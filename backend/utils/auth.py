@@ -4,6 +4,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 import os
 from dotenv import load_dotenv
+from fastapi import HTTPException, status
 
 load_dotenv()
 
@@ -31,12 +32,13 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def verify_token(token: str) -> Optional[str]:
+def verify_token(token: str) -> dict:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
-            return None
-        return email
+        return payload
     except JWTError:
-        return None 
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) 

@@ -1,6 +1,35 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// Create axios instance with default config
+export const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add request interceptor to include token in headers
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Add response interceptor to handle 401 errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/auth/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export interface LoginCredentials {
   username: string;
@@ -14,43 +43,51 @@ export interface RegisterData {
 }
 
 export const authService = {
-  async login(username: string, password: string) {
+  async login(email: string, password: string) {
     const formData = new FormData();
-    formData.append('username', username);
+    formData.append('username', email);
     formData.append('password', password);
 
-    const response = await axios.post(`${API_URL}/auth/token`, formData, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
-
+    const response = await api.post('/auth/token', formData);
     if (response.data.access_token) {
       localStorage.setItem('token', response.data.access_token);
+      return response.data;
     }
-
-    return response.data;
+    return null;
   },
 
-  async register(data: RegisterData) {
-    const response = await axios.post(`${API_URL}/auth/register`, data);
+  async register(userData: { email: string; password: string; full_name: string }) {
+    const response = await api.post('/auth/register', userData);
     return response.data;
   },
 
   async getCurrentUser() {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${API_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    return response.data;
-  },
+    const token = this.getToken();
+    if (!token) return null;
 
-  logout() {
-    localStorage.removeItem('token');
+    try {
+      const response = await api.get('/auth/me');
+      return response.data;
+    } catch (error) {
+      this.logout();
+      return null;
+    }
   },
 
   getToken() {
     return localStorage.getItem('token');
+  },
+
+  logout() {
+    // Clear all auth-related data
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // Clear axios default headers
+    delete api.defaults.headers.common['Authorization'];
+    
+    // Force a page reload to clear any cached state
+    window.location.href = '/auth/login';
   },
 
   isAuthenticated() {

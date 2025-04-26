@@ -20,9 +20,12 @@ export default function Login() {
     setLoading(true)
 
     try {
+      // Use email as username for the API
       await authService.login(formData.email, formData.password)
-      router.push('/dashboard')
+      // Force a hard navigation to ensure middleware runs
+      window.location.href = '/dashboard'
     } catch (err: any) {
+      console.error('Login error:', err)
       setError(err.response?.data?.detail || 'An error occurred during login')
     } finally {
       setLoading(false)

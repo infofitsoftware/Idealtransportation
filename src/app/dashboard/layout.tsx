@@ -23,8 +23,13 @@ export default function DashboardLayout({
           return
         }
         const userData = await authService.getCurrentUser()
+        if (!userData) {
+          router.push('/auth/login')
+          return
+        }
         setUser(userData)
       } catch (error) {
+        console.error('Auth check failed:', error)
         router.push('/auth/login')
       } finally {
         setLoading(false)
@@ -34,9 +39,16 @@ export default function DashboardLayout({
     checkAuth()
   }, [router])
 
-  const handleLogout = () => {
-    authService.logout()
-    router.push('/auth/login')
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    try {
+      authService.logout()
+      // The logout function will handle the redirect
+    } catch (error) {
+      console.error('Logout failed:', error)
+      // Force redirect to login page if logout fails
+      router.push('/auth/login')
+    }
   }
 
   if (loading) {
