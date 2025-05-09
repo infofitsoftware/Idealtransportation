@@ -1,83 +1,64 @@
 'use client'
 
 import { useState } from 'react'
-import { Transaction, transactionService } from '@/services/transaction'
-import TransactionForm from '@/components/TransactionForm'
-import TransactionList from '@/components/TransactionList'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { DocumentDuplicateIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline'
+
+const transactionTypes = [
+  {
+    name: 'Transportation',
+    href: '/dashboard/transactions/new',
+    icon: DocumentDuplicateIcon,
+    description: 'Record transportation transactions',
+  },
+  {
+    name: 'Daily Expenses',
+    href: '/dashboard/transactions/daily-expense',
+    icon: ClipboardDocumentListIcon,
+    description: 'Record daily expenses',
+  },
+]
 
 export default function TransactionsPage() {
-  const [showForm, setShowForm] = useState(false)
-  const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>()
-  const [error, setError] = useState('')
-
-  const handleCreate = async (data: Omit<Transaction, 'id'>) => {
-    try {
-      await transactionService.createTransaction(data)
-      setShowForm(false)
-      setError('')
-    } catch (err) {
-      setError('Failed to create transaction')
-      console.error(err)
-    }
-  }
-
-  const handleUpdate = async (data: Omit<Transaction, 'id'>) => {
-    if (!editingTransaction?.id) return
-
-    try {
-      await transactionService.updateTransaction(editingTransaction.id, data)
-      setShowForm(false)
-      setEditingTransaction(undefined)
-      setError('')
-    } catch (err) {
-      setError('Failed to update transaction')
-      console.error(err)
-    }
-  }
-
-  const handleEdit = (transaction: Transaction) => {
-    setEditingTransaction(transaction)
-    setShowForm(true)
-  }
+  const router = useRouter()
 
   return (
-    <div className="py-6">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-gray-900">Transactions</h1>
-          <button
-            onClick={() => {
-              setEditingTransaction(undefined)
-              setShowForm(true)
-            }}
-            className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-          >
-            Add Transaction
-          </button>
+    <div className="space-y-6">
+      <div className="md:flex md:items-center md:justify-between">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
+            Transactions
+          </h2>
         </div>
+      </div>
 
-        {error && (
-          <div className="mt-4 rounded-md bg-red-50 p-4">
-            <div className="text-sm text-red-700">{error}</div>
-          </div>
-        )}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {transactionTypes.map((type) => (
+          <Link
+            key={type.name}
+            href={type.href}
+            className="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-gray-400 focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2"
+          >
+            <div className="flex-shrink-0">
+              <type.icon className="h-6 w-6 text-gray-400" aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="absolute inset-0" aria-hidden="true" />
+              <p className="text-sm font-medium text-gray-900">{type.name}</p>
+              <p className="truncate text-sm text-gray-500">{type.description}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
 
-        {showForm ? (
-          <div className="mt-8">
-            <TransactionForm
-              transaction={editingTransaction}
-              onSubmit={editingTransaction ? handleUpdate : handleCreate}
-              onCancel={() => {
-                setShowForm(false)
-                setEditingTransaction(undefined)
-              }}
-            />
+      <div className="mt-8">
+        <h3 className="text-lg font-medium leading-6 text-gray-900">Recent Transactions</h3>
+        <div className="mt-4 overflow-hidden rounded-lg bg-white shadow">
+          <div className="p-6">
+            <p className="text-sm text-gray-500">No recent transactions to display</p>
           </div>
-        ) : (
-          <div className="mt-8">
-            <TransactionList onEdit={handleEdit} />
-          </div>
-        )}
+        </div>
       </div>
     </div>
   )

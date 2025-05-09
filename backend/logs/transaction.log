@@ -1,0 +1,36 @@
+2025-05-05 16:14:38 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-05-05 16:14:38 - routers.transaction - INFO - Found 0 transactions
+2025-05-05 16:14:38 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-05-05 16:14:39 - routers.transaction - INFO - Found 0 transactions
+2025-05-05 16:14:46 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-05-05 16:14:47 - routers.transaction - INFO - Found 0 transactions
+2025-05-05 16:14:47 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-05-05 16:14:47 - routers.transaction - INFO - Found 0 transactions
+2025-05-05 16:15:02 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-05-05 16:15:02 - routers.transaction - INFO - Found 0 transactions
+2025-05-05 16:15:02 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-05-05 16:15:02 - routers.transaction - INFO - Found 0 transactions
+2025-05-05 16:15:16 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-05-05 16:15:16 - routers.transaction - INFO - Found 0 transactions
+2025-05-05 16:15:16 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-05-05 16:15:17 - routers.transaction - INFO - Found 0 transactions
+2025-05-05 16:18:00 - routers.transaction - INFO - Creating new transaction for user: admin@idealtransport.com
+2025-05-05 16:18:00 - routers.transaction - DEBUG - Transaction data: {'date': datetime.date(2025, 5, 5), 'car_year': '1946', 'car_make': 'hyndai', 'car_model': '2015', 'car_vin': '1254256', 'pickup_location': 'dallas', 'dropoff_location': 'sadaf', 'payment_type': 'CASH', 'amount': 122.0, 'comments': 'saasasa'}
+2025-05-05 16:18:00 - routers.transaction - INFO - Adding transaction to database
+2025-05-05 16:18:01 - routers.transaction - INFO - Transaction created successfully with ID: 1
+2025-05-05 16:18:02 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-05-05 16:18:02 - routers.transaction - INFO - Found 1 transactions
+2025-05-05 16:18:02 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-05-05 16:18:02 - routers.transaction - INFO - Found 1 transactions
+2025-05-07 08:25:49 - routers.transaction - INFO - Creating new transaction for user: admin@idealtransport.com
+2025-05-07 08:25:49 - routers.transaction - DEBUG - Transaction data: {'date': datetime.date(2025, 5, 7), 'car_year': '1946', 'car_make': 'hyndai', 'car_model': '2015', 'car_vin': '1254256', 'pickup_location': 'dallas', 'dropoff_location': 'sadaf', 'payment_type': 'CREDIT_CARD', 'amount': 5000.0, 'comments': 'great'}
+2025-05-07 08:25:49 - routers.transaction - INFO - Adding transaction to database
+2025-05-07 08:25:49 - routers.transaction - INFO - Transaction created successfully with ID: 2
+2025-05-07 08:27:02 - routers.transaction - INFO - Creating new daily expense for user: admin@idealtransport.com
+2025-05-07 08:27:02 - routers.transaction - ERROR - Error creating daily expense: (psycopg2.errors.UndefinedTable) relation "daily_expenses" does not exist
+LINE 1: INSERT INTO daily_expenses (date, diesel_amount, diesel_loca...
+                    ^
+
+[SQL: INSERT INTO daily_expenses (date, diesel_amount, diesel_location, def_amount, def_location, other_expense_description, other_expense_amount, other_expense_location, total, user_id) VALUES (%(date)s, %(diesel_amount)s, %(diesel_location)s, %(def_amount)s, %(def_location)s, %(other_expense_description)s, %(other_expense_amount)s, %(other_expense_location)s, %(total)s, %(user_id)s) RETURNING daily_expenses.id]
+[parameters: {'date': datetime.date(2025, 5, 7), 'diesel_amount': 500.0, 'diesel_location': 'dada', 'def_amount': 2525.0, 'def_location': 'sasa', 'other_expense_description': 'sasas', 'other_expense_amount': 200.0, 'other_expense_location': 'sasa', 'total': 3225.0, 'user_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)

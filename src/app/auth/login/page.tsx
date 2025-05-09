@@ -22,11 +22,16 @@ export default function Login() {
     try {
       // Use email as username for the API
       await authService.login(formData.email, formData.password)
-      // Force a hard navigation to ensure middleware runs
-      window.location.href = '/dashboard'
+      // Use Next.js router for navigation
+      router.push('/dashboard')
     } catch (err: any) {
       console.error('Login error:', err)
-      setError(err.response?.data?.detail || 'An error occurred during login')
+      // Extract the error message from the response
+      const errorMessage = err.response?.data?.detail || 
+                          err.response?.data?.message || 
+                          err.message || 
+                          'An error occurred during login'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

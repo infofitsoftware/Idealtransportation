@@ -5,9 +5,6 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 // Create axios instance with default config
 export const api = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 // Add request interceptor to include token in headers
@@ -50,7 +47,11 @@ export const authService = {
 
     const response = await api.post('/auth/token', formData);
     if (response.data.access_token) {
-      localStorage.setItem('token', response.data.access_token);
+      const token = response.data.access_token;
+      // Store token in localStorage
+      localStorage.setItem('token', token);
+      // Store token in cookies
+      document.cookie = `token=${token}; path=/; max-age=86400`; // 24 hours
       return response.data;
     }
     return null;
