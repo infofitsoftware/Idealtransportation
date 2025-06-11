@@ -20,11 +20,9 @@ jobs:
 
     - name: Install Frontend Dependencies
       working-directory: ./src
-      run: npm ci
-
-    - name: Build Frontend
-      working-directory: ./src
-      run: npm run build
+      run: |
+        npm ci
+        npm run build
       env:
         NEXT_PUBLIC_API_URL: http://${{ secrets.EC2_HOST }}/api
 
