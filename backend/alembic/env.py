@@ -1,5 +1,18 @@
+# Import the Base from your models package
+#from database import Base, SQLALCHEMY_DATABASE_URL
+#import models  # noqa: F401  # Ensure all models are imported for Alembic autogenerate
 import os
 import sys
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, backend_dir)
+#Import the Base from your models package
+from database import Base, SQLALCHEMY_DATABASE_URL
+from models.base import Base
+from models.user import User
+from models.transaction import Transaction
+from models.daily_expense import DailyExpense
+from models.bill_of_lading import BillOfLading, BOLVehicle
+
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -7,11 +20,8 @@ from sqlalchemy import pool
 
 from alembic import context
 
-# Add the parent directory to Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add the parent directory (backend) to Python path
 
-# Import the Base from your models package
-from database import Base, SQLALCHEMY_DATABASE_URL
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

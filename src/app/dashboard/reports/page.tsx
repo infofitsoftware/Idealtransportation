@@ -1,140 +1,222 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { DocumentArrowDownIcon } from '@heroicons/react/24/outline'
+import React, { useEffect, useState } from "react";
+import { DocumentTextIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
-interface Report {
-  id: string
-  name: string
-  description: string
-  type: 'Daily' | 'Weekly' | 'Monthly'
-  lastGenerated: string
-  format: 'CSV' | 'Excel' | 'PDF'
+interface Vehicle {
+  year: string;
+  make: string;
+  model: string;
+  vin: string;
+  mileage: string;
+  price: string;
 }
 
-const reports: Report[] = [
-  {
-    id: '1',
-    name: 'Daily Transactions',
-    description: 'Detailed report of all daily transportation transactions',
-    type: 'Daily',
-    lastGenerated: '2024-02-20',
-    format: 'Excel',
-  },
-  {
-    id: '2',
-    name: 'Weekly Revenue Summary',
-    description: 'Summary of revenue by location and service type',
-    type: 'Weekly',
-    lastGenerated: '2024-02-18',
-    format: 'PDF',
-  },
-  {
-    id: '3',
-    name: 'Monthly Performance Metrics',
-    description: 'Key performance indicators and analytics',
-    type: 'Monthly',
-    lastGenerated: '2024-02-01',
-    format: 'CSV',
-  },
-]
+interface BillOfLading {
+  id: number;
+  driver_name: string;
+  date: string;
+  work_order_no?: string;
+  pickup_name?: string;
+  pickup_address?: string;
+  pickup_city?: string;
+  pickup_state?: string;
+  pickup_zip?: string;
+  pickup_phone?: string;
+  delivery_name?: string;
+  delivery_address?: string;
+  delivery_city?: string;
+  delivery_state?: string;
+  delivery_zip?: string;
+  delivery_phone?: string;
+  condition_codes?: string;
+  remarks?: string;
+  pickup_agent_name?: string;
+  pickup_signature?: string;
+  pickup_date?: string;
+  delivery_agent_name?: string;
+  delivery_signature?: string;
+  delivery_date?: string;
+  vehicles: Vehicle[];
+}
 
-export default function Reports() {
-  const [selectedReport, setSelectedReport] = useState<string>('')
-  const [dateRange, setDateRange] = useState({
-    start: new Date().toISOString().split('T')[0],
-    end: new Date().toISOString().split('T')[0],
-  })
+function formatDate(dateStr?: string) {
+  if (!dateStr) return "";
+  return new Date(dateStr).toLocaleDateString();
+}
 
-  const handleExport = (reportId: string) => {
-    // TODO: Implement export functionality
-    console.log('Exporting report:', reportId, 'with date range:', dateRange)
+function downloadBOLPdf(bol: BillOfLading) {
+  const doc = new jsPDF();
+  let y = 10;
+  doc.setFontSize(18);
+  doc.text("Bill of Lading", 105, y, { align: "center" });
+  y += 10;
+  doc.setFontSize(12);
+  doc.text('Driver: ' + String(bol.driver_name ?? ''), 14, y);
+  doc.text('Date: ' + String(formatDate(bol.date) ?? ''), 150, y);
+  y += 8;
+  doc.text('Work Order No: ' + String(bol.work_order_no ?? ''), 14, y);
+  y += 8;
+  doc.setFont(undefined, "bold");
+  doc.text("Pick Up", 14, y);
+  doc.setFont(undefined, "normal");
+  y += 6;
+  doc.text('Name: ' + String(bol.pickup_name ?? ''), 14, y);
+  doc.text('Phone: ' + String(bol.pickup_phone ?? ''), 100, y);
+  y += 6;
+  doc.text('Address: ' + String(bol.pickup_address ?? ''), 14, y);
+  y += 6;
+  doc.text('City: ' + String(bol.pickup_city ?? '') + '  State: ' + String(bol.pickup_state ?? '') + '  Zip: ' + String(bol.pickup_zip ?? ''), 14, y);
+  y += 8;
+  doc.setFont(undefined, "bold");
+  doc.text("Delivery", 14, y);
+  doc.setFont(undefined, "normal");
+  y += 6;
+  doc.text('Name: ' + String(bol.delivery_name ?? ''), 14, y);
+  doc.text('Phone: ' + String(bol.delivery_phone ?? ''), 100, y);
+  y += 6;
+  doc.text('Address: ' + String(bol.delivery_address ?? ''), 14, y);
+  y += 6;
+  doc.text('City: ' + String(bol.delivery_city ?? '') + '  State: ' + String(bol.delivery_state ?? '') + '  Zip: ' + String(bol.delivery_zip ?? ''), 14, y);
+  y += 8;
+  doc.setFont(undefined, "bold");
+  doc.text("Vehicles", 14, y);
+  doc.setFont(undefined, "normal");
+  y += 2;
+  autoTable(doc, {
+    startY: y,
+    head: [["Year", "Make", "Model", "VIN", "Mileage", "Price"]],
+    body: bol.vehicles.map((v) => [v.year, v.make, v.model, v.vin, v.mileage, v.price]),
+    theme: "grid",
+    headStyles: { fillColor: [37, 99, 235] },
+    styles: { fontSize: 9 },
+    margin: { left: 14, right: 14 },
+  });
+  y = (doc as any).lastAutoTable.finalY + 6;
+  doc.setFont(undefined, "bold");
+  doc.text("Condition Codes", 14, y);
+  doc.setFont(undefined, "normal");
+  y += 6;
+  doc.text(String(bol.condition_codes ?? ''), 14, y);
+  y += 8;
+  doc.setFont(undefined, "bold");
+  doc.text("Remarks", 14, y);
+  doc.setFont(undefined, "normal");
+  y += 6;
+  doc.text(String(bol.remarks ?? ''), 14, y, { maxWidth: 180 });
+  y += 10;
+  doc.setFont(undefined, "bold");
+  doc.text("Signatures", 14, y);
+  doc.setFont(undefined, "normal");
+  y += 6;
+  doc.text('Pickup Agent: ' + String(bol.pickup_agent_name ?? ''), 14, y);
+  doc.text('Date: ' + String(formatDate(bol.pickup_date) ?? ''), 100, y);
+  y += 2;
+  if (bol.pickup_signature && typeof bol.pickup_signature === 'string') {
+    try {
+      const base64Data = bol.pickup_signature.split(',')[1] || bol.pickup_signature;
+      doc.addImage(base64Data, "PNG", 14, y + 2, 40, 16);
+    } catch (err) {
+      console.error('Error adding pickup signature:', err);
+    }
   }
+  y += 20;
+  doc.text('Delivery Agent: ' + String(bol.delivery_agent_name ?? ''), 14, y);
+  doc.text('Date: ' + String(formatDate(bol.delivery_date) ?? ''), 100, y);
+  y += 2;
+  if (bol.delivery_signature && typeof bol.delivery_signature === 'string') {
+    try {
+      const base64Data = bol.delivery_signature.split(',')[1] || bol.delivery_signature;
+      doc.addImage(base64Data, "PNG", 14, y + 2, 40, 16);
+    } catch (err) {
+      console.error('Error adding delivery signature:', err);
+    }
+  }
+  y += 22;
+  doc.save(`BillOfLading_${bol.id}.pdf`);
+}
+
+export default function ReportsPage() {
+  const [data, setData] = useState<BillOfLading[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/bol/`);
+        if (!res.ok) throw new Error("Failed to fetch reports");
+        const json = await res.json();
+        setData(json);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
-    <div>
-      <div className="sm:flex sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Reports</h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Generate and download reports for your transportation operations.
-          </p>
-        </div>
-      </div>
-
-      {/* Date Range Selection */}
-      <div className="mt-8 rounded-lg bg-white p-6 shadow">
-        <h2 className="text-base font-semibold text-gray-900">Date Range</h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:max-w-lg">
-          <div>
-            <label htmlFor="start-date" className="block text-sm font-medium text-gray-700">
-              Start Date
-            </label>
-            <input
-              type="date"
-              id="start-date"
-              name="start-date"
-              value={dateRange.start}
-              onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            />
-          </div>
-          <div>
-            <label htmlFor="end-date" className="block text-sm font-medium text-gray-700">
-              End Date
-            </label>
-            <input
-              type="date"
-              id="end-date"
-              name="end-date"
-              value={dateRange.end}
-              onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Available Reports */}
-      <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900">Available Reports</h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {reports.map((report) => (
-            <div
-              key={report.id}
-              className="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none"
-            >
-              <div className="flex flex-1">
-                <div className="flex flex-col">
-                  <div className="flex justify-between">
-                    <p className="text-sm font-medium text-gray-900">{report.name}</p>
-                    <p className="text-sm text-gray-500">{report.type}</p>
-                  </div>
-                  <p className="mt-1 flex text-sm text-gray-500">{report.description}</p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
-                        {report.format}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        Last generated: {report.lastGenerated}
-                      </span>
-                    </div>
+    <div className="max-w-5xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
+      <h1 className="text-3xl font-extrabold mb-6 text-blue-700 tracking-tight flex items-center gap-2">
+        <DocumentTextIcon className="h-8 w-8 text-blue-500" /> Reports
+      </h1>
+      {loading ? (
+        <div className="text-gray-500">Loading...</div>
+      ) : error ? (
+        <div className="text-red-600">{error}</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full border text-sm">
+            <thead>
+              <tr className="bg-blue-100 text-blue-800">
+                <th className="border px-2 py-1">Driver</th>
+                <th className="border px-2 py-1">Date</th>
+                <th className="border px-2 py-1">Pickup</th>
+                <th className="border px-2 py-1">Delivery</th>
+                <th className="border px-2 py-1">Vehicles</th>
+                <th className="border px-2 py-1">Download</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((bol) => (
+                <tr key={bol.id} className="hover:bg-blue-50">
+                  <td className="border px-2 py-1 font-medium">{bol.driver_name}</td>
+                  <td className="border px-2 py-1">{bol.date}</td>
+                  <td className="border px-2 py-1">
+                    <div className="font-semibold">{bol.pickup_name}</div>
+                    <div className="text-xs text-gray-500">{bol.pickup_address}</div>
+                    <div className="text-xs text-gray-400">{bol.pickup_city}, {bol.pickup_state} {bol.pickup_zip}</div>
+                  </td>
+                  <td className="border px-2 py-1">
+                    <div className="font-semibold">{bol.delivery_name}</div>
+                    <div className="text-xs text-gray-500">{bol.delivery_address}</div>
+                    <div className="text-xs text-gray-400">{bol.delivery_city}, {bol.delivery_state} {bol.delivery_zip}</div>
+                  </td>
+                  <td className="border px-2 py-1">
+                    <ul className="list-disc pl-4">
+                      {bol.vehicles.map((v, i) => (
+                        <li key={i}>{v.year} {v.make} {v.model} ({v.vin})</li>
+                      ))}
+                    </ul>
+                  </td>
+                  <td className="border px-2 py-1 text-center">
                     <button
-                      type="button"
-                      onClick={() => handleExport(report.id)}
-                      className="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                      className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto"
+                      onClick={() => downloadBOLPdf(bol)}
                     >
-                      <DocumentArrowDownIcon className="mr-1.5 h-5 w-5 text-gray-400" />
-                      Export
+                      <ArrowDownTrayIcon className="h-5 w-5" /> Download
                     </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
+      )}
     </div>
-  )
+  );
 } 

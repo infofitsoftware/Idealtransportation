@@ -19,6 +19,9 @@ export default function TransactionForm({ transaction, onSubmit, onCancel }: Tra
     payment_type: 'Cash',
     amount: 0,
     comments: '',
+    user_id: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   })
 
   useEffect(() => {
@@ -34,6 +37,9 @@ export default function TransactionForm({ transaction, onSubmit, onCancel }: Tra
         payment_type: transaction.payment_type,
         amount: transaction.amount,
         comments: transaction.comments || '',
+        user_id: transaction.user_id,
+        created_at: transaction.created_at,
+        updated_at: transaction.updated_at,
       })
     }
   }, [transaction])

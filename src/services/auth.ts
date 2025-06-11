@@ -22,6 +22,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
       window.location.href = '/auth/login';
     }
     return Promise.reject(error);
@@ -50,6 +52,8 @@ export const authService = {
       const token = response.data.access_token;
       // Store token in localStorage
       localStorage.setItem('token', token);
+      // Store token in sessionStorage
+      sessionStorage.setItem('token', token);
       // Store token in cookies
       document.cookie = `token=${token}; path=/; max-age=86400`; // 24 hours
       return response.data;
@@ -76,19 +80,20 @@ export const authService = {
   },
 
   getToken() {
-    return localStorage.getItem('token');
+    return localStorage.getItem('token') || sessionStorage.getItem('token');
   },
 
   logout() {
     // Clear all auth-related data
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     
     // Clear axios default headers
     delete api.defaults.headers.common['Authorization'];
     
     // Force a page reload to clear any cached state
-    window.location.href = '/auth/login';
+    window.location.href = '/';
   },
 
   isAuthenticated() {

@@ -34,3 +34,43 @@ LINE 1: INSERT INTO daily_expenses (date, diesel_amount, diesel_loca...
 [SQL: INSERT INTO daily_expenses (date, diesel_amount, diesel_location, def_amount, def_location, other_expense_description, other_expense_amount, other_expense_location, total, user_id) VALUES (%(date)s, %(diesel_amount)s, %(diesel_location)s, %(def_amount)s, %(def_location)s, %(other_expense_description)s, %(other_expense_amount)s, %(other_expense_location)s, %(total)s, %(user_id)s) RETURNING daily_expenses.id]
 [parameters: {'date': datetime.date(2025, 5, 7), 'diesel_amount': 500.0, 'diesel_location': 'dada', 'def_amount': 2525.0, 'def_location': 'sasa', 'other_expense_description': 'sasas', 'other_expense_amount': 200.0, 'other_expense_location': 'sasa', 'total': 3225.0, 'user_id': 1}]
 (Background on this error at: https://sqlalche.me/e/20/f405)
+2025-05-19 13:03:32 - routers.transaction - INFO - Creating new daily expense for user: admin@idealtransport.com
+2025-05-19 13:03:32 - routers.transaction - ERROR - Error creating daily expense: (psycopg2.errors.UndefinedTable) relation "daily_expenses" does not exist
+LINE 1: INSERT INTO daily_expenses (date, diesel_amount, diesel_loca...
+                    ^
+
+[SQL: INSERT INTO daily_expenses (date, diesel_amount, diesel_location, def_amount, def_location, other_expense_description, other_expense_amount, other_expense_location, total, user_id) VALUES (%(date)s, %(diesel_amount)s, %(diesel_location)s, %(def_amount)s, %(def_location)s, %(other_expense_description)s, %(other_expense_amount)s, %(other_expense_location)s, %(total)s, %(user_id)s) RETURNING daily_expenses.id]
+[parameters: {'date': datetime.date(2025, 5, 19), 'diesel_amount': 200.0, 'diesel_location': 'dada', 'def_amount': 200.0, 'def_location': 'sasa', 'other_expense_description': '200', 'other_expense_amount': 200.0, 'other_expense_location': 'sasa', 'total': 600.0, 'user_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-05-19 14:53:32 - routers.transaction - INFO - Creating new daily expense for user: admin@idealtransport.com
+2025-05-19 14:53:32 - routers.transaction - ERROR - Error creating daily expense: (psycopg2.errors.UndefinedTable) relation "daily_expenses" does not exist
+LINE 1: INSERT INTO daily_expenses (date, diesel_amount, diesel_loca...
+                    ^
+
+[SQL: INSERT INTO daily_expenses (date, diesel_amount, diesel_location, def_amount, def_location, other_expense_description, other_expense_amount, other_expense_location, total, user_id) VALUES (%(date)s, %(diesel_amount)s, %(diesel_location)s, %(def_amount)s, %(def_location)s, %(other_expense_description)s, %(other_expense_amount)s, %(other_expense_location)s, %(total)s, %(user_id)s) RETURNING daily_expenses.id]
+[parameters: {'date': datetime.date(2025, 5, 19), 'diesel_amount': 10.0, 'diesel_location': 'dada', 'def_amount': 10.0, 'def_location': 'sasa', 'other_expense_description': 'sasas', 'other_expense_amount': 10.0, 'other_expense_location': 'sasa', 'total': 30.0, 'user_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-05-20 13:18:52 - routers.transaction - INFO - Creating new transaction for user: admin@idealtransport.com
+2025-05-20 13:18:52 - routers.transaction - DEBUG - Transaction data: {'date': datetime.date(2025, 5, 20), 'car_year': '1946', 'car_make': 'anish', 'car_model': 'anish', 'car_vin': '12121ass', 'pickup_location': 'dallas', 'dropoff_location': 'dalls', 'payment_type': 'CASH', 'amount': 500.0, 'comments': 'payment received'}
+2025-05-20 13:18:52 - routers.transaction - INFO - Adding transaction to database
+2025-05-20 13:18:53 - routers.transaction - INFO - Transaction created successfully with ID: 3
+2025-05-20 14:32:10 - routers.transaction - INFO - Creating new daily expense for user: admin@idealtransport.com
+2025-05-20 14:32:11 - routers.transaction - INFO - Daily expense created successfully with ID: 1
+2025-05-20 16:37:41 - routers.transaction - INFO - Creating new daily expense for user: admin@idealtransport.com
+2025-05-20 16:37:42 - routers.transaction - INFO - Daily expense created successfully with ID: 2
+2025-05-20 16:38:28 - routers.transaction - INFO - Creating new transaction for user: admin@idealtransport.com
+2025-05-20 16:38:28 - routers.transaction - DEBUG - Transaction data: {'date': datetime.date(2025, 5, 20), 'car_year': '1946', 'car_make': 'hyndai', 'car_model': '2015', 'car_vin': '1254256', 'pickup_location': 'dallas', 'dropoff_location': 'sadaf', 'payment_type': 'BANK_TRANSFER', 'amount': 15000.0, 'comments': 'sasasas'}
+2025-05-20 16:38:28 - routers.transaction - INFO - Adding transaction to database
+2025-05-20 16:38:29 - routers.transaction - INFO - Transaction created successfully with ID: 4
+2025-05-24 17:06:40 - routers.transaction - INFO - Creating new daily expense for user: admin@idealtransport.com
+2025-05-24 17:06:41 - routers.transaction - INFO - Daily expense created successfully with ID: 3
+2025-05-24 17:07:11 - routers.transaction - INFO - Creating new transaction for user: admin@idealtransport.com
+2025-05-24 17:07:11 - routers.transaction - DEBUG - Transaction data: {'date': datetime.date(2025, 5, 24), 'car_year': '2055', 'car_make': 'assa', 'car_model': 'sasa', 'car_vin': 'saaass', 'pickup_location': 'sassas', 'dropoff_location': 'asasaa', 'payment_type': 'CASH', 'amount': 2102.0, 'comments': 'sasas'}
+2025-05-24 17:07:11 - routers.transaction - INFO - Adding transaction to database
+2025-05-24 17:07:12 - routers.transaction - INFO - Transaction created successfully with ID: 5
+2025-06-06 15:42:32 - routers.transaction - INFO - Creating new transaction for user: admin@idealtransport.com
+2025-06-06 15:42:32 - routers.transaction - DEBUG - Transaction data: {'date': datetime.date(2025, 6, 6), 'car_year': '2025', 'car_make': 'hyundai', 'car_model': '2025', 'car_vin': 'nb1235', 'pickup_location': 'sasa', 'dropoff_location': 'sasas', 'payment_type': 'CASH', 'amount': 15000.0, 'comments': 'this is working'}
+2025-06-06 15:42:32 - routers.transaction - INFO - Adding transaction to database
+2025-06-06 15:42:33 - routers.transaction - INFO - Transaction created successfully with ID: 1
+2025-06-06 15:46:23 - routers.transaction - INFO - Creating new daily expense for user: admin@idealtransport.com
+2025-06-06 15:46:23 - routers.transaction - INFO - Daily expense created successfully with ID: 1

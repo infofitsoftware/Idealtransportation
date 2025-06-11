@@ -17,6 +17,14 @@ export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
 
+  const handleLoginClick = () => {
+    // Clear any existing session data
+    localStorage.removeItem('token')
+    sessionStorage.removeItem('token')
+    // Force a hard navigation to the login page
+    window.location.href = '/auth/login'
+  }
+
   return (
     <header className="absolute inset-x-0 top-0 z-50">
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
@@ -50,12 +58,12 @@ export default function Navigation() {
           ))}
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-          <Link
-            href="/dashboard"
+          <button
+            onClick={handleLoginClick}
             className="rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
           >
             Login <span aria-hidden="true">&rarr;</span>
-          </Link>
+          </button>
         </div>
       </nav>
       <Dialog as="div" className="lg:hidden" open={mobileMenuOpen} onClose={setMobileMenuOpen}>
@@ -94,13 +102,15 @@ export default function Navigation() {
                 ))}
               </div>
               <div className="py-6">
-                <Link
-                  href="/dashboard"
-                  className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                  onClick={() => setMobileMenuOpen(false)}
+                <button
+                  onClick={() => {
+                    handleLoginClick()
+                    setMobileMenuOpen(false)
+                  }}
+                  className="-mx-3 block w-full text-left rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
                 >
                   Login
-                </Link>
+                </button>
               </div>
             </div>
           </div>

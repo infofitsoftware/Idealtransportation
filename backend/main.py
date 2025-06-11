@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
-from routers import auth_router, transaction
+from routers import auth_router, transaction, bill_of_lading
 from dependencies import get_current_active_user
 from database import get_db
 from utils.logger import setup_logger
@@ -28,6 +28,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(transaction.router, prefix="/transactions", tags=["transactions"])
+app.include_router(bill_of_lading.router, prefix="/bol", tags=["bill_of_lading"])
 
 @app.on_event("startup")
 async def startup_event():

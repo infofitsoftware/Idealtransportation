@@ -1,0 +1,53 @@
+from pydantic import BaseModel
+from typing import List, Optional
+from datetime import date
+
+class BOLVehicleBase(BaseModel):
+    year: Optional[str]
+    make: Optional[str]
+    model: Optional[str]
+    vin: Optional[str]
+    mileage: Optional[str]
+    price: Optional[str]
+
+class BOLVehicleCreate(BOLVehicleBase):
+    pass
+
+class BOLVehicle(BOLVehicleBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+class BillOfLadingBase(BaseModel):
+    driver_name: str
+    date: date
+    work_order_no: Optional[str]
+    pickup_name: Optional[str]
+    pickup_address: Optional[str]
+    pickup_city: Optional[str]
+    pickup_state: Optional[str]
+    pickup_zip: Optional[str]
+    pickup_phone: Optional[str]
+    delivery_name: Optional[str]
+    delivery_address: Optional[str]
+    delivery_city: Optional[str]
+    delivery_state: Optional[str]
+    delivery_zip: Optional[str]
+    delivery_phone: Optional[str]
+    condition_codes: Optional[str]
+    remarks: Optional[str]
+    pickup_agent_name: Optional[str]
+    pickup_signature: Optional[str]
+    pickup_date: Optional[date]
+    delivery_agent_name: Optional[str]
+    delivery_signature: Optional[str]
+    delivery_date: Optional[date]
+
+class BillOfLadingCreate(BillOfLadingBase):
+    vehicles: List[BOLVehicleCreate]
+
+class BillOfLading(BillOfLadingBase):
+    id: int
+    vehicles: List[BOLVehicle]
+    class Config:
+        orm_mode = True 
