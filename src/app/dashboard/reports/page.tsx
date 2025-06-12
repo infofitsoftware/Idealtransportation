@@ -59,9 +59,9 @@ function downloadBOLPdf(bol: BillOfLading) {
   y += 8;
   doc.text('Work Order No: ' + String(bol.work_order_no ?? ''), 14, y);
   y += 8;
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Pick Up", 14, y);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   y += 6;
   doc.text('Name: ' + String(bol.pickup_name ?? ''), 14, y);
   doc.text('Phone: ' + String(bol.pickup_phone ?? ''), 100, y);
@@ -70,9 +70,9 @@ function downloadBOLPdf(bol: BillOfLading) {
   y += 6;
   doc.text('City: ' + String(bol.pickup_city ?? '') + '  State: ' + String(bol.pickup_state ?? '') + '  Zip: ' + String(bol.pickup_zip ?? ''), 14, y);
   y += 8;
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Delivery", 14, y);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   y += 6;
   doc.text('Name: ' + String(bol.delivery_name ?? ''), 14, y);
   doc.text('Phone: ' + String(bol.delivery_phone ?? ''), 100, y);
@@ -81,9 +81,9 @@ function downloadBOLPdf(bol: BillOfLading) {
   y += 6;
   doc.text('City: ' + String(bol.delivery_city ?? '') + '  State: ' + String(bol.delivery_state ?? '') + '  Zip: ' + String(bol.delivery_zip ?? ''), 14, y);
   y += 8;
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Vehicles", 14, y);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   y += 2;
   autoTable(doc, {
     startY: y,
@@ -95,21 +95,21 @@ function downloadBOLPdf(bol: BillOfLading) {
     margin: { left: 14, right: 14 },
   });
   y = (doc as any).lastAutoTable.finalY + 6;
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Condition Codes", 14, y);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   y += 6;
   doc.text(String(bol.condition_codes ?? ''), 14, y);
   y += 8;
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Remarks", 14, y);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   y += 6;
   doc.text(String(bol.remarks ?? ''), 14, y, { maxWidth: 180 });
   y += 10;
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Signatures", 14, y);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   y += 6;
   doc.text('Pickup Agent: ' + String(bol.pickup_agent_name ?? ''), 14, y);
   doc.text('Date: ' + String(formatDate(bol.pickup_date) ?? ''), 100, y);
