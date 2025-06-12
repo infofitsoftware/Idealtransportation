@@ -56,65 +56,109 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          # Install required packages if not present
-          if ! command -v git &> /dev/null; then
-            sudo apt-get update
-            sudo apt-get install -y git nodejs npm python3-pip python3-venv nginx
-          fi
+          # Function to check if a command exists
+          command_exists() {
+            command -v "$1" >/dev/null 2>&1
+          }
 
-          # Check if it's first deployment
-          if [ ! -d /home/ubuntu/ideal-transportation ]; then
-            # First time setup
-            mkdir -p /home/ubuntu/ideal-transportation
-            cd /home/ubuntu/ideal-transportation
-            
-            # Clone using SSH URL
+          # Install required packages
+          echo "Installing required packages..."
+          sudo apt-get update
+          sudo apt-get install -y git nodejs npm python3-pip python3-venv nginx
+
+          # Create application directory
+          echo "Setting up application directory..."
+          sudo mkdir -p /home/ubuntu/ideal-transportation
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation
+          cd /home/ubuntu/ideal-transportation
+
+          # Clone repository
+          echo "Cloning repository..."
+          if [ ! -d ".git" ]; then
             git clone git@github.com:${{ github.repository }}.git .
-            
-            # Export environment variables for setup script
-            export DATABASE_URL="${{ secrets.DATABASE_URL }}"
-            export SECRET_KEY="${{ secrets.SECRET_KEY }}"
-            
-            # Make setup script executable and run it
-            chmod +x backend/setup.sh
-            ./backend/setup.sh
           else
-            # Update existing deployment
-            cd /home/ubuntu/ideal-transportation
             git fetch origin
             git reset --hard origin/main
           fi
-          
-          # Deploy Backend
+
+          # Setup backend
+          echo "Setting up backend..."
           cd backend
+          
+          # Create virtual environment
           if [ ! -d "venv" ]; then
             python3 -m venv venv
           fi
+          
+          # Activate virtual environment and install dependencies
           source venv/bin/activate
+          pip install --upgrade pip
           pip install "pydantic[email]"
           pip install -r requirements.txt
-          
-          # Create and enable systemd service if it doesn't exist
-          if [ ! -f /etc/systemd/system/ideal-transportation.service ]; then
-            sudo cp ideal-transportation.service /etc/systemd/system/
-            sudo systemctl daemon-reload
-            sudo systemctl enable ideal-transportation
-          fi
+
+          # Setup systemd service
+          echo "Setting up systemd service..."
+          sudo tee /etc/systemd/system/ideal-transportation.service << 'EOF'
+          [Unit]
+          Description=Ideal Transportation Backend
+          After=network.target
+
+          [Service]
+          User=ubuntu
+          WorkingDirectory=/home/ubuntu/ideal-transportation/backend
+          Environment="PATH=/home/ubuntu/ideal-transportation/backend/venv/bin"
+          Environment="DATABASE_URL=${{ secrets.DATABASE_URL }}"
+          Environment="SECRET_KEY=${{ secrets.SECRET_KEY }}"
+          ExecStart=/home/ubuntu/ideal-transportation/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+          EOF
+
+          # Enable and restart service
+          sudo systemctl daemon-reload
+          sudo systemctl enable ideal-transportation
           sudo systemctl restart ideal-transportation
-          
-          # Deploy Frontend
+
+          # Setup frontend
+          echo "Setting up frontend..."
           cd ../src
           npm ci
           npm run build
-          
-          # Configure and restart nginx if needed
-          if [ ! -f /etc/nginx/sites-available/ideal-transportation ]; then
-            sudo cp ../backend/nginx.conf /etc/nginx/sites-available/ideal-transportation
-            sudo ln -sf /etc/nginx/sites-available/ideal-transportation /etc/nginx/sites-enabled/
-            sudo rm -f /etc/nginx/sites-enabled/default
-            sudo nginx -t
-          fi
+
+          # Setup nginx
+          echo "Setting up nginx..."
+          sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
+          server {
+              listen 80;
+              server_name _;  # Accepts any hostname/IP
+
+              # Frontend
+              location / {
+                  root /home/ubuntu/ideal-transportation/src/out;
+                  try_files $uri $uri/ /index.html;
+              }
+
+              # Backend API
+              location /api/ {
+                  proxy_pass http://localhost:8000/;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host $host;
+                  proxy_cache_bypass $http_upgrade;
+              }
+          }
+          EOF
+
+          # Enable nginx site
+          sudo ln -sf /etc/nginx/sites-available/ideal-transportation /etc/nginx/sites-enabled/
+          sudo rm -f /etc/nginx/sites-enabled/default
+          sudo nginx -t
           sudo systemctl restart nginx
+
+          echo "Deployment completed successfully!"
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
