@@ -96,6 +96,14 @@ jobs:
           pip install "pydantic[email]"
           pip install -r requirements.txt
 
+          # Verify Python and uvicorn installation
+          echo "Verifying Python installation..."
+          which python
+          python --version
+          echo "Verifying uvicorn installation..."
+          which uvicorn
+          uvicorn --version
+
           # Setup systemd service
           echo "Setting up systemd service..."
           sudo tee /etc/systemd/system/ideal-transportation.service << 'EOF'
@@ -137,6 +145,10 @@ jobs:
           echo "Checking error logs..."
           sudo tail -n 50 /var/log/ideal-transportation.error.log
 
+          # Test backend directly
+          echo "Testing backend directly..."
+          curl -v http://localhost:8000/health
+
           # Setup frontend
           echo "Setting up frontend..."
           cd ../src
@@ -146,6 +158,10 @@ jobs:
           # Fix frontend permissions
           sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/src/out
           sudo chmod -R 755 /home/ubuntu/ideal-transportation/src/out
+
+          # Verify frontend files
+          echo "Verifying frontend files..."
+          ls -la /home/ubuntu/ideal-transportation/src/out
 
           # Setup nginx
           echo "Setting up nginx..."
@@ -190,6 +206,18 @@ jobs:
           echo "Checking nginx logs..."
           sudo tail -n 50 /var/log/nginx/error.log
           sudo tail -n 50 /var/log/nginx/ideal-transportation.error.log
+
+          # Test nginx configuration
+          echo "Testing nginx configuration..."
+          curl -v http://localhost/health
+          curl -v http://localhost/
+
+          # Final status check
+          echo "Final status check..."
+          sudo systemctl status ideal-transportation
+          sudo systemctl status nginx
+          ps aux | grep uvicorn
+          netstat -tulpn | grep -E ':(80|8000)'
 
           echo "Deployment completed successfully!"
 
