@@ -18,6 +18,13 @@ echo "Setting up application directory..."
 sudo mkdir -p /home/ubuntu/ideal-transportation
 sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation
 
+# Clone repository if not exists
+echo "Cloning repository..."
+if [ ! -d "/home/ubuntu/ideal-transportation/.git" ]; then
+    cd /home/ubuntu/ideal-transportation
+    git clone https://github.com/your-username/ideal-transportation.git .
+fi
+
 # Create and configure Nginx
 echo "Configuring Nginx..."
 sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
