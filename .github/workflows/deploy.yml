@@ -116,6 +116,13 @@ jobs:
           which uvicorn
           uvicorn --version
 
+          # Create environment file
+          echo "Creating environment file..."
+          sudo tee /home/ubuntu/ideal-transportation/backend/.env << EOF
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          EOF
+
           # Setup systemd service
           echo "Setting up systemd service..."
           sudo tee /etc/systemd/system/ideal-transportation.service << 'EOF'

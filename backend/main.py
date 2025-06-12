@@ -7,6 +7,7 @@ from dependencies import get_current_active_user
 from database import get_db, SQLALCHEMY_DATABASE_URL
 from utils.logger import setup_logger
 import logging
+from sqlalchemy import text
 
 # Load environment variables
 load_dotenv()
@@ -41,7 +42,8 @@ async def startup_event():
     try:
         # Test database connection
         db = next(get_db())
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
+        db.commit()
         logger.info("Database connection successful")
         logger.info("Application startup complete")
     except Exception as e:
@@ -72,7 +74,8 @@ async def health_check():
     try:
         # Test database connection
         db = next(get_db())
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
+        db.commit()
         return {
             "status": "healthy",
             "database": "connected"
