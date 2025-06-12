@@ -105,11 +105,12 @@ jobs:
 
           [Service]
           User=ubuntu
+          Group=ubuntu
           WorkingDirectory=/home/ubuntu/ideal-transportation/backend
           Environment="PATH=/home/ubuntu/ideal-transportation/backend/venv/bin"
           Environment="DATABASE_URL=${{ secrets.DATABASE_URL }}"
           Environment="SECRET_KEY=${{ secrets.SECRET_KEY }}"
-          ExecStart=/home/ubuntu/ideal-transportation/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug
+          ExecStart=/home/ubuntu/ideal-transportation/backend/venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug
           Restart=always
           StandardOutput=append:/var/log/ideal-transportation.log
           StandardError=append:/var/log/ideal-transportation.error.log
@@ -142,6 +143,10 @@ jobs:
           npm ci
           npm run build
 
+          # Fix frontend permissions
+          sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/src/out
+          sudo chmod -R 755 /home/ubuntu/ideal-transportation/src/out
+
           # Setup nginx
           echo "Setting up nginx..."
           sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
@@ -153,6 +158,7 @@ jobs:
               location / {
                   root /home/ubuntu/ideal-transportation/src/out;
                   try_files $uri $uri/ /index.html;
+                  add_header Cache-Control "no-cache";
               }
 
               # Backend API
