@@ -35,6 +35,7 @@ jobs:
       working-directory: ./backend
       run: |
         python -m pip install --upgrade pip
+        pip install "pydantic[email]"
         pip install -r requirements.txt
 
     - name: Run Backend Tests
@@ -55,12 +56,20 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          # Install required packages if not present
+          if ! command -v git &> /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y git nodejs npm python3-pip python3-venv nginx
+          fi
+
           # Check if it's first deployment
           if [ ! -d /home/ubuntu/ideal-transportation ]; then
             # First time setup
             mkdir -p /home/ubuntu/ideal-transportation
             cd /home/ubuntu/ideal-transportation
-            git clone ${{ secrets.REPO_URL }} .
+            
+            # Clone using SSH URL
+            git clone git@github.com:${{ github.repository }}.git .
             
             # Export environment variables for setup script
             export DATABASE_URL="${{ secrets.DATABASE_URL }}"
@@ -68,24 +77,44 @@ jobs:
             
             # Make setup script executable and run it
             chmod +x backend/setup.sh
-            backend/setup.sh
+            ./backend/setup.sh
           else
             # Update existing deployment
             cd /home/ubuntu/ideal-transportation
-            git pull origin main
+            git fetch origin
+            git reset --hard origin/main
           fi
           
           # Deploy Backend
           cd backend
+          if [ ! -d "venv" ]; then
+            python3 -m venv venv
+          fi
           source venv/bin/activate
+          pip install "pydantic[email]"
           pip install -r requirements.txt
+          
+          # Create and enable systemd service if it doesn't exist
+          if [ ! -f /etc/systemd/system/ideal-transportation.service ]; then
+            sudo cp ideal-transportation.service /etc/systemd/system/
+            sudo systemctl daemon-reload
+            sudo systemctl enable ideal-transportation
+          fi
           sudo systemctl restart ideal-transportation
           
           # Deploy Frontend
           cd ../src
           npm ci
           npm run build
-          sudo systemctl restart nginx 
+          
+          # Configure and restart nginx if needed
+          if [ ! -f /etc/nginx/sites-available/ideal-transportation ]; then
+            sudo cp ../backend/nginx.conf /etc/nginx/sites-available/ideal-transportation
+            sudo ln -sf /etc/nginx/sites-available/ideal-transportation /etc/nginx/sites-enabled/
+            sudo rm -f /etc/nginx/sites-enabled/default
+            sudo nginx -t
+          fi
+          sudo systemctl restart nginx
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
