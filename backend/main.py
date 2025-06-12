@@ -4,14 +4,20 @@ import os
 from dotenv import load_dotenv
 from routers import auth_router, transaction, bill_of_lading
 from dependencies import get_current_active_user
-from database import get_db
+from database import get_db, SQLALCHEMY_DATABASE_URL
 from utils.logger import setup_logger
+import logging
 
 # Load environment variables
 load_dotenv()
 
-# Setup logger
-logger = setup_logger(__name__, "app.log")
+# Setup basic logging if logger setup fails
+try:
+    logger = setup_logger(__name__, "app.log")
+except Exception as e:
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    logger.error(f"Failed to setup logger: {e}")
 
 # Create FastAPI app
 app = FastAPI(title="Ideal Transportation Solutions API")
@@ -19,10 +25,10 @@ app = FastAPI(title="Ideal Transportation Solutions API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=["*"],  # Allow all origins in production
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Include routers
@@ -32,7 +38,16 @@ app.include_router(bill_of_lading.router, prefix="/bol", tags=["bill_of_lading"]
 
 @app.on_event("startup")
 async def startup_event():
-    logger.info("Application startup complete")
+    try:
+        # Test database connection
+        db = next(get_db())
+        db.execute("SELECT 1")
+        logger.info("Database connection successful")
+        logger.info("Application startup complete")
+    except Exception as e:
+        logger.error(f"Database connection failed: {e}")
+        logger.error(f"Database URL: {SQLALCHEMY_DATABASE_URL}")
+        raise
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -41,13 +56,33 @@ async def shutdown_event():
 # Test database connection
 @app.get("/")
 async def root():
-    logger.info("Root endpoint accessed")
-    return {"message": "Welcome to Ideal Transportation Solutions API"}
+    try:
+        logger.info("Root endpoint accessed")
+        return {"message": "Welcome to Ideal Transportation Solutions API"}
+    except Exception as e:
+        logger.error(f"Error in root endpoint: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
 
 # Health check endpoint
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    try:
+        # Test database connection
+        db = next(get_db())
+        db.execute("SELECT 1")
+        return {
+            "status": "healthy",
+            "database": "connected"
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return {
+            "status": "unhealthy",
+            "error": str(e)
+        }
 
 # Protected route example
 @app.get("/dashboard")
