@@ -65,9 +65,16 @@ source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 
+# Create environment file
+echo "Creating environment file..."
+sudo tee /home/ubuntu/ideal-transportation/backend/.env << EOF
+DATABASE_URL=postgresql://idealtransport:idealtransport19041988@idealtransport.cvyuacwgotuv.ap-southeast-2.rds.amazonaws.com:5432/idealtransport
+SECRET_KEY=your-secret-key-here
+EOF
+
 # Create systemd service for backend
 echo "Creating systemd service..."
-sudo tee /etc/systemd/system/ideal-transportation.service << 'EOF'
+sudo tee /etc/systemd/system/ideal-transportation.service << EOF
 [Unit]
 Description=Ideal Transportation Backend
 After=network.target
@@ -76,9 +83,9 @@ After=network.target
 User=ubuntu
 WorkingDirectory=/home/ubuntu/ideal-transportation/backend
 Environment="PATH=/home/ubuntu/ideal-transportation/backend/venv/bin"
-Environment="DATABASE_URL=${DATABASE_URL}"
-Environment="SECRET_KEY=${SECRET_KEY}"
-ExecStart=/home/ubuntu/ideal-transportation/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+Environment="DATABASE_URL=postgresql://idealtransport:idealtransport19041988@idealtransport.cvyuacwgotuv.ap-southeast-2.rds.amazonaws.com:5432/idealtransport"
+Environment="SECRET_KEY=your-secret-key-here"
+ExecStart=/home/ubuntu/ideal-transportation/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug
 Restart=always
 
 [Install]
