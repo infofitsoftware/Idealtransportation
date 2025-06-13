@@ -8,6 +8,8 @@ from database import get_db, SQLALCHEMY_DATABASE_URL
 from utils.logger import setup_logger
 import logging
 from sqlalchemy import text
+from sqlalchemy.orm import Session
+from sqlalchemy import engine
 
 # Load environment variables
 load_dotenv()
@@ -41,14 +43,12 @@ app.include_router(bill_of_lading.router, prefix="/bol", tags=["bill_of_lading"]
 async def startup_event():
     try:
         # Test database connection
-        db = next(get_db())
-        db.execute(text("SELECT 1"))
-        db.commit()
-        logger.info("Database connection successful")
-        logger.info("Application startup complete")
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+            logger.info("Database connection successful")
     except Exception as e:
-        logger.error(f"Database connection failed: {e}")
-        logger.error(f"Database URL: {SQLALCHEMY_DATABASE_URL}")
+        logger.error(f"Database connection failed: {str(e)}")
+        logger.error(f"Database URL: {os.getenv('DATABASE_URL')}")
         raise
 
 @app.on_event("shutdown")
@@ -62,9 +62,9 @@ async def root():
         logger.info("Root endpoint accessed")
         return {"message": "Welcome to Ideal Transportation Solutions API"}
     except Exception as e:
-        logger.error(f"Error in root endpoint: {e}")
+        logger.error(f"Error in root endpoint: {str(e)}")
         raise HTTPException(
-            status_code=500,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
         )
 
@@ -73,19 +73,20 @@ async def root():
 async def health_check():
     try:
         # Test database connection
-        db = next(get_db())
-        db.execute(text("SELECT 1"))
-        db.commit()
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+            logger.info("Health check: Database connection successful")
         return {
             "status": "healthy",
-            "database": "connected"
+            "database": "connected",
+            "version": "1.0.0"
         }
     except Exception as e:
-        logger.error(f"Health check failed: {e}")
-        return {
-            "status": "unhealthy",
-            "error": str(e)
-        }
+        logger.error(f"Health check failed: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Service unhealthy: {str(e)}"
+        )
 
 # Protected route example
 @app.get("/dashboard")

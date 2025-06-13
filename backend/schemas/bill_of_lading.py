@@ -3,20 +3,18 @@ from typing import List, Optional
 from datetime import date
 
 class BOLVehicleBase(BaseModel):
-    year: Optional[str]
-    make: Optional[str]
-    model: Optional[str]
-    vin: Optional[str]
-    mileage: Optional[str]
-    price: Optional[str]
-
-class BOLVehicleCreate(BOLVehicleBase):
-    pass
+    vehicle_id: int
+    vin: str
+    make: str
+    model: str
+    year: int
+    color: str
+    license_plate: str
 
 class BOLVehicle(BOLVehicleBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class BillOfLadingBase(BaseModel):
     driver_name: str
@@ -44,10 +42,10 @@ class BillOfLadingBase(BaseModel):
     delivery_date: Optional[date]
 
 class BillOfLadingCreate(BillOfLadingBase):
-    vehicles: List[BOLVehicleCreate]
+    vehicles: List[BOLVehicleBase]
 
 class BillOfLading(BillOfLadingBase):
     id: int
     vehicles: List[BOLVehicle]
     class Config:
-        orm_mode = True 
+        from_attributes = True 
