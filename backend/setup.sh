@@ -6,7 +6,7 @@ set -e
 echo "Starting setup process..."
 
 # Update system
-echo "Updating system record..."
+echo "Updating system ..."
 sudo apt update && sudo apt upgrade -y
 
 # Install required packages
