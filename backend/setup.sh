@@ -3,7 +3,7 @@
 # Exit on error
 set -e
 
-echo "Starting setup process THIS..."
+echo "Starting setup process .."
 
 # Update system
 echo "Updating system record..."
