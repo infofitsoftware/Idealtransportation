@@ -1,26 +1,48 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.ext.declarative import declarative_base
+from contextlib import contextmanager
+import logging
 import os
 from dotenv import load_dotenv
 from routers import auth_router, transaction, bill_of_lading
 from dependencies import get_current_active_user
 from database import get_db, SQLALCHEMY_DATABASE_URL
 from utils.logger import setup_logger
-import logging
-from sqlalchemy import text
-from sqlalchemy.orm import Session
-from sqlalchemy import engine
 
 # Load environment variables
 load_dotenv()
 
-# Setup basic logging if logger setup fails
-try:
-    logger = setup_logger(__name__, "app.log")
-except Exception as e:
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
-    logger.error(f"Failed to setup logger: {e}")
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('/var/log/ideal-transportation.log'),
+        logging.FileHandler('/var/log/ideal-transportation.error.log', level=logging.ERROR),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# Database configuration
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+if not SQLALCHEMY_DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set")
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 # Create FastAPI app
 app = FastAPI(title="Ideal Transportation Solutions API")
@@ -43,12 +65,13 @@ app.include_router(bill_of_lading.router, prefix="/bol", tags=["bill_of_lading"]
 async def startup_event():
     try:
         # Test database connection
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-            logger.info("Database connection successful")
+        with SessionLocal() as session:
+            session.execute(text("SELECT 1"))
+            session.commit()
+        logger.info("Database connection successful")
     except Exception as e:
         logger.error(f"Database connection failed: {str(e)}")
-        logger.error(f"Database URL: {os.getenv('DATABASE_URL')}")
+        logger.error(f"Database URL: {SQLALCHEMY_DATABASE_URL}")
         raise
 
 @app.on_event("shutdown")
@@ -72,10 +95,9 @@ async def root():
 @app.get("/health")
 async def health_check():
     try:
-        # Test database connection
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-            logger.info("Health check: Database connection successful")
+        with SessionLocal() as session:
+            session.execute(text("SELECT 1"))
+            session.commit()
         return {
             "status": "healthy",
             "database": "connected",
