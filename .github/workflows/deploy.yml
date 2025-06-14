@@ -26,6 +26,7 @@ jobs:
       run: |
         npm ci
         npm run build
+        ls -la out/  # Verify build output
       env:
         NEXT_PUBLIC_API_URL: http://${{ secrets.EC2_HOST }}/api
 
@@ -203,7 +204,7 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         port: 22
-        source: "src/out/*"
+        source: "src/out/"
         target: "/home/ubuntu/ideal-transportation/src/out"
         strip_components: 1
 
