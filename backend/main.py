@@ -41,7 +41,12 @@ SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 if not SQLALCHEMY_DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is not set")
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=10
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -76,7 +81,8 @@ async def startup_event():
         # Test database connection using SessionLocal
         db = SessionLocal()
         try:
-            db.execute(text("SELECT 1"))
+            # Use text() for raw SQL
+            result = db.execute(text("SELECT 1"))
             db.commit()
             logger.info("Database connection successful")
         except Exception as e:
@@ -112,7 +118,7 @@ async def health_check():
     try:
         db = SessionLocal()
         try:
-            db.execute(text("SELECT 1"))
+            result = db.execute(text("SELECT 1"))
             db.commit()
             return {
                 "status": "healthy",
