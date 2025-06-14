@@ -20,14 +20,17 @@ def setup_logging():
     log_dir = os.getenv('LOG_DIR', 'logs')
     os.makedirs(log_dir, exist_ok=True)
     
+    # Create handlers
+    info_handler = logging.FileHandler(os.path.join(log_dir, 'ideal-transportation.log'))
+    error_handler = logging.FileHandler(os.path.join(log_dir, 'ideal-transportation.error.log'))
+    error_handler.setLevel(logging.ERROR)
+    console_handler = logging.StreamHandler()
+    
+    # Configure root logger
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler(os.path.join(log_dir, 'ideal-transportation.log')),
-            logging.FileHandler(os.path.join(log_dir, 'ideal-transportation.error.log'), level=logging.ERROR),
-            logging.StreamHandler()
-        ]
+        handlers=[info_handler, error_handler, console_handler]
     )
     return logging.getLogger(__name__)
 
