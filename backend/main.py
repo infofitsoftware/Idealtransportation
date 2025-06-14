@@ -73,11 +73,17 @@ app.include_router(bill_of_lading.router, prefix="/bol", tags=["bill_of_lading"]
 @app.on_event("startup")
 async def startup_event():
     try:
-        # Test database connection
-        with SessionLocal() as session:
-            session.execute(text("SELECT 1"))
-            session.commit()
-        logger.info("Database connection successful")
+        # Test database connection using SessionLocal
+        db = SessionLocal()
+        try:
+            db.execute(text("SELECT 1"))
+            db.commit()
+            logger.info("Database connection successful")
+        except Exception as e:
+            db.rollback()
+            raise e
+        finally:
+            db.close()
     except Exception as e:
         logger.error(f"Database connection failed: {str(e)}")
         logger.error(f"Database URL: {SQLALCHEMY_DATABASE_URL}")
@@ -104,14 +110,20 @@ async def root():
 @app.get("/health")
 async def health_check():
     try:
-        with SessionLocal() as session:
-            session.execute(text("SELECT 1"))
-            session.commit()
-        return {
-            "status": "healthy",
-            "database": "connected",
-            "version": "1.0.0"
-        }
+        db = SessionLocal()
+        try:
+            db.execute(text("SELECT 1"))
+            db.commit()
+            return {
+                "status": "healthy",
+                "database": "connected",
+                "version": "1.0.0"
+            }
+        except Exception as e:
+            db.rollback()
+            raise e
+        finally:
+            db.close()
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
         raise HTTPException(
