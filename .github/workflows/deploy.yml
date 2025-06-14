@@ -22,7 +22,7 @@ jobs:
         cache: 'npm'
 
     - name: Install Frontend Dependencies
-      working-directory: ./src
+      working-directory: ./
       run: |
         npm ci
         npm run build
@@ -194,8 +194,8 @@ jobs:
         debug: true
         script: |
           # Create frontend directory
-          sudo mkdir -p /home/ubuntu/ideal-transportation/src/.next
-          sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation/src/.next
+          sudo mkdir -p /home/ubuntu/ideal-transportation/.next
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation/.next
 
     - name: Copy Frontend Build
       uses: appleboy/scp-action@master
@@ -204,8 +204,8 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         port: 22
-        source: "src/.next/"
-        target: "/home/ubuntu/ideal-transportation/src/.next"
+        source: ".next/"
+        target: "/home/ubuntu/ideal-transportation/.next"
         strip_components: 1
 
     - name: Set Frontend Permissions
@@ -220,11 +220,11 @@ jobs:
         debug: true
         script: |
           # Fix frontend permissions
-          sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/src/.next
-          sudo chmod -R 755 /home/ubuntu/ideal-transportation/src/.next
+          sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/.next
+          sudo chmod -R 755 /home/ubuntu/ideal-transportation/.next
           
           # Verify frontend files
-          ls -la /home/ubuntu/ideal-transportation/src/.next
+          ls -la /home/ubuntu/ideal-transportation/.next
 
     - name: Setup Nginx
       uses: appleboy/ssh-action@master
