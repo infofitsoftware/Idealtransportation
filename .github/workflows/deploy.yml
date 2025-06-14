@@ -147,6 +147,9 @@ jobs:
           source venv/bin/activate
           pip install --upgrade pip
           pip install "sqlalchemy>=2.0.0"
+          pip install "fastapi>=0.68.0"
+          pip install "uvicorn>=0.15.0"
+          pip install "psycopg2-binary>=2.9.0"
           pip install -r requirements.txt
           
           # Create environment file

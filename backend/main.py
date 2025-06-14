@@ -77,22 +77,23 @@ app.include_router(bill_of_lading.router, prefix="/bol", tags=["bill_of_lading"]
 
 @app.on_event("startup")
 async def startup_event():
+    """Initialize database connection on startup"""
     try:
         # Test database connection using SessionLocal
         db = SessionLocal()
         try:
-            # Use text() for raw SQL
+            # Execute a simple query to test connection
             result = db.execute(text("SELECT 1"))
-            db.commit()
+            result.scalar()
             logger.info("Database connection successful")
         except Exception as e:
-            db.rollback()
-            raise e
+            logger.error(f"Database connection failed: {str(e)}")
+            logger.error(f"Database URL: {SQLALCHEMY_DATABASE_URL}")
+            raise
         finally:
             db.close()
     except Exception as e:
-        logger.error(f"Database connection failed: {str(e)}")
-        logger.error(f"Database URL: {SQLALCHEMY_DATABASE_URL}")
+        logger.error(f"Failed to initialize database: {str(e)}")
         raise
 
 @app.on_event("shutdown")
