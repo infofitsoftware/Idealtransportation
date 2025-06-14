@@ -1,5 +1,8 @@
 name: Deploy to EC2
 
+# This workflow will deploy the application to EC2
+# Last updated: 2024-06-14
+
 on:
   push:
     branches: [ main ]
@@ -71,7 +74,7 @@ jobs:
           echo "No running instances found"
         fi
 
-    - name: Deploy to EC2
+    - name: Test SSH Connection
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -81,83 +84,73 @@ jobs:
         timeout: 60s
         command_timeout: 30m
         debug: true
-        script_stop: true
         script: |
-          # Test SSH connection first
           echo "Testing SSH connection..."
           whoami
           pwd
           hostname
-          
-          # Function to check if a command exists
-          command_exists() {
-            command -v "$1" >/dev/null 2>&1
-          }
 
-          # Install required packages
-          echo "Installing required packages..."
+    - name: Setup Application Directory
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
+        timeout: 60s
+        command_timeout: 30m
+        debug: true
+        script: |
+          echo "Setting up application directory..."
           sudo apt-get update
           sudo apt-get install -y git nodejs npm python3-pip python3-venv nginx
-
-          # Create application directory
-          echo "Setting up application directory..."
           sudo mkdir -p /home/ubuntu/ideal-transportation
           sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation
           cd /home/ubuntu/ideal-transportation
-
-          # Clean up existing directory
-          echo "Cleaning up existing directory..."
           rm -rf * .[^.]*
 
-          # Clone repository using REPO_URL secret
-          echo "Cloning repository..."
+    - name: Clone Repository
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
+        timeout: 60s
+        command_timeout: 30m
+        debug: true
+        script: |
+          cd /home/ubuntu/ideal-transportation
           git clone ${{ secrets.REPO_URL }} .
-          if [ $? -ne 0 ]; then
-            echo "Git clone failed. Current directory contents:"
-            ls -la
-            exit 1
-          fi
-
-          # Verify repository contents
-          echo "Verifying repository contents..."
           ls -la
-          echo "Checking git status..."
-          git status
 
-          # Setup backend
-          echo "Setting up backend..."
-          cd backend
-          
-          # Remove existing venv if it exists
+    - name: Setup Backend
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
+        timeout: 60s
+        command_timeout: 30m
+        debug: true
+        script: |
+          cd /home/ubuntu/ideal-transportation/backend
           rm -rf venv
-          
-          # Create virtual environment
           python3 -m venv venv
-          
-          # Activate virtual environment and install dependencies
           source venv/bin/activate
           pip install --upgrade pip
           pip install "pydantic[email]"
           pip install -r requirements.txt
           pip install uvicorn
 
-          # Verify Python and uvicorn installation
-          echo "Verifying Python installation..."
-          which python
-          python --version
-          echo "Verifying uvicorn installation..."
-          which uvicorn
-          uvicorn --version
-
           # Create environment file
-          echo "Creating environment file..."
           sudo tee /home/ubuntu/ideal-transportation/backend/.env << EOF
           DATABASE_URL=postgresql://idealtransport:idealtransport19041988@idealtransport.cvyuacwgotuv.ap-southeast-2.rds.amazonaws.com:5432/idealtransport
           SECRET_KEY=your-secret-key-here
           EOF
 
           # Setup systemd service
-          echo "Setting up systemd service..."
           sudo tee /etc/systemd/system/ideal-transportation.service << EOF
           [Unit]
           Description=Ideal Transportation Backend
@@ -188,37 +181,38 @@ jobs:
           sudo systemctl enable ideal-transportation
           sudo systemctl restart ideal-transportation
 
-          # Wait for service to start and check status
-          sleep 5
-          echo "Checking service status..."
-          sudo systemctl status ideal-transportation
-          echo "Checking service logs..."
-          sudo tail -n 50 /var/log/ideal-transportation.log
-          echo "Checking error logs..."
-          sudo tail -n 50 /var/log/ideal-transportation.error.log
-
-          # Test backend directly
-          echo "Testing backend directly..."
-          curl -v http://localhost:8000/health
-
-          # Setup frontend
-          echo "Setting up frontend..."
-          cd ../src
+    - name: Setup Frontend
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
+        timeout: 60s
+        command_timeout: 30m
+        debug: true
+        script: |
+          cd /home/ubuntu/ideal-transportation/src
           npm ci
           npm run build
 
           # Fix frontend permissions
-          echo "Setting up frontend permissions..."
           sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/src/out
           sudo chmod -R 755 /home/ubuntu/ideal-transportation/src/out
           sudo chmod -R 755 /home/ubuntu/ideal-transportation/src/out/index.html
 
-          # Verify frontend files
-          echo "Verifying frontend files..."
-          ls -la /home/ubuntu/ideal-transportation/src/out
-
+    - name: Setup Nginx
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
+        timeout: 60s
+        command_timeout: 30m
+        debug: true
+        script: |
           # Setup nginx
-          echo "Setting up nginx..."
           sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
           server {
               listen 80;
@@ -256,24 +250,33 @@ jobs:
           sudo nginx -t
           sudo systemctl restart nginx
 
-          # Check nginx logs
-          echo "Checking nginx logs..."
-          sudo tail -n 50 /var/log/nginx/error.log
-          sudo tail -n 50 /var/log/nginx/ideal-transportation.error.log
-
-          # Test nginx configuration
-          echo "Testing nginx configuration..."
-          curl -v http://localhost/health
-          curl -v http://localhost/
-
-          # Final status check
-          echo "Final status check..."
+    - name: Verify Deployment
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
+        timeout: 60s
+        command_timeout: 30m
+        debug: true
+        script: |
+          # Check service status
           sudo systemctl status ideal-transportation
           sudo systemctl status nginx
+          
+          # Check logs
+          sudo tail -n 50 /var/log/ideal-transportation.log
+          sudo tail -n 50 /var/log/ideal-transportation.error.log
+          sudo tail -n 50 /var/log/nginx/error.log
+          
+          # Test endpoints
+          curl -v http://localhost:8000/health
+          curl -v http://localhost/
+          
+          # Check processes
           ps aux | grep uvicorn
           netstat -tulpn | grep -E ':(80|8000)'
-
-          echo "Deployment completed successfully!"
 
     env:
       DATABASE_URL: postgresql://idealtransport:idealtransport19041988@idealtransport.cvyuacwgotuv.ap-southeast-2.rds.amazonaws.com:5432/idealtransport
