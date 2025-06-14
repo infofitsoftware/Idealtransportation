@@ -16,16 +16,22 @@ from utils.logger import setup_logger
 load_dotenv()
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('/var/log/ideal-transportation.log'),
-        logging.FileHandler('/var/log/ideal-transportation.error.log', level=logging.ERROR),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+def setup_logging():
+    log_dir = os.getenv('LOG_DIR', 'logs')
+    os.makedirs(log_dir, exist_ok=True)
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(os.path.join(log_dir, 'ideal-transportation.log')),
+            logging.FileHandler(os.path.join(log_dir, 'ideal-transportation.error.log'), level=logging.ERROR),
+            logging.StreamHandler()
+        ]
+    )
+    return logging.getLogger(__name__)
+
+logger = setup_logging()
 
 # Database configuration
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")

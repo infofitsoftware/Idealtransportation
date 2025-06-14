@@ -136,27 +136,31 @@ jobs:
         command_timeout: 30m
         debug: true
         script: |
+          # Create necessary directories
+          sudo mkdir -p /var/log/ideal-transportation
+          sudo chown -R ubuntu:ubuntu /var/log/ideal-transportation
+          sudo chmod -R 755 /var/log/ideal-transportation
+          
+          # Create and configure virtual environment
           cd /home/ubuntu/ideal-transportation/backend
-          rm -rf venv
           python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          pip install "pydantic[email]"
           pip install -r requirements.txt
-          pip install uvicorn
-
+          
           # Create environment file
-          sudo tee /home/ubuntu/ideal-transportation/backend/.env << EOF
+          cat > .env << EOL
           DATABASE_URL=postgresql://idealtransport:idealtransport19041988@idealtransport.cvyuacwgotuv.ap-southeast-2.rds.amazonaws.com:5432/idealtransport
           SECRET_KEY=your-secret-key-here
-          EOF
-
-          # Setup systemd service
-          sudo tee /etc/systemd/system/ideal-transportation.service << EOF
+          LOG_DIR=/var/log/ideal-transportation
+          EOL
+          
+          # Create systemd service file
+          sudo tee /etc/systemd/system/ideal-transportation.service << EOL
           [Unit]
           Description=Ideal Transportation Backend
           After=network.target
-
+          
           [Service]
           User=ubuntu
           Group=ubuntu
@@ -164,20 +168,15 @@ jobs:
           Environment="PATH=/home/ubuntu/ideal-transportation/backend/venv/bin"
           Environment="DATABASE_URL=postgresql://idealtransport:idealtransport19041988@idealtransport.cvyuacwgotuv.ap-southeast-2.rds.amazonaws.com:5432/idealtransport"
           Environment="SECRET_KEY=your-secret-key-here"
+          Environment="LOG_DIR=/var/log/ideal-transportation"
           ExecStart=/home/ubuntu/ideal-transportation/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug
           Restart=always
-          StandardOutput=append:/var/log/ideal-transportation.log
-          StandardError=append:/var/log/ideal-transportation.error.log
-
+          
           [Install]
           WantedBy=multi-user.target
-          EOF
-
-          # Create log files and set permissions
-          sudo touch /var/log/ideal-transportation.log /var/log/ideal-transportation.error.log
-          sudo chown ubuntu:ubuntu /var/log/ideal-transportation.log /var/log/ideal-transportation.error.log
-
-          # Enable and restart service
+          EOL
+          
+          # Reload systemd and start service
           sudo systemctl daemon-reload
           sudo systemctl enable ideal-transportation
           sudo systemctl restart ideal-transportation
