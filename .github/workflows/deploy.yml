@@ -26,8 +26,6 @@ jobs:
       run: |
         npm ci
         npm run build
-        # Verify build output
-        ls -la out/
       env:
         NEXT_PUBLIC_API_URL: http://${{ secrets.EC2_HOST }}/api
 
@@ -183,7 +181,7 @@ jobs:
           sudo systemctl enable ideal-transportation
           sudo systemctl restart ideal-transportation
 
-    - name: Setup Frontend Directory
+    - name: Setup Frontend
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -205,8 +203,8 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         port: 22
-        source: "src/out"
-        target: "/home/ubuntu/ideal-transportation/src"
+        source: "src/out/*"
+        target: "/home/ubuntu/ideal-transportation/src/out"
         strip_components: 1
 
     - name: Set Frontend Permissions
