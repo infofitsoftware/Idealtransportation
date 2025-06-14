@@ -26,6 +26,8 @@ jobs:
       run: |
         npm ci
         npm run build
+        # Verify build output
+        ls -la out/
       env:
         NEXT_PUBLIC_API_URL: http://${{ secrets.EC2_HOST }}/api
 
@@ -203,8 +205,8 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         port: 22
-        source: "src/out/*"
-        target: "/home/ubuntu/ideal-transportation/src/out"
+        source: "src/out"
+        target: "/home/ubuntu/ideal-transportation/src"
         strip_components: 1
 
     - name: Set Frontend Permissions

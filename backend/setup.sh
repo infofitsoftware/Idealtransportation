@@ -3,7 +3,7 @@
 # Exit on error
 set -e
 
-echo "Starting setup pr.."
+echo "Starting setup prgit .."
 
 # Update system
 echo "Updating system record..."
