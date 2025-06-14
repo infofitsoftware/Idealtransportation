@@ -80,7 +80,15 @@ jobs:
         port: 22
         timeout: 60s
         command_timeout: 30m
+        debug: true
+        script_stop: true
         script: |
+          # Test SSH connection first
+          echo "Testing SSH connection..."
+          whoami
+          pwd
+          hostname
+          
           # Function to check if a command exists
           command_exists() {
             command -v "$1" >/dev/null 2>&1
