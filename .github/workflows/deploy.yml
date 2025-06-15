@@ -26,7 +26,8 @@ jobs:
       run: |
         npm ci
         npm run build
-        ls -la .next/  # Verify build output
+        npm run export  # Add export step for static files
+        ls -la out/  # Verify build output
       env:
         NEXT_PUBLIC_API_URL: http://${{ secrets.EC2_HOST }}/api
 
@@ -240,8 +241,8 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         port: 22
-        source: ".next/"
-        target: "/home/ubuntu/ideal-transportation/.next"
+        source: "out/"
+        target: "/home/ubuntu/ideal-transportation/frontend"
         strip_components: 1
 
     - name: Set Frontend Permissions
@@ -256,11 +257,11 @@ jobs:
         debug: true
         script: |
           # Fix frontend permissions
-          sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/.next
-          sudo chmod -R 755 /home/ubuntu/ideal-transportation/.next
+          sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/frontend
+          sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend
           
           # Verify frontend files
-          ls -la /home/ubuntu/ideal-transportation/.next
+          ls -la /home/ubuntu/ideal-transportation/frontend
 
     - name: Setup Nginx
       uses: appleboy/ssh-action@master
@@ -281,7 +282,7 @@ jobs:
 
               # Frontend
               location / {
-                  root /home/ubuntu/ideal-transportation/.next;
+                  root /home/ubuntu/ideal-transportation/frontend;
                   try_files $uri $uri.html $uri/index.html /index.html;
                   index index.html;
                   add_header Cache-Control "no-cache";
@@ -355,7 +356,7 @@ jobs:
           sudo netstat -tulpn | grep -E ':(80|8000)'
           
           # Check frontend files
-          ls -la /home/ubuntu/ideal-transportation/.next
+          ls -la /home/ubuntu/ideal-transportation/frontend
 
     env:
       DATABASE_URL: postgresql://idealtransport:idealtransport19041988@idealtransport.cvyuacwgotuv.ap-southeast-2.rds.amazonaws.com:5432/idealtransport
