@@ -104,7 +104,7 @@ jobs:
         script: |
           echo "Setting up application directory..."
           sudo apt-get update
-          sudo apt-get install -y git nodejs npm python3-pip python3-venv nginx
+          sudo apt-get install -y git nodejs npm python3-pip python3-venv nginx net-tools
           sudo mkdir -p /home/ubuntu/ideal-transportation
           sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation
           cd /home/ubuntu/ideal-transportation
@@ -281,9 +281,10 @@ jobs:
 
               # Frontend
               location / {
-                  root /home/ubuntu/ideal-transportation/frontend/dist;
+                  root /home/ubuntu/ideal-transportation/.next;
                   try_files $uri $uri.html $uri/index.html /index.html;
                   index index.html;
+                  add_header Cache-Control "no-cache";
               }
 
               # Backend API
@@ -349,9 +350,12 @@ jobs:
           curl -v http://localhost:8000/health
           curl -v http://localhost/
           
-          # Check processes
+          # Check processes and ports
           ps aux | grep uvicorn
-          netstat -tulpn | grep -E ':(80|8000)'
+          sudo netstat -tulpn | grep -E ':(80|8000)'
+          
+          # Check frontend files
+          ls -la /home/ubuntu/ideal-transportation/.next
 
     env:
       DATABASE_URL: postgresql://idealtransport:idealtransport19041988@idealtransport.cvyuacwgotuv.ap-southeast-2.rds.amazonaws.com:5432/idealtransport
