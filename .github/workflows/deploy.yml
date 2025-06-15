@@ -26,7 +26,6 @@ jobs:
       run: |
         npm ci
         npm run build
-        npm run export  # Add export step for static files
         ls -la out/  # Verify build output
       env:
         NEXT_PUBLIC_API_URL: http://${{ secrets.EC2_HOST }}/api
