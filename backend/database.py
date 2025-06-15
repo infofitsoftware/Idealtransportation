@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 import os
 from dotenv import load_dotenv
@@ -14,12 +14,16 @@ SQLALCHEMY_DATABASE_URL = os.getenv(
     "postgresql://postgres:postgres@localhost:5432/idealtransportation"
 )
 
+if not SQLALCHEMY_DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set")
+
 # Create engine with pool_pre_ping to handle connection issues
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     pool_pre_ping=True,
     pool_size=5,
-    max_overflow=10
+    max_overflow=10,
+    echo=True  # Enable SQL query logging
 )
 
 # Create session factory
@@ -38,4 +42,15 @@ def get_db():
     try:
         yield db
     finally:
-        db.close() 
+        db.close()
+
+# Test database connection
+def test_connection():
+    try:
+        with engine.begin() as conn:
+            result = conn.execute(text("SELECT 1"))
+            result.scalar()
+            return True
+    except Exception as e:
+        print(f"Database connection failed: {str(e)}")
+        return False 

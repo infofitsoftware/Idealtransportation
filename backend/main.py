@@ -1,15 +1,13 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import text
 from contextlib import contextmanager
 import logging
 import os
 from dotenv import load_dotenv
 from routers import auth_router, transaction, bill_of_lading
 from dependencies import get_current_active_user
-from database import get_db, SQLALCHEMY_DATABASE_URL
+from database import get_db, engine, SessionLocal
 from utils.logger import setup_logger
 
 # Load environment variables
@@ -35,28 +33,6 @@ def setup_logging():
     return logging.getLogger(__name__)
 
 logger = setup_logging()
-
-# Database configuration
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
-if not SQLALCHEMY_DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is not set")
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # Create FastAPI app
 app = FastAPI(title="Ideal Transportation Solutions API")
@@ -86,7 +62,7 @@ async def startup_event():
             logger.info("Database connection successful")
     except Exception as e:
         logger.error(f"Database connection failed: {str(e)}")
-        logger.error(f"Database URL: {SQLALCHEMY_DATABASE_URL}")
+        logger.error(f"Database URL: {os.getenv('DATABASE_URL')}")
         raise
 
 @app.on_event("shutdown")
