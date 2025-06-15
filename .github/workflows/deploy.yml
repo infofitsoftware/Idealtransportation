@@ -145,8 +145,14 @@ jobs:
           cd /home/ubuntu/ideal-transportation/backend
           python3 -m venv venv
           source venv/bin/activate
+          
+          # Upgrade pip and install wheel
           pip install --upgrade pip
-          pip install "sqlalchemy>=2.0.0"
+          pip install wheel
+          
+          # Install dependencies in specific order
+          pip uninstall -y sqlalchemy
+          pip install "sqlalchemy==2.0.27"
           pip install "fastapi>=0.68.0"
           pip install "uvicorn>=0.15.0"
           pip install "psycopg2-binary>=2.9.0"
@@ -157,6 +163,8 @@ jobs:
           pip install "python-multipart>=0.0.5"
           pip install "python-dotenv>=0.19.0"
           pip install "httpx>=0.27.0"
+          
+          # Install remaining requirements
           pip install -r requirements.txt
           
           # Create environment file

@@ -6,11 +6,12 @@ setup(
     packages=find_packages(),
     install_requires=[
         "fastapi",
-        "sqlalchemy",
+        "sqlalchemy>=2.0.0",
         "alembic",
         "pydantic",
         "python-jose[cryptography]",
         "passlib[bcrypt]",
         "python-multipart",
+        "psycopg2-binary",
     ],
 ) 

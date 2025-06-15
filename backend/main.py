@@ -55,9 +55,9 @@ app.include_router(bill_of_lading.router, prefix="/bol", tags=["bill_of_lading"]
 async def startup_event():
     """Initialize database connection on startup"""
     try:
-        # Test database connection using engine.connect()
-        with engine.connect() as connection:
-            result = connection.execute(text("SELECT 1"))
+        # Test database connection using SessionLocal
+        with SessionLocal() as session:
+            result = session.execute(text("SELECT 1"))
             result.scalar()
             logger.info("Database connection successful")
     except Exception as e:

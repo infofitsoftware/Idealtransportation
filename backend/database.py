@@ -47,8 +47,8 @@ def get_db():
 # Test database connection
 def test_connection():
     try:
-        with engine.connect() as connection:
-            result = connection.execute(text("SELECT 1"))
+        with SessionLocal() as session:
+            result = session.execute(text("SELECT 1"))
             result.scalar()
             return True
     except Exception as e:
