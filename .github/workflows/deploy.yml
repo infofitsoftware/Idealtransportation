@@ -175,6 +175,8 @@ jobs:
           Environment="LOG_DIR=/var/log/ideal-transportation"
           ExecStart=/home/ubuntu/ideal-transportation/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug
           Restart=always
+          StandardOutput=append:/var/log/ideal-transportation.log
+          StandardError=append:/var/log/ideal-transportation.error.log
           
           [Install]
           WantedBy=multi-user.target
@@ -184,6 +186,22 @@ jobs:
           sudo systemctl daemon-reload
           sudo systemctl enable ideal-transportation
           sudo systemctl restart ideal-transportation
+          
+          # Wait a moment for the service to start
+          sleep 5
+          
+          # Check service status and logs
+          echo "=== Service Status ==="
+          sudo systemctl status ideal-transportation
+          
+          echo "=== Application Logs ==="
+          sudo tail -n 50 /var/log/ideal-transportation.log
+          
+          echo "=== Error Logs ==="
+          sudo tail -n 50 /var/log/ideal-transportation.error.log
+          
+          echo "=== Journal Logs ==="
+          sudo journalctl -u ideal-transportation -n 50 --no-pager
 
     - name: Setup Frontend
       uses: appleboy/ssh-action@master
