@@ -109,10 +109,23 @@ jobs:
           sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation
           sudo chmod o+x /home/ubuntu
           cd /home/ubuntu/ideal-transportation
-          # Backup existing frontend if it exists
+          
+          # Clean up old backups and handle frontend directory
+          if [ -d "frontend_backup" ]; then
+            echo "Removing old backup..."
+            sudo rm -rf frontend_backup
+          fi
+          
           if [ -d "frontend" ]; then
+            echo "Creating backup of existing frontend..."
             sudo mv frontend frontend_backup
           fi
+          
+          # Clean up any remaining files
+          sudo rm -rf * .[^.]*
+          
+          echo "Directory setup complete. Current contents:"
+          ls -la
 
     - name: Clone Repository
       uses: appleboy/ssh-action@master
