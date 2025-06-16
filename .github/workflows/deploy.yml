@@ -283,6 +283,14 @@ jobs:
               error_log /var/log/nginx/ideal-transportation.error.log debug;
               access_log /var/log/nginx/ideal-transportation.access.log;
 
+              # Handle static files
+              location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                  root /home/ubuntu/ideal-transportation/frontend;
+                  expires 30d;
+                  add_header Cache-Control "public, no-transform";
+                  try_files $uri =404;
+              }
+
               # Frontend
               location / {
                   root /home/ubuntu/ideal-transportation/frontend;
@@ -294,12 +302,6 @@ jobs:
                   add_header X-Debug-Path $request_filename;
                   add_header X-Debug-Uri $uri;
                   add_header X-Debug-Root $document_root;
-                  
-                  # Handle static files
-                  location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-                      expires 30d;
-                      add_header Cache-Control "public, no-transform";
-                  }
               }
 
               # Backend API
@@ -324,9 +326,17 @@ jobs:
               }
 
               # Error pages
+              error_page 404 /404.html;
               error_page 500 502 503 504 /50x.html;
+              
+              location = /404.html {
+                  root /home/ubuntu/ideal-transportation/frontend;
+                  internal;
+              }
+              
               location = /50x.html {
                   root /usr/share/nginx/html;
+                  internal;
               }
           }
           EOF
