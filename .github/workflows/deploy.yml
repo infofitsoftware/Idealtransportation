@@ -109,6 +109,8 @@ jobs:
           sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation
           sudo chmod o+x /home/ubuntu
           cd /home/ubuntu/ideal-transportation
+          # Change ownership before removing files
+          sudo chown -R ubuntu:ubuntu .
           rm -rf * .[^.]*
 
     - name: Clone Repository
@@ -256,12 +258,25 @@ jobs:
         command_timeout: 30m
         debug: true
         script: |
-          # Fix frontend permissions
+          # First, ensure ubuntu user owns everything
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation
+          
+          # Then set nginx permissions
           sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/frontend
           sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend
+          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/*.html
+          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/*.txt
+          sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend/_next
+          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/_next/static/*
+          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/_next/chunks/*
+          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/_next/app/*
           
-          # Verify frontend files
+          # Add nginx user to ubuntu group
+          sudo usermod -a -G ubuntu www-data
+          
+          # Verify permissions
           ls -la /home/ubuntu/ideal-transportation/frontend
+          ls -la /home/ubuntu/ideal-transportation/frontend/_next
 
     - name: Setup Nginx
       uses: appleboy/ssh-action@master
@@ -346,19 +361,6 @@ jobs:
           # Enable nginx site
           sudo ln -sf /etc/nginx/sites-available/ideal-transportation /etc/nginx/sites-enabled/
           sudo rm -f /etc/nginx/sites-enabled/default
-          
-          # Fix permissions and ownership
-          sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/frontend
-          sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend
-          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/*.html
-          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/*.txt
-          sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend/_next
-          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/_next/static/*
-          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/_next/chunks/*
-          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/_next/app/*
-          
-          # Add nginx user to ubuntu group
-          sudo usermod -a -G ubuntu www-data
           
           # Test and restart nginx
           sudo nginx -t
