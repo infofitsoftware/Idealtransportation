@@ -272,6 +272,13 @@ jobs:
           # Add nginx user to ubuntu group
           sudo usermod -a -G ubuntu www-data
           
+          # Add ubuntu user to www-data group
+          sudo usermod -a -G www-data ubuntu
+          
+          # Set group permissions
+          sudo chmod -R g+rx /home/ubuntu/ideal-transportation/frontend
+          sudo chmod -R g+r /home/ubuntu/ideal-transportation/frontend/_next
+          
           # Verify permissions
           ls -la /home/ubuntu/ideal-transportation/frontend
           ls -la /home/ubuntu/ideal-transportation/frontend/_next
@@ -370,45 +377,33 @@ jobs:
         command_timeout: 30m
         debug: true
         script: |
-          # Check service status
+          echo "=== Checking service status ==="
           sudo systemctl status ideal-transportation
           sudo systemctl status nginx
           
-          # Check logs
+          echo "=== Checking logs ==="
           sudo tail -n 50 /var/log/ideal-transportation.log
           sudo tail -n 50 /var/log/ideal-transportation.error.log
           sudo tail -n 50 /var/log/nginx/error.log
           
-          # Test endpoints
+          echo "=== Testing endpoints ==="
           curl -v http://localhost:8000/health
           curl -v http://localhost/
           
-          # Check processes and ports
-          ps aux | grep uvicorn
-          sudo netstat -tulpn | grep -E ':(80|8000)'
+          echo "=== Checking frontend files ==="
+          sudo ls -la /home/ubuntu/ideal-transportation/frontend/
+          sudo ls -la /home/ubuntu/ideal-transportation/frontend/_next/
           
-          # Check frontend files
-          echo "=== Frontend Files ==="
-          ls -la /home/ubuntu/ideal-transportation/frontend
-          echo "=== Frontend Files Contents ==="
-          find /home/ubuntu/ideal-transportation/frontend -type f -name "*.html" | xargs ls -la
-          
-          # Check Nginx configuration
-          echo "=== Nginx Configuration ==="
-          sudo nginx -T
-          
-          # Check Nginx error log
-          echo "=== Nginx Error Log ==="
-          sudo tail -n 50 /var/log/nginx/error.log
-          
-          # Check file permissions
-          echo "=== File Permissions ==="
-          ls -la /home/ubuntu/ideal-transportation/
-          ls -la /home/ubuntu/ideal-transportation/frontend/
-          
-          # Check if index.html exists
           echo "=== Checking for index.html ==="
-          find /home/ubuntu/ideal-transportation/frontend -name "index.html"
+          sudo find /home/ubuntu/ideal-transportation/frontend -name "index.html"
+          
+          echo "=== Checking Nginx configuration ==="
+          sudo nginx -t
+          
+          echo "=== Checking file permissions ==="
+          sudo ls -la /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/
+          sudo ls -la /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app/
+          sudo ls -la /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/pages/
 
     env:
       DATABASE_URL: postgresql://idealtransport:idealtransport19041988@idealtransport.cvyuacwgotuv.ap-southeast-2.rds.amazonaws.com:5432/idealtransport
