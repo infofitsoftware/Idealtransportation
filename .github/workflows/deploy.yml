@@ -292,9 +292,29 @@ jobs:
                   alias /home/ubuntu/ideal-transportation/frontend/_next/static/;
                   expires 365d;
                   access_log off;
+                  add_header Cache-Control "public, max-age=31536000, immutable";
+                  try_files $uri =404;
               }
 
-              # Frontend
+              # Next.js chunks
+              location /_next/chunks/ {
+                  alias /home/ubuntu/ideal-transportation/frontend/_next/chunks/;
+                  expires 365d;
+                  access_log off;
+                  add_header Cache-Control "public, max-age=31536000, immutable";
+                  try_files $uri =404;
+              }
+
+              # Next.js app directory
+              location /_next/app/ {
+                  alias /home/ubuntu/ideal-transportation/frontend/_next/app/;
+                  expires 365d;
+                  access_log off;
+                  add_header Cache-Control "public, max-age=31536000, immutable";
+                  try_files $uri =404;
+              }
+
+              # Frontend routes
               location / {
                   try_files $uri $uri.html $uri/index.html /index.html;
                   add_header Cache-Control "no-cache";
@@ -334,6 +354,8 @@ jobs:
           sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/*.txt
           sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend/_next
           sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/_next/static/*
+          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/_next/chunks/*
+          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/_next/app/*
           
           # Add nginx user to ubuntu group
           sudo usermod -a -G ubuntu www-data
