@@ -274,31 +274,30 @@ jobs:
         script: |
           # Set permissions for frontend files
           sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/frontend
-          sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend
-          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/*.html
-          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/*.txt
           
-          # Fix Next.js directory permissions
+          # Fix directory permissions
+          sudo find /home/ubuntu/ideal-transportation/frontend -type d -exec chmod 755 {} \;
+          
+          # Fix file permissions
+          sudo find /home/ubuntu/ideal-transportation/frontend -type f -exec chmod 644 {} \;
+          
+          # Special handling for Next.js app directory
           sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend/_next
-          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/_next/static/*
+          sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend/_next/static
           sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend/_next/static/chunks
           sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app
-          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app/*
-          
-          # Add nginx user to ubuntu group
-          sudo usermod -a -G ubuntu www-data
-          
-          # Add ubuntu user to www-data group
-          sudo usermod -a -G www-data ubuntu
-          
-          # Set group permissions
-          sudo chmod -R g+rx /home/ubuntu/ideal-transportation/frontend
-          sudo chmod -R g+r /home/ubuntu/ideal-transportation/frontend/_next
+          sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app/auth
+          sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app/auth/login
           
           # Verify permissions
           echo "=== Checking frontend permissions ==="
-          ls -la /home/ubuntu/ideal-transportation/frontend
-          ls -la /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app
+          ls -la /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app/auth
+          ls -la /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app/auth/login
+          
+          # Check specific files
+          echo "=== Checking specific files ==="
+          ls -la /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app/auth/layout-7580899587a1d30d.js
+          ls -la /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app/auth/login/page-953022d234051af3.js
 
     - name: Setup Nginx
       uses: appleboy/ssh-action@master
