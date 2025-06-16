@@ -107,6 +107,7 @@ jobs:
           sudo apt-get install -y git nodejs npm python3-pip python3-venv nginx net-tools
           sudo mkdir -p /home/ubuntu/ideal-transportation
           sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation
+          sudo chmod o+x /home/ubuntu
           cd /home/ubuntu/ideal-transportation
           rm -rf * .[^.]*
 
@@ -326,9 +327,16 @@ jobs:
           sudo ln -sf /etc/nginx/sites-available/ideal-transportation /etc/nginx/sites-enabled/
           sudo rm -f /etc/nginx/sites-enabled/default
           
-          # Set permissions
+          # Fix permissions and ownership
           sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/frontend
           sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend
+          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/*.html
+          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/*.txt
+          sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend/_next
+          sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/_next/static/*
+          
+          # Add nginx user to ubuntu group
+          sudo usermod -a -G ubuntu www-data
           
           # Test and restart nginx
           sudo nginx -t
