@@ -228,7 +228,7 @@ jobs:
         # Create a test file to verify the build
         echo "Testing frontend build" > out/test.txt
 
-    - name: Deploy to EC2
+    - name: Set Frontend Permissions
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -239,14 +239,7 @@ jobs:
         command_timeout: 30m
         debug: true
         script: |
-          # Create deployment directory with proper permissions
-          sudo mkdir -p /home/ubuntu/ideal-transportation/frontend
-          sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation
-          
-          # Copy frontend files
-          sudo cp -r frontend/out/* /home/ubuntu/ideal-transportation/frontend/
-          
-          # Set proper permissions
+          # Fix permissions
           sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/frontend
           sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend
           sudo chmod 755 /home/ubuntu/ideal-transportation
@@ -254,7 +247,18 @@ jobs:
           # Verify frontend files
           echo "Frontend files:"
           ls -la /home/ubuntu/ideal-transportation/frontend/
-          
+
+    - name: Setup Nginx
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
+        timeout: 60s
+        command_timeout: 30m
+        debug: true
+        script: |
           # Setup nginx
           sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
           server {
