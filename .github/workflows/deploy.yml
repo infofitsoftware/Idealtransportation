@@ -109,9 +109,10 @@ jobs:
           sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation
           sudo chmod o+x /home/ubuntu
           cd /home/ubuntu/ideal-transportation
-          # Change ownership before removing files
-          sudo chown -R ubuntu:ubuntu .
-          rm -rf * .[^.]*
+          # Backup existing frontend if it exists
+          if [ -d "frontend" ]; then
+            sudo mv frontend frontend_backup
+          fi
 
     - name: Clone Repository
       uses: appleboy/ssh-action@master
@@ -258,10 +259,7 @@ jobs:
         command_timeout: 30m
         debug: true
         script: |
-          # First, ensure ubuntu user owns everything
-          sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation
-          
-          # Then set nginx permissions
+          # Set permissions for frontend files
           sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/frontend
           sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend
           sudo chmod -R 644 /home/ubuntu/ideal-transportation/frontend/*.html
@@ -289,76 +287,68 @@ jobs:
         command_timeout: 30m
         debug: true
         script: |
-          # Setup nginx
+          # Create nginx configuration
           sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
           server {
               listen 80;
               server_name _;
-
               root /home/ubuntu/ideal-transportation/frontend;
-              index index.html;
-
+              
               # Enable detailed error logging
               error_log /var/log/nginx/ideal-transportation.error.log debug;
               access_log /var/log/nginx/ideal-transportation.access.log;
-
+              
               # Next.js static files
               location /_next/static/ {
                   alias /home/ubuntu/ideal-transportation/frontend/_next/static/;
-                  expires 365d;
-                  access_log off;
                   add_header Cache-Control "public, max-age=31536000, immutable";
                   try_files $uri =404;
               }
-
+              
               # Next.js chunks
               location /_next/chunks/ {
                   alias /home/ubuntu/ideal-transportation/frontend/_next/chunks/;
-                  expires 365d;
-                  access_log off;
                   add_header Cache-Control "public, max-age=31536000, immutable";
                   try_files $uri =404;
               }
-
-              # Next.js app directory
+              
+              # Next.js app
               location /_next/app/ {
                   alias /home/ubuntu/ideal-transportation/frontend/_next/app/;
-                  expires 365d;
-                  access_log off;
                   add_header Cache-Control "public, max-age=31536000, immutable";
                   try_files $uri =404;
               }
-
+              
               # Frontend routes
               location / {
-                  try_files $uri $uri.html $uri/index.html /index.html;
-                  add_header Cache-Control "no-cache";
+                  try_files $uri $uri.html $uri/index.html =404;
+                  add_header X-Debug-Path $request_filename;
+                  add_header X-Debug-Uri $uri;
               }
-
+              
               # Backend API
               location /api/ {
-                  proxy_pass http://localhost:8000/;
+                  proxy_pass http://localhost:8000;
                   proxy_http_version 1.1;
                   proxy_set_header Upgrade $http_upgrade;
                   proxy_set_header Connection 'upgrade';
                   proxy_set_header Host $host;
                   proxy_cache_bypass $http_upgrade;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto $scheme;
               }
-
+              
               # Health check endpoint
               location /health {
                   proxy_pass http://localhost:8000/health;
                   proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection 'upgrade';
                   proxy_set_header Host $host;
                   proxy_cache_bypass $http_upgrade;
               }
           }
           EOF
-
-          # Enable nginx site
+          
+          # Enable site and restart nginx
           sudo ln -sf /etc/nginx/sites-available/ideal-transportation /etc/nginx/sites-enabled/
           sudo rm -f /etc/nginx/sites-enabled/default
           
@@ -366,17 +356,8 @@ jobs:
           sudo nginx -t
           sudo systemctl restart nginx
           
-          # Verify deployment
-          echo "Testing endpoints:"
-          curl -v http://localhost:8000/health
-          curl -v http://localhost/
-          
-          # Check nginx status
+          # Verify nginx status
           sudo systemctl status nginx
-          
-          # Check logs
-          echo "Nginx error log:"
-          sudo tail -n 50 /var/log/nginx/ideal-transportation.error.log
 
     - name: Verify Deployment
       uses: appleboy/ssh-action@master
