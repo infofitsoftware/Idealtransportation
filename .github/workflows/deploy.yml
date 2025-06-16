@@ -109,10 +109,6 @@ jobs:
           sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation
           sudo chmod o+x /home/ubuntu
           cd /home/ubuntu/ideal-transportation
-          # Backup existing frontend if it exists
-          if [ -d "frontend" ]; then
-            sudo mv frontend frontend_backup
-          fi
 
     - name: Clone Repository
       uses: appleboy/ssh-action@master
