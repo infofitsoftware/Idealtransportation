@@ -218,7 +218,17 @@ jobs:
           echo "=== Journal Logs ==="
           sudo journalctl -u ideal-transportation -n 50 --no-pager
 
-    - name: Setup Frontend
+    - name: Build Frontend
+      run: |
+        cd frontend
+        npm install
+        npm run build
+        # Verify the build output
+        ls -la out/
+        # Create a test file to verify the build
+        echo "Testing frontend build" > out/test.txt
+
+    - name: Deploy to EC2
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -229,79 +239,39 @@ jobs:
         command_timeout: 30m
         debug: true
         script: |
-          # Create frontend directory
-          sudo mkdir -p /home/ubuntu/ideal-transportation/.next
-          sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation/.next
-
-    - name: Copy Frontend Build
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        port: 22
-        source: "out/"
-        target: "/home/ubuntu/ideal-transportation/frontend"
-        strip_components: 1
-
-    - name: Set Frontend Permissions
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        port: 22
-        timeout: 60s
-        command_timeout: 30m
-        debug: true
-        script: |
-          # Fix frontend permissions
+          # Create deployment directory with proper permissions
+          sudo mkdir -p /home/ubuntu/ideal-transportation/frontend
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation
+          
+          # Copy frontend files
+          sudo cp -r frontend/out/* /home/ubuntu/ideal-transportation/frontend/
+          
+          # Set proper permissions
           sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/frontend
           sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend
+          sudo chmod 755 /home/ubuntu/ideal-transportation
           
           # Verify frontend files
-          ls -la /home/ubuntu/ideal-transportation/frontend
-
-    - name: Setup Nginx
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        port: 22
-        timeout: 60s
-        command_timeout: 30m
-        debug: true
-        script: |
+          echo "Frontend files:"
+          ls -la /home/ubuntu/ideal-transportation/frontend/
+          
           # Setup nginx
           sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
           server {
               listen 80;
-              server_name _;  # Accepts any hostname/IP
+              server_name _;
+
+              root /home/ubuntu/ideal-transportation/frontend;
+              index index.html;
 
               # Enable detailed error logging
               error_log /var/log/nginx/ideal-transportation.error.log debug;
               access_log /var/log/nginx/ideal-transportation.access.log;
 
-              # Handle static files
-              location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-                  root /home/ubuntu/ideal-transportation/frontend;
-                  expires 30d;
-                  add_header Cache-Control "public, no-transform";
-                  try_files $uri =404;
-              }
-
               # Frontend
               location / {
-                  root /home/ubuntu/ideal-transportation/frontend;
                   try_files $uri $uri.html $uri/index.html /index.html;
-                  index index.html;
                   add_header Cache-Control "no-cache";
-                  
-                  # Debug headers
-                  add_header X-Debug-Path $request_filename;
-                  add_header X-Debug-Uri $uri;
-                  add_header X-Debug-Root $document_root;
               }
 
               # Backend API
@@ -324,20 +294,6 @@ jobs:
                   proxy_set_header Host $host;
                   proxy_cache_bypass $http_upgrade;
               }
-
-              # Error pages
-              error_page 404 /404.html;
-              error_page 500 502 503 504 /50x.html;
-              
-              location = /404.html {
-                  root /home/ubuntu/ideal-transportation/frontend;
-                  internal;
-              }
-              
-              location = /50x.html {
-                  root /usr/share/nginx/html;
-                  internal;
-              }
           }
           EOF
 
@@ -345,67 +301,21 @@ jobs:
           sudo ln -sf /etc/nginx/sites-available/ideal-transportation /etc/nginx/sites-enabled/
           sudo rm -f /etc/nginx/sites-enabled/default
           
-          # Ensure proper permissions
-          sudo chown -R www-data:www-data /home/ubuntu/ideal-transportation/frontend
-          sudo chmod -R 755 /home/ubuntu/ideal-transportation/frontend
-          
           # Test and restart nginx
           sudo nginx -t
           sudo systemctl restart nginx
           
-          # Verify nginx is running
-          sudo systemctl status nginx
-
-    - name: Verify Deployment
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        port: 22
-        timeout: 60s
-        command_timeout: 30m
-        debug: true
-        script: |
-          # Check service status
-          sudo systemctl status ideal-transportation
-          sudo systemctl status nginx
-          
-          # Check logs
-          sudo tail -n 50 /var/log/ideal-transportation.log
-          sudo tail -n 50 /var/log/ideal-transportation.error.log
-          sudo tail -n 50 /var/log/nginx/error.log
-          
-          # Test endpoints
+          # Verify deployment
+          echo "Testing endpoints:"
           curl -v http://localhost:8000/health
           curl -v http://localhost/
           
-          # Check processes and ports
-          ps aux | grep uvicorn
-          sudo netstat -tulpn | grep -E ':(80|8000)'
+          # Check nginx status
+          sudo systemctl status nginx
           
-          # Check frontend files
-          echo "=== Frontend Files ==="
-          ls -la /home/ubuntu/ideal-transportation/frontend
-          echo "=== Frontend Files Contents ==="
-          find /home/ubuntu/ideal-transportation/frontend -type f -name "*.html" | xargs ls -la
-          
-          # Check Nginx configuration
-          echo "=== Nginx Configuration ==="
-          sudo nginx -T
-          
-          # Check Nginx error log
-          echo "=== Nginx Error Log ==="
-          sudo tail -n 50 /var/log/nginx/error.log
-          
-          # Check file permissions
-          echo "=== File Permissions ==="
-          ls -la /home/ubuntu/ideal-transportation/
-          ls -la /home/ubuntu/ideal-transportation/frontend/
-          
-          # Check if index.html exists
-          echo "=== Checking for index.html ==="
-          find /home/ubuntu/ideal-transportation/frontend -name "index.html"
+          # Check logs
+          echo "Nginx error log:"
+          sudo tail -n 50 /var/log/nginx/ideal-transportation.error.log
 
     env:
       DATABASE_URL: postgresql://idealtransport:idealtransport19041988@idealtransport.cvyuacwgotuv.ap-southeast-2.rds.amazonaws.com:5432/idealtransport
