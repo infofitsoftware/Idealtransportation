@@ -164,7 +164,7 @@ jobs:
           # Create .env file
           sudo tee /home/ubuntu/ideal-transportation/backend/.env << 'EOF'
           # Database configuration
-          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/idealtransportation
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
           
           # JWT Configuration
           SECRET_KEY=${{ secrets.JWT_SECRET }}
