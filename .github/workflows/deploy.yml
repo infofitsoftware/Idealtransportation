@@ -153,46 +153,40 @@ jobs:
         command_timeout: 30m
         debug: true
         script: |
-          # Create necessary directories
-          sudo mkdir -p /var/log/ideal-transportation
-          sudo chown -R ubuntu:ubuntu /var/log/ideal-transportation
-          sudo chmod -R 755 /var/log/ideal-transportation
-          
-          # Create and configure virtual environment
+          # Create and activate virtual environment
           cd /home/ubuntu/ideal-transportation/backend
           python3 -m venv venv
           source venv/bin/activate
           
-          # Upgrade pip and install wheel
-          pip install --upgrade pip
-          pip install wheel
-          
-          # Install dependencies in specific order
-          pip uninstall -y sqlalchemy
-          pip install "sqlalchemy==2.0.27"
-          pip install "fastapi>=0.68.0"
-          pip install "uvicorn>=0.15.0"
-          pip install "psycopg2-binary>=2.9.0"
-          pip install "email-validator>=2.0.0"
-          pip install "pydantic[email]>=2.0.0"
-          pip install "python-jose[cryptography]>=3.3.0"
-          pip install "passlib[bcrypt]>=1.7.4"
-          pip install "python-multipart>=0.0.5"
-          pip install "python-dotenv>=0.19.0"
-          pip install "httpx>=0.27.0"
-          
-          # Install remaining requirements
+          # Install dependencies
           pip install -r requirements.txt
           
-          # Create environment file
-          cat > .env << EOL
-          DATABASE_URL=postgresql://idealtransport:idealtransport19041988@idealtransport.cvyuacwgotuv.ap-southeast-2.rds.amazonaws.com:5432/idealtransport
-          SECRET_KEY=your-secret-key-here
-          LOG_DIR=/var/log/ideal-transportation
-          EOL
+          # Create .env file
+          sudo tee /home/ubuntu/ideal-transportation/backend/.env << 'EOF'
+          # Database configuration
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/idealtransportation
           
-          # Create systemd service file
-          sudo tee /etc/systemd/system/ideal-transportation.service << EOL
+          # JWT Configuration
+          SECRET_KEY=${{ secrets.JWT_SECRET }}
+          ACCESS_TOKEN_EXPIRE_MINUTES=30
+          
+          # Logging configuration
+          LOG_DIR=logs
+          
+          # CORS configuration
+          CORS_ORIGINS=["http://localhost:3000", "http://13.221.221.48"]
+          EOF
+          
+          # Set permissions for .env file
+          sudo chown ubuntu:ubuntu /home/ubuntu/ideal-transportation/backend/.env
+          sudo chmod 600 /home/ubuntu/ideal-transportation/backend/.env
+          
+          # Create logs directory
+          sudo mkdir -p /home/ubuntu/ideal-transportation/backend/logs
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/ideal-transportation/backend/logs
+          
+          # Start backend service
+          sudo tee /etc/systemd/system/ideal-transportation.service << 'EOF'
           [Unit]
           Description=Ideal Transportation Backend
           After=network.target
@@ -202,38 +196,20 @@ jobs:
           Group=ubuntu
           WorkingDirectory=/home/ubuntu/ideal-transportation/backend
           Environment="PATH=/home/ubuntu/ideal-transportation/backend/venv/bin"
-          Environment="DATABASE_URL=postgresql://idealtransport:idealtransport19041988@idealtransport.cvyuacwgotuv.ap-southeast-2.rds.amazonaws.com:5432/idealtransport"
-          Environment="SECRET_KEY=your-secret-key-here"
-          Environment="LOG_DIR=/var/log/ideal-transportation"
           ExecStart=/home/ubuntu/ideal-transportation/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug
           Restart=always
-          StandardOutput=append:/var/log/ideal-transportation.log
-          StandardError=append:/var/log/ideal-transportation.error.log
           
           [Install]
           WantedBy=multi-user.target
-          EOL
+          EOF
           
           # Reload systemd and start service
           sudo systemctl daemon-reload
           sudo systemctl enable ideal-transportation
           sudo systemctl restart ideal-transportation
           
-          # Wait a moment for the service to start
-          sleep 5
-          
-          # Check service status and logs
-          echo "=== Service Status ==="
+          # Verify service status
           sudo systemctl status ideal-transportation
-          
-          echo "=== Application Logs ==="
-          sudo tail -n 50 /var/log/ideal-transportation.log
-          
-          echo "=== Error Logs ==="
-          sudo tail -n 50 /var/log/ideal-transportation.error.log
-          
-          echo "=== Journal Logs ==="
-          sudo journalctl -u ideal-transportation -n 50 --no-pager
 
     - name: Setup Frontend
       uses: appleboy/ssh-action@master
