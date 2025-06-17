@@ -1,6 +1,14 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// Ensure the base URL does not end with /api
+let API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+if (API_URL.endsWith('/api')) {
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    // Warn in dev mode
+    console.warn('NEXT_PUBLIC_API_URL should NOT end with /api. Removing /api automatically.');
+  }
+  API_URL = API_URL.replace(/\/api$/, '');
+}
 
 // Create axios instance with default config
 export const api = axios.create({

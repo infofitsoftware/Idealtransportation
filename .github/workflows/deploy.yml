@@ -28,7 +28,7 @@ jobs:
         npm run build
         ls -la out/  # Verify build output
       env:
-        NEXT_PUBLIC_API_URL: http://${{ secrets.EC2_HOST }}/api
+        NEXT_PUBLIC_API_URL: http://${{ secrets.EC2_HOST }}
 
     - name: Setup Python
       uses: actions/setup-python@v4
