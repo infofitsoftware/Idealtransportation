@@ -137,3 +137,152 @@ FROM bol_vehicle
 WHERE %(param_1)s = bol_vehicle.bill_of_lading_id
 2025-06-16 11:42:55,202 - sqlalchemy.engine.Engine - INFO - [cached since 4.795s ago] {'param_1': 5}
 2025-06-16 11:42:55,361 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-17 12:34:40,898 - main - INFO - Application shutdown complete
+2025-06-17 14:41:44,458 - sqlalchemy.engine.Engine - INFO - select pg_catalog.version()
+2025-06-17 14:41:44,492 - sqlalchemy.engine.Engine - INFO - [raw sql] {}
+2025-06-17 14:41:44,820 - sqlalchemy.engine.Engine - INFO - select current_schema()
+2025-06-17 14:41:44,820 - sqlalchemy.engine.Engine - INFO - [raw sql] {}
+2025-06-17 14:41:45,154 - sqlalchemy.engine.Engine - INFO - show standard_conforming_strings
+2025-06-17 14:41:45,154 - sqlalchemy.engine.Engine - INFO - [raw sql] {}
+2025-06-17 14:41:45,476 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-17 14:41:45,476 - sqlalchemy.engine.Engine - INFO - SELECT 1
+2025-06-17 14:41:45,476 - sqlalchemy.engine.Engine - INFO - [generated in 0.00051s] {}
+2025-06-17 14:41:45,805 - main - INFO - Database connection successful
+2025-06-17 14:41:45,805 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-17 14:42:23,393 - routers.auth - INFO - Login attempt for user: admin@idealtransport.com
+2025-06-17 14:42:23,409 - routers.auth - INFO - Authenticating user: admin@idealtransport.com
+2025-06-17 14:42:23,409 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-06-17 14:42:23,615 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-17 14:42:23,615 - sqlalchemy.engine.Engine - INFO - SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.email = %(email_1)s 
+ LIMIT %(param_1)s
+2025-06-17 14:42:23,615 - sqlalchemy.engine.Engine - INFO - [generated in 0.00101s] {'email_1': 'admin@idealtransport.com', 'param_1': 1}
+2025-06-17 14:42:23,950 - routers.auth - INFO - User found: admin@idealtransport.com
+2025-06-17 14:42:24,195 - routers.auth - INFO - Authentication successful: admin@idealtransport.com
+2025-06-17 14:42:24,320 - routers.auth - INFO - Login successful: admin@idealtransport.com
+2025-06-17 14:42:24,320 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-17 14:42:24,922 - routers.auth - INFO - Validating token for /me endpoint
+2025-06-17 14:42:24,922 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-06-17 14:42:25,092 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-17 14:42:25,092 - sqlalchemy.engine.Engine - INFO - SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.email = %(email_1)s 
+ LIMIT %(param_1)s
+2025-06-17 14:42:25,092 - sqlalchemy.engine.Engine - INFO - [cached since 1.472s ago] {'email_1': 'admin@idealtransport.com', 'param_1': 1}
+2025-06-17 14:42:25,414 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-06-17 14:42:25,414 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-17 14:42:25,585 - routers.auth - INFO - Validating token for /me endpoint
+2025-06-17 14:42:25,585 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-06-17 14:42:25,757 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-17 14:42:25,758 - sqlalchemy.engine.Engine - INFO - SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.email = %(email_1)s 
+ LIMIT %(param_1)s
+2025-06-17 14:42:25,759 - sqlalchemy.engine.Engine - INFO - [cached since 2.134s ago] {'email_1': 'admin@idealtransport.com', 'param_1': 1}
+2025-06-17 14:42:26,082 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-06-17 14:42:26,082 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-17 14:42:26,237 - routers.auth - INFO - Validating token for /me endpoint
+2025-06-17 14:42:26,237 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-06-17 14:42:26,409 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-17 14:42:26,409 - sqlalchemy.engine.Engine - INFO - SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.email = %(email_1)s 
+ LIMIT %(param_1)s
+2025-06-17 14:42:26,409 - sqlalchemy.engine.Engine - INFO - [cached since 2.791s ago] {'email_1': 'admin@idealtransport.com', 'param_1': 1}
+2025-06-17 14:42:26,736 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-06-17 14:42:26,736 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-17 14:42:26,906 - routers.auth - INFO - Validating token for /me endpoint
+2025-06-17 14:42:26,906 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-06-17 14:42:27,074 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-17 14:42:27,075 - sqlalchemy.engine.Engine - INFO - SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.email = %(email_1)s 
+ LIMIT %(param_1)s
+2025-06-17 14:42:27,076 - sqlalchemy.engine.Engine - INFO - [cached since 3.451s ago] {'email_1': 'admin@idealtransport.com', 'param_1': 1}
+2025-06-17 14:42:27,399 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-06-17 14:42:27,400 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-17 14:42:37,021 - routers.auth - INFO - Validating token for /me endpoint
+2025-06-17 14:42:37,139 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-06-17 14:42:37,367 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-17 14:42:37,383 - sqlalchemy.engine.Engine - INFO - SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.email = %(email_1)s 
+ LIMIT %(param_1)s
+2025-06-17 14:42:37,383 - sqlalchemy.engine.Engine - INFO - [cached since 13.76s ago] {'email_1': 'admin@idealtransport.com', 'param_1': 1}
+2025-06-17 14:42:37,725 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-06-17 14:42:37,886 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-17 14:42:38,072 - routers.auth - INFO - Validating token for /me endpoint
+2025-06-17 14:42:38,072 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-06-17 14:42:38,236 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-17 14:42:38,236 - sqlalchemy.engine.Engine - INFO - SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.email = %(email_1)s 
+ LIMIT %(param_1)s
+2025-06-17 14:42:38,236 - sqlalchemy.engine.Engine - INFO - [cached since 14.62s ago] {'email_1': 'admin@idealtransport.com', 'param_1': 1}
+2025-06-17 14:42:38,561 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-06-17 14:42:38,561 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-17 14:42:41,762 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-17 14:42:41,819 - sqlalchemy.engine.Engine - INFO - SELECT bill_of_lading.driver_name AS bill_of_lading_driver_name, bill_of_lading.date AS bill_of_lading_date, bill_of_lading.work_order_no AS bill_of_lading_work_order_no, bill_of_lading.pickup_name AS bill_of_lading_pickup_name, bill_of_lading.pickup_address AS bill_of_lading_pickup_address, bill_of_lading.pickup_city AS bill_of_lading_pickup_city, bill_of_lading.pickup_state AS bill_of_lading_pickup_state, bill_of_lading.pickup_zip AS bill_of_lading_pickup_zip, bill_of_lading.pickup_phone AS bill_of_lading_pickup_phone, bill_of_lading.delivery_name AS bill_of_lading_delivery_name, bill_of_lading.delivery_address AS bill_of_lading_delivery_address, bill_of_lading.delivery_city AS bill_of_lading_delivery_city, bill_of_lading.delivery_state AS bill_of_lading_delivery_state, bill_of_lading.delivery_zip AS bill_of_lading_delivery_zip, bill_of_lading.delivery_phone AS bill_of_lading_delivery_phone, bill_of_lading.condition_codes AS bill_of_lading_condition_codes, bill_of_lading.remarks AS bill_of_lading_remarks, bill_of_lading.pickup_agent_name AS bill_of_lading_pickup_agent_name, bill_of_lading.pickup_signature AS bill_of_lading_pickup_signature, bill_of_lading.pickup_date AS bill_of_lading_pickup_date, bill_of_lading.delivery_agent_name AS bill_of_lading_delivery_agent_name, bill_of_lading.delivery_signature AS bill_of_lading_delivery_signature, bill_of_lading.delivery_date AS bill_of_lading_delivery_date, bill_of_lading.id AS bill_of_lading_id, bill_of_lading.created_at AS bill_of_lading_created_at, bill_of_lading.updated_at AS bill_of_lading_updated_at 
+FROM bill_of_lading
+2025-06-17 14:42:41,823 - sqlalchemy.engine.Engine - INFO - [generated in 0.00337s] {}
+2025-06-17 14:42:42,343 - sqlalchemy.engine.Engine - INFO - SELECT bol_vehicle.bill_of_lading_id AS bol_vehicle_bill_of_lading_id, bol_vehicle.year AS bol_vehicle_year, bol_vehicle.make AS bol_vehicle_make, bol_vehicle.model AS bol_vehicle_model, bol_vehicle.vin AS bol_vehicle_vin, bol_vehicle.mileage AS bol_vehicle_mileage, bol_vehicle.price AS bol_vehicle_price, bol_vehicle.id AS bol_vehicle_id, bol_vehicle.created_at AS bol_vehicle_created_at, bol_vehicle.updated_at AS bol_vehicle_updated_at 
+FROM bol_vehicle 
+WHERE %(param_1)s = bol_vehicle.bill_of_lading_id
+2025-06-17 14:42:42,347 - sqlalchemy.engine.Engine - INFO - [generated in 0.00110s] {'param_1': 1}
+2025-06-17 14:42:42,545 - sqlalchemy.engine.Engine - INFO - SELECT bol_vehicle.bill_of_lading_id AS bol_vehicle_bill_of_lading_id, bol_vehicle.year AS bol_vehicle_year, bol_vehicle.make AS bol_vehicle_make, bol_vehicle.model AS bol_vehicle_model, bol_vehicle.vin AS bol_vehicle_vin, bol_vehicle.mileage AS bol_vehicle_mileage, bol_vehicle.price AS bol_vehicle_price, bol_vehicle.id AS bol_vehicle_id, bol_vehicle.created_at AS bol_vehicle_created_at, bol_vehicle.updated_at AS bol_vehicle_updated_at 
+FROM bol_vehicle 
+WHERE %(param_1)s = bol_vehicle.bill_of_lading_id
+2025-06-17 14:42:42,546 - sqlalchemy.engine.Engine - INFO - [cached since 0.2007s ago] {'param_1': 2}
+2025-06-17 14:42:42,701 - sqlalchemy.engine.Engine - INFO - SELECT bol_vehicle.bill_of_lading_id AS bol_vehicle_bill_of_lading_id, bol_vehicle.year AS bol_vehicle_year, bol_vehicle.make AS bol_vehicle_make, bol_vehicle.model AS bol_vehicle_model, bol_vehicle.vin AS bol_vehicle_vin, bol_vehicle.mileage AS bol_vehicle_mileage, bol_vehicle.price AS bol_vehicle_price, bol_vehicle.id AS bol_vehicle_id, bol_vehicle.created_at AS bol_vehicle_created_at, bol_vehicle.updated_at AS bol_vehicle_updated_at 
+FROM bol_vehicle 
+WHERE %(param_1)s = bol_vehicle.bill_of_lading_id
+2025-06-17 14:42:42,701 - sqlalchemy.engine.Engine - INFO - [cached since 0.3659s ago] {'param_1': 3}
+2025-06-17 14:42:42,869 - sqlalchemy.engine.Engine - INFO - SELECT bol_vehicle.bill_of_lading_id AS bol_vehicle_bill_of_lading_id, bol_vehicle.year AS bol_vehicle_year, bol_vehicle.make AS bol_vehicle_make, bol_vehicle.model AS bol_vehicle_model, bol_vehicle.vin AS bol_vehicle_vin, bol_vehicle.mileage AS bol_vehicle_mileage, bol_vehicle.price AS bol_vehicle_price, bol_vehicle.id AS bol_vehicle_id, bol_vehicle.created_at AS bol_vehicle_created_at, bol_vehicle.updated_at AS bol_vehicle_updated_at 
+FROM bol_vehicle 
+WHERE %(param_1)s = bol_vehicle.bill_of_lading_id
+2025-06-17 14:42:42,869 - sqlalchemy.engine.Engine - INFO - [cached since 0.5309s ago] {'param_1': 4}
+2025-06-17 14:42:43,039 - sqlalchemy.engine.Engine - INFO - SELECT bol_vehicle.bill_of_lading_id AS bol_vehicle_bill_of_lading_id, bol_vehicle.year AS bol_vehicle_year, bol_vehicle.make AS bol_vehicle_make, bol_vehicle.model AS bol_vehicle_model, bol_vehicle.vin AS bol_vehicle_vin, bol_vehicle.mileage AS bol_vehicle_mileage, bol_vehicle.price AS bol_vehicle_price, bol_vehicle.id AS bol_vehicle_id, bol_vehicle.created_at AS bol_vehicle_created_at, bol_vehicle.updated_at AS bol_vehicle_updated_at 
+FROM bol_vehicle 
+WHERE %(param_1)s = bol_vehicle.bill_of_lading_id
+2025-06-17 14:42:43,041 - sqlalchemy.engine.Engine - INFO - [cached since 0.6958s ago] {'param_1': 5}
+2025-06-17 14:42:43,228 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-17 14:42:44,460 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-17 14:42:44,460 - sqlalchemy.engine.Engine - INFO - SELECT bill_of_lading.driver_name AS bill_of_lading_driver_name, bill_of_lading.date AS bill_of_lading_date, bill_of_lading.work_order_no AS bill_of_lading_work_order_no, bill_of_lading.pickup_name AS bill_of_lading_pickup_name, bill_of_lading.pickup_address AS bill_of_lading_pickup_address, bill_of_lading.pickup_city AS bill_of_lading_pickup_city, bill_of_lading.pickup_state AS bill_of_lading_pickup_state, bill_of_lading.pickup_zip AS bill_of_lading_pickup_zip, bill_of_lading.pickup_phone AS bill_of_lading_pickup_phone, bill_of_lading.delivery_name AS bill_of_lading_delivery_name, bill_of_lading.delivery_address AS bill_of_lading_delivery_address, bill_of_lading.delivery_city AS bill_of_lading_delivery_city, bill_of_lading.delivery_state AS bill_of_lading_delivery_state, bill_of_lading.delivery_zip AS bill_of_lading_delivery_zip, bill_of_lading.delivery_phone AS bill_of_lading_delivery_phone, bill_of_lading.condition_codes AS bill_of_lading_condition_codes, bill_of_lading.remarks AS bill_of_lading_remarks, bill_of_lading.pickup_agent_name AS bill_of_lading_pickup_agent_name, bill_of_lading.pickup_signature AS bill_of_lading_pickup_signature, bill_of_lading.pickup_date AS bill_of_lading_pickup_date, bill_of_lading.delivery_agent_name AS bill_of_lading_delivery_agent_name, bill_of_lading.delivery_signature AS bill_of_lading_delivery_signature, bill_of_lading.delivery_date AS bill_of_lading_delivery_date, bill_of_lading.id AS bill_of_lading_id, bill_of_lading.created_at AS bill_of_lading_created_at, bill_of_lading.updated_at AS bill_of_lading_updated_at 
+FROM bill_of_lading
+2025-06-17 14:42:44,460 - sqlalchemy.engine.Engine - INFO - [cached since 2.645s ago] {}
+2025-06-17 14:42:44,986 - sqlalchemy.engine.Engine - INFO - SELECT bol_vehicle.bill_of_lading_id AS bol_vehicle_bill_of_lading_id, bol_vehicle.year AS bol_vehicle_year, bol_vehicle.make AS bol_vehicle_make, bol_vehicle.model AS bol_vehicle_model, bol_vehicle.vin AS bol_vehicle_vin, bol_vehicle.mileage AS bol_vehicle_mileage, bol_vehicle.price AS bol_vehicle_price, bol_vehicle.id AS bol_vehicle_id, bol_vehicle.created_at AS bol_vehicle_created_at, bol_vehicle.updated_at AS bol_vehicle_updated_at 
+FROM bol_vehicle 
+WHERE %(param_1)s = bol_vehicle.bill_of_lading_id
+2025-06-17 14:42:44,986 - sqlalchemy.engine.Engine - INFO - [cached since 2.649s ago] {'param_1': 1}
+2025-06-17 14:42:45,153 - sqlalchemy.engine.Engine - INFO - SELECT bol_vehicle.bill_of_lading_id AS bol_vehicle_bill_of_lading_id, bol_vehicle.year AS bol_vehicle_year, bol_vehicle.make AS bol_vehicle_make, bol_vehicle.model AS bol_vehicle_model, bol_vehicle.vin AS bol_vehicle_vin, bol_vehicle.mileage AS bol_vehicle_mileage, bol_vehicle.price AS bol_vehicle_price, bol_vehicle.id AS bol_vehicle_id, bol_vehicle.created_at AS bol_vehicle_created_at, bol_vehicle.updated_at AS bol_vehicle_updated_at 
+FROM bol_vehicle 
+WHERE %(param_1)s = bol_vehicle.bill_of_lading_id
+2025-06-17 14:42:45,153 - sqlalchemy.engine.Engine - INFO - [cached since 2.814s ago] {'param_1': 2}
+2025-06-17 14:42:45,351 - sqlalchemy.engine.Engine - INFO - SELECT bol_vehicle.bill_of_lading_id AS bol_vehicle_bill_of_lading_id, bol_vehicle.year AS bol_vehicle_year, bol_vehicle.make AS bol_vehicle_make, bol_vehicle.model AS bol_vehicle_model, bol_vehicle.vin AS bol_vehicle_vin, bol_vehicle.mileage AS bol_vehicle_mileage, bol_vehicle.price AS bol_vehicle_price, bol_vehicle.id AS bol_vehicle_id, bol_vehicle.created_at AS bol_vehicle_created_at, bol_vehicle.updated_at AS bol_vehicle_updated_at 
+FROM bol_vehicle 
+WHERE %(param_1)s = bol_vehicle.bill_of_lading_id
+2025-06-17 14:42:45,353 - sqlalchemy.engine.Engine - INFO - [cached since 3.008s ago] {'param_1': 3}
+2025-06-17 14:42:45,516 - sqlalchemy.engine.Engine - INFO - SELECT bol_vehicle.bill_of_lading_id AS bol_vehicle_bill_of_lading_id, bol_vehicle.year AS bol_vehicle_year, bol_vehicle.make AS bol_vehicle_make, bol_vehicle.model AS bol_vehicle_model, bol_vehicle.vin AS bol_vehicle_vin, bol_vehicle.mileage AS bol_vehicle_mileage, bol_vehicle.price AS bol_vehicle_price, bol_vehicle.id AS bol_vehicle_id, bol_vehicle.created_at AS bol_vehicle_created_at, bol_vehicle.updated_at AS bol_vehicle_updated_at 
+FROM bol_vehicle 
+WHERE %(param_1)s = bol_vehicle.bill_of_lading_id
+2025-06-17 14:42:45,518 - sqlalchemy.engine.Engine - INFO - [cached since 3.172s ago] {'param_1': 4}
+2025-06-17 14:42:45,681 - sqlalchemy.engine.Engine - INFO - SELECT bol_vehicle.bill_of_lading_id AS bol_vehicle_bill_of_lading_id, bol_vehicle.year AS bol_vehicle_year, bol_vehicle.make AS bol_vehicle_make, bol_vehicle.model AS bol_vehicle_model, bol_vehicle.vin AS bol_vehicle_vin, bol_vehicle.mileage AS bol_vehicle_mileage, bol_vehicle.price AS bol_vehicle_price, bol_vehicle.id AS bol_vehicle_id, bol_vehicle.created_at AS bol_vehicle_created_at, bol_vehicle.updated_at AS bol_vehicle_updated_at 
+FROM bol_vehicle 
+WHERE %(param_1)s = bol_vehicle.bill_of_lading_id
+2025-06-17 14:42:45,683 - sqlalchemy.engine.Engine - INFO - [cached since 3.337s ago] {'param_1': 5}
+2025-06-17 14:42:45,836 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-17 15:02:04,672 - routers.auth - INFO - Login attempt for user: admin@idealtransport.com
+2025-06-17 15:02:04,719 - routers.auth - INFO - Authenticating user: admin@idealtransport.com
+2025-06-17 15:02:04,726 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-06-17 15:02:04,962 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-17 15:02:04,967 - sqlalchemy.engine.Engine - INFO - SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.email = %(email_1)s 
+ LIMIT %(param_1)s
+2025-06-17 15:02:04,969 - sqlalchemy.engine.Engine - INFO - [cached since 1181s ago] {'email_1': 'admin@idealtransport.com', 'param_1': 1}
+2025-06-17 15:02:05,303 - routers.auth - INFO - User found: admin@idealtransport.com
+2025-06-17 15:02:05,536 - routers.auth - INFO - Authentication successful: admin@idealtransport.com
+2025-06-17 15:02:05,611 - routers.auth - INFO - Login successful: admin@idealtransport.com
+2025-06-17 15:02:05,627 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-17 15:02:05,842 - main - INFO - Application shutdown complete

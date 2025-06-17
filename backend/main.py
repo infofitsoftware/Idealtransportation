@@ -47,7 +47,7 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(transaction.router, prefix="/transactions", tags=["transactions"])
 app.include_router(bill_of_lading.router, prefix="/bol", tags=["bill_of_lading"])
 
