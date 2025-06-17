@@ -146,7 +146,7 @@ export default function ReportsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/bol/`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/bol/`);
         if (!res.ok) throw new Error("Failed to fetch reports");
         const json = await res.json();
         setData(json);

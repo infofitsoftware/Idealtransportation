@@ -40,7 +40,10 @@ app = FastAPI(title="Ideal Transportation Solutions API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins in production
+    allow_origins=[
+        "http://localhost:3000",
+        "http://13.221.221.48"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

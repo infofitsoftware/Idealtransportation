@@ -272,8 +272,7 @@ jobs:
           
           # Check specific files
           echo "=== Checking specific files ==="
-          ls -la /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app/auth/layout-7580899587a1d30d.js
-          ls -la /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app/auth/login/page-953022d234051af3.js
+          ls -la /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app/auth/login/*.js || true
 
     - name: Setup Nginx
       uses: appleboy/ssh-action@master

@@ -3,13 +3,12 @@ from typing import List, Optional
 from datetime import date
 
 class BOLVehicleBase(BaseModel):
-    vehicle_id: int
-    vin: str
+    year: str
     make: str
     model: str
-    year: int
-    color: str
-    license_plate: str
+    vin: str
+    mileage: str
+    price: str
 
 class BOLVehicle(BOLVehicleBase):
     id: int
