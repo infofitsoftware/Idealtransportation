@@ -14,17 +14,17 @@ export interface DailyExpenseData {
 
 export const dailyExpenseService = {
   async createExpense(expenseData: DailyExpenseData) {
-    const response = await api.post('/transactions/daily-expenses', expenseData)
+    const response = await api.post('/api/transactions/daily-expenses', expenseData)
     return response.data
   },
 
   async getExpenses() {
-    const response = await api.get('/transactions/daily-expenses')
+    const response = await api.get('/api/transactions/daily-expenses')
     return response.data
   },
 
   async getExpense(id: number) {
-    const response = await api.get(`/transactions/daily-expenses/${id}`)
+    const response = await api.get(`/api/transactions/daily-expenses/${id}`)
     return response.data
   }
 } 

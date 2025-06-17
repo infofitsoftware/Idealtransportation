@@ -48,8 +48,8 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
-app.include_router(transaction.router, prefix="/transactions", tags=["transactions"])
-app.include_router(bill_of_lading.router, prefix="/bol", tags=["bill_of_lading"])
+app.include_router(transaction.router, prefix="/api/transactions", tags=["transactions"])
+app.include_router(bill_of_lading.router, prefix="/api/bol", tags=["bill_of_lading"])
 
 @app.on_event("startup")
 async def startup_event():

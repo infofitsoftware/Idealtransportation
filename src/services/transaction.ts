@@ -32,26 +32,26 @@ export interface TransactionCreate {
 
 export const transactionService = {
   async createTransaction(data: TransactionCreate): Promise<Transaction> {
-    const response = await api.post('/transactions', data);
+    const response = await api.post('/api/transactions', data);
     return response.data;
   },
 
   async getTransactions(): Promise<Transaction[]> {
-    const response = await api.get('/transactions');
+    const response = await api.get('/api/transactions');
     return response.data;
   },
 
   async getTransaction(id: number): Promise<Transaction> {
-    const response = await api.get(`/transactions/${id}`);
+    const response = await api.get(`/api/transactions/${id}`);
     return response.data;
   },
 
   async updateTransaction(id: number, data: Partial<TransactionCreate>): Promise<Transaction> {
-    const response = await api.put(`/transactions/${id}`, data);
+    const response = await api.put(`/api/transactions/${id}`, data);
     return response.data;
   },
 
   async deleteTransaction(id: number): Promise<void> {
-    await api.delete(`/transactions/${id}`);
+    await api.delete(`/api/transactions/${id}`);
   }
 }; 
