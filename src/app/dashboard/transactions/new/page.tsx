@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import { transactionService } from '@/services/transaction'
 import { authService } from '@/services/auth'
+import toast from 'react-hot-toast'
 
 export default function NewTransaction() {
   const router = useRouter()
@@ -46,11 +47,11 @@ export default function NewTransaction() {
         amount: parseFloat(formData.amount),
         comments: formData.comments
       })
-      
-      router.push('/dashboard/transactions')
+      toast.success('Transaction saved successfully!')
+      setTimeout(() => router.push('/dashboard/transactions'), 1200)
     } catch (error: any) {
       console.error('Error creating transaction:', error)
-      setError(error.response?.data?.detail || 'Failed to create transaction')
+      toast.error(error.response?.data?.detail || 'Failed to create transaction')
     } finally {
       setIsSubmitting(false)
     }

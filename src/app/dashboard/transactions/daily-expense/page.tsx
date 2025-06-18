@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import { dailyExpenseService } from '@/services/dailyExpense'
 import { authService } from '@/services/auth'
+import toast from 'react-hot-toast'
 
 export default function DailyExpenseForm() {
   const router = useRouter()
@@ -46,11 +47,11 @@ export default function DailyExpenseForm() {
         other_expense_amount: formData.other_expense_amount ? parseFloat(formData.other_expense_amount) : undefined,
         total: total
       })
-      
-      router.push('/dashboard/transactions')
+      toast.success('Daily expense saved successfully!')
+      setTimeout(() => router.push('/dashboard/transactions'), 1200)
     } catch (error: any) {
       console.error('Error creating daily expense:', error)
-      setError(error.response?.data?.detail || 'Failed to create daily expense')
+      toast.error(error.response?.data?.detail || 'Failed to create daily expense')
     } finally {
       setIsSubmitting(false)
     }

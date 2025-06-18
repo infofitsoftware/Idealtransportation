@@ -11,6 +11,8 @@ import {
   PhoneIcon,
   BuildingOffice2Icon,
 } from "@heroicons/react/24/outline";
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast';
 
 interface Vehicle {
   year: string;
@@ -78,6 +80,7 @@ function SignaturePad({ value, onChange, label }: { value: string; onChange: (da
 }
 
 export default function BillOfLadingForm() {
+  const router = useRouter();
   const [form, setForm] = useState({
     driver_name: "",
     date: "",
@@ -152,9 +155,10 @@ export default function BillOfLadingForm() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Failed to save Bill of Lading');
-      alert('Bill of Lading saved!');
+      toast.success('Bill of Lading saved successfully!');
+      setTimeout(() => router.push('/dashboard'), 1200);
     } catch (err: any) {
-      alert('Error: ' + err.message);
+      toast.error('Error: ' + err.message);
     }
   };
 
@@ -240,37 +244,76 @@ export default function BillOfLadingForm() {
         {/* Vehicles */}
         <div className="border border-blue-100 rounded-lg p-4 bg-blue-50">
           <SectionHeader icon={TruckIcon} title="Vehicles" />
-          <table className="min-w-full border mb-2 text-sm">
-            <thead>
-              <tr className="bg-blue-100 text-blue-800">
-                <th className="border px-2 py-1">Year</th>
-                <th className="border px-2 py-1">Make</th>
-                <th className="border px-2 py-1">Model</th>
-                <th className="border px-2 py-1">VIN</th>
-                <th className="border px-2 py-1">Mileage</th>
-                <th className="border px-2 py-1">Price</th>
-                <th className="border px-2 py-1">Remove</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vehicles.map((v, idx) => (
-                <tr key={idx} className="hover:bg-blue-50">
-                  <td className="border px-2 py-1"><input name="year" value={v.year} onChange={e => handleVehicleChange(idx, e)} className="input w-20" /></td>
-                  <td className="border px-2 py-1"><input name="make" value={v.make} onChange={e => handleVehicleChange(idx, e)} className="input w-24" /></td>
-                  <td className="border px-2 py-1"><input name="model" value={v.model} onChange={e => handleVehicleChange(idx, e)} className="input w-24" /></td>
-                  <td className="border px-2 py-1"><input name="vin" value={v.vin} onChange={e => handleVehicleChange(idx, e)} className="input w-32" /></td>
-                  <td className="border px-2 py-1"><input name="mileage" value={v.mileage} onChange={e => handleVehicleChange(idx, e)} className="input w-20" /></td>
-                  <td className="border px-2 py-1"><input name="price" value={v.price} onChange={e => handleVehicleChange(idx, e)} className="input w-20" /></td>
-                  <td className="border px-2 py-1 text-center">
-                    {vehicles.length > 1 && (
-                      <button type="button" onClick={() => removeVehicle(idx)} className="text-red-500 font-bold">X</button>
-                    )}
-                  </td>
+          {/* Desktop/tablet table view */}
+          <div className="overflow-x-auto -mx-4 hidden md:block">
+            <table className="min-w-[700px] border mb-2 text-sm mx-4">
+              <thead>
+                <tr className="bg-blue-100 text-blue-800">
+                  <th className="border px-2 py-1">Year</th>
+                  <th className="border px-2 py-1">Make</th>
+                  <th className="border px-2 py-1">Model</th>
+                  <th className="border px-2 py-1">VIN</th>
+                  <th className="border px-2 py-1">Mileage</th>
+                  <th className="border px-2 py-1">Price</th>
+                  <th className="border px-2 py-1">Remove</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <button type="button" onClick={addVehicle} className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition">Add Vehicle</button>
+              </thead>
+              <tbody>
+                {vehicles.map((v, idx) => (
+                  <tr key={idx} className="hover:bg-blue-50">
+                    <td className="border px-2 py-1"><input name="year" value={v.year} onChange={e => handleVehicleChange(idx, e)} className="input w-full" /></td>
+                    <td className="border px-2 py-1"><input name="make" value={v.make} onChange={e => handleVehicleChange(idx, e)} className="input w-full" /></td>
+                    <td className="border px-2 py-1"><input name="model" value={v.model} onChange={e => handleVehicleChange(idx, e)} className="input w-full" /></td>
+                    <td className="border px-2 py-1"><input name="vin" value={v.vin} onChange={e => handleVehicleChange(idx, e)} className="input w-full" /></td>
+                    <td className="border px-2 py-1"><input name="mileage" value={v.mileage} onChange={e => handleVehicleChange(idx, e)} className="input w-full" /></td>
+                    <td className="border px-2 py-1"><input name="price" value={v.price} onChange={e => handleVehicleChange(idx, e)} className="input w-full" /></td>
+                    <td className="border px-2 py-1 text-center">
+                      {vehicles.length > 1 && (
+                        <button type="button" onClick={() => removeVehicle(idx)} className="text-red-500 font-bold">X</button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Mobile stacked card view */}
+          <div className="block md:hidden space-y-4">
+            {vehicles.map((v, idx) => (
+              <div key={idx} className="bg-white rounded-lg shadow p-3 border border-blue-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Year</label>
+                    <input name="year" value={v.year} onChange={e => handleVehicleChange(idx, e)} className="input w-full" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Make</label>
+                    <input name="make" value={v.make} onChange={e => handleVehicleChange(idx, e)} className="input w-full" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Model</label>
+                    <input name="model" value={v.model} onChange={e => handleVehicleChange(idx, e)} className="input w-full" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">VIN</label>
+                    <input name="vin" value={v.vin} onChange={e => handleVehicleChange(idx, e)} className="input w-full" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Mileage</label>
+                    <input name="mileage" value={v.mileage} onChange={e => handleVehicleChange(idx, e)} className="input w-full" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Price</label>
+                    <input name="price" value={v.price} onChange={e => handleVehicleChange(idx, e)} className="input w-full" />
+                  </div>
+                </div>
+                {vehicles.length > 1 && (
+                  <button type="button" onClick={() => removeVehicle(idx)} className="text-red-500 font-bold text-sm">Remove</button>
+                )}
+              </div>
+            ))}
+          </div>
+          <button type="button" onClick={addVehicle} className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition mt-2">Add Vehicle</button>
         </div>
 
         {/* Condition Codes */}
@@ -304,21 +347,25 @@ export default function BillOfLadingForm() {
             <SectionHeader icon={UserIcon} title="Pick Up Agent" />
             <input name="pickup_agent_name" placeholder="Agent Name" value={form.pickup_agent_name} onChange={handleChange} className="input mb-1" />
             <input type="date" name="pickup_date" value={form.pickup_date} onChange={handleChange} className="input mb-1" />
-            <SignaturePad
-              value={form.pickup_signature}
-              onChange={handlePickupSignature}
-              label="Pickup Signature (sign below)"
-            />
+            <div className="overflow-x-auto max-w-full">
+              <SignaturePad
+                value={form.pickup_signature}
+                onChange={handlePickupSignature}
+                label="Pickup Signature (sign below)"
+              />
+            </div>
           </div>
           <div className="border border-blue-100 rounded-lg p-4 bg-blue-50">
             <SectionHeader icon={UserIcon} title="Delivery Agent" />
             <input name="delivery_agent_name" placeholder="Agent Name" value={form.delivery_agent_name} onChange={handleChange} className="input mb-1" />
             <input type="date" name="delivery_date" value={form.delivery_date} onChange={handleChange} className="input mb-1" />
-            <SignaturePad
-              value={form.delivery_signature}
-              onChange={handleDeliverySignature}
-              label="Delivery Signature (sign below)"
-            />
+            <div className="overflow-x-auto max-w-full">
+              <SignaturePad
+                value={form.delivery_signature}
+                onChange={handleDeliverySignature}
+                label="Delivery Signature (sign below)"
+              />
+            </div>
           </div>
         </div>
 
