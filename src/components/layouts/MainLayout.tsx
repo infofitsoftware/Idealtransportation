@@ -12,9 +12,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="lg:pl-64">
+      <div className="flex-1 flex flex-col">
         <button
           className="p-2 lg:hidden fixed top-4 left-4 z-50 bg-white rounded-md shadow"
           onClick={() => setSidebarOpen(true)}
@@ -25,7 +25,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </svg>
         </button>
         <Header />
-        <main className="py-10">
+        <main className="flex-1 py-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {children}
           </div>
