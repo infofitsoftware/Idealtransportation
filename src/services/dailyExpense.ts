@@ -71,12 +71,9 @@ export const dailyExpenseService = {
         throw new Error('No authentication token found')
       }
 
-      // Log the request configuration
+      // Only pass headers in config
       const config = {
-        url: '/api/transactions/daily-expenses',
-        method: 'get',
         headers: {
-          ...api.defaults.headers,
           Authorization: `Bearer ${token}`
         }
       }

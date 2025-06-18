@@ -390,3 +390,9 @@
 2025-06-18 13:00:16 - routers.auth - INFO - Validating token for /me endpoint
 2025-06-18 13:00:16 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
 2025-06-18 13:00:17 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-06-18 13:05:22 - routers.auth - INFO - Validating token for /me endpoint
+2025-06-18 13:05:22 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-06-18 13:05:22 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-06-18 13:05:22 - routers.auth - INFO - Validating token for /me endpoint
+2025-06-18 13:05:22 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-06-18 13:05:23 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com

@@ -44,3 +44,67 @@
 2025-06-18 12:23:36 - routers.transaction - INFO - Found 4 transactions
 2025-06-18 12:23:36 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
 2025-06-18 12:23:36 - routers.transaction - INFO - Found 4 transactions
+2025-06-18 12:55:25 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-06-18 12:55:25 - routers.transaction - INFO - Found 4 transactions
+2025-06-18 12:55:26 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-06-18 12:55:26 - routers.transaction - INFO - Found 4 transactions
+2025-06-18 12:55:26 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2025-06-18 12:55:26 - routers.transaction - INFO - User ID: 1
+2025-06-18 12:55:26 - routers.transaction - INFO - SQL Query: SELECT daily_expenses.id AS daily_expenses_id, daily_expenses.date AS daily_expenses_date, daily_expenses.diesel_amount AS daily_expenses_diesel_amount, daily_expenses.diesel_location AS daily_expenses_diesel_location, daily_expenses.def_amount AS daily_expenses_def_amount, daily_expenses.def_location AS daily_expenses_def_location, daily_expenses.other_expense_description AS daily_expenses_other_expense_description, daily_expenses.other_expense_amount AS daily_expenses_other_expense_amount, daily_expenses.other_expense_location AS daily_expenses_other_expense_location, daily_expenses.total AS daily_expenses_total, daily_expenses.user_id AS daily_expenses_user_id 
+FROM daily_expenses 
+WHERE daily_expenses.user_id = %(user_id_1)s
+2025-06-18 12:55:27 - routers.transaction - INFO - Found 4 daily expenses
+2025-06-18 12:55:27 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 6, 6), 'diesel_amount': 500.0, 'diesel_location': 'sasa', 'def_amount': 1000.0, 'def_location': 'sasaa', 'other_expense_description': '500', 'other_expense_amount': 522.0, 'other_expense_location': 'sasa', 'total': 2022.0, 'id': 1, 'user_id': 1}
+2025-06-18 12:55:27 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(1990, 10, 2), 'diesel_amount': 1000.0, 'diesel_location': 'ssas', 'def_amount': 1000.0, 'def_location': 'sas', 'other_expense_description': 'sasa', 'other_expense_amount': 1000.0, 'other_expense_location': 'sasa', 'total': 3000.0, 'id': 2, 'user_id': 1}
+2025-06-18 12:55:27 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 6, 17), 'diesel_amount': 500.0, 'diesel_location': 'abc', 'def_amount': 5000.0, 'def_location': 'sas', 'other_expense_description': 'sas', 'other_expense_amount': 2000.0, 'other_expense_location': 'sas', 'total': 7500.0, 'id': 3, 'user_id': 1}
+2025-06-18 12:55:27 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(1990, 10, 2), 'diesel_amount': 500.0, 'diesel_location': 'sasa', 'def_amount': 500.0, 'def_location': 'sasasa', 'other_expense_description': 'ssa', 'other_expense_amount': 500.0, 'other_expense_location': 'sas', 'total': 1500.0, 'id': 4, 'user_id': 1}
+2025-06-18 12:55:27 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2025-06-18 12:55:27 - routers.transaction - INFO - User ID: 1
+2025-06-18 12:55:27 - routers.transaction - INFO - SQL Query: SELECT daily_expenses.id AS daily_expenses_id, daily_expenses.date AS daily_expenses_date, daily_expenses.diesel_amount AS daily_expenses_diesel_amount, daily_expenses.diesel_location AS daily_expenses_diesel_location, daily_expenses.def_amount AS daily_expenses_def_amount, daily_expenses.def_location AS daily_expenses_def_location, daily_expenses.other_expense_description AS daily_expenses_other_expense_description, daily_expenses.other_expense_amount AS daily_expenses_other_expense_amount, daily_expenses.other_expense_location AS daily_expenses_other_expense_location, daily_expenses.total AS daily_expenses_total, daily_expenses.user_id AS daily_expenses_user_id 
+FROM daily_expenses 
+WHERE daily_expenses.user_id = %(user_id_1)s
+2025-06-18 12:55:28 - routers.transaction - INFO - Found 4 daily expenses
+2025-06-18 12:55:28 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 6, 6), 'diesel_amount': 500.0, 'diesel_location': 'sasa', 'def_amount': 1000.0, 'def_location': 'sasaa', 'other_expense_description': '500', 'other_expense_amount': 522.0, 'other_expense_location': 'sasa', 'total': 2022.0, 'id': 1, 'user_id': 1}
+2025-06-18 12:55:28 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(1990, 10, 2), 'diesel_amount': 1000.0, 'diesel_location': 'ssas', 'def_amount': 1000.0, 'def_location': 'sas', 'other_expense_description': 'sasa', 'other_expense_amount': 1000.0, 'other_expense_location': 'sasa', 'total': 3000.0, 'id': 2, 'user_id': 1}
+2025-06-18 12:55:28 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 6, 17), 'diesel_amount': 500.0, 'diesel_location': 'abc', 'def_amount': 5000.0, 'def_location': 'sas', 'other_expense_description': 'sas', 'other_expense_amount': 2000.0, 'other_expense_location': 'sas', 'total': 7500.0, 'id': 3, 'user_id': 1}
+2025-06-18 12:55:28 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(1990, 10, 2), 'diesel_amount': 500.0, 'diesel_location': 'sasa', 'def_amount': 500.0, 'def_location': 'sasasa', 'other_expense_description': 'ssa', 'other_expense_amount': 500.0, 'other_expense_location': 'sas', 'total': 1500.0, 'id': 4, 'user_id': 1}
+2025-06-18 12:56:00 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-06-18 12:56:00 - routers.transaction - INFO - Found 4 transactions
+2025-06-18 12:56:00 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-06-18 12:56:01 - routers.transaction - INFO - Found 4 transactions
+2025-06-18 13:01:02 - routers.transaction - INFO - Creating new transaction for user: admin@idealtransport.com
+2025-06-18 13:01:02 - routers.transaction - DEBUG - Transaction data: {'date': datetime.date(1990, 10, 2), 'car_year': '1945', 'car_make': 'pradeep', 'car_model': 'pradeep', 'car_vin': 'car1234', 'pickup_location': 'pradeep', 'dropoff_location': 'pradeep', 'payment_type': 'CASH', 'amount': 5000.0, 'comments': 'good'}
+2025-06-18 13:01:02 - routers.transaction - INFO - Adding transaction to database
+2025-06-18 13:01:03 - routers.transaction - INFO - Transaction created successfully with ID: 5
+2025-06-18 13:01:37 - routers.transaction - INFO - Creating new daily expense for user: admin@idealtransport.com
+2025-06-18 13:01:38 - routers.transaction - INFO - Daily expense created successfully with ID: 5
+2025-06-18 13:05:24 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-06-18 13:05:24 - routers.transaction - INFO - Found 5 transactions
+2025-06-18 13:05:24 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-06-18 13:05:25 - routers.transaction - INFO - Found 5 transactions
+2025-06-18 13:05:25 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2025-06-18 13:05:25 - routers.transaction - INFO - User ID: 1
+2025-06-18 13:05:25 - routers.transaction - INFO - SQL Query: SELECT daily_expenses.id AS daily_expenses_id, daily_expenses.date AS daily_expenses_date, daily_expenses.diesel_amount AS daily_expenses_diesel_amount, daily_expenses.diesel_location AS daily_expenses_diesel_location, daily_expenses.def_amount AS daily_expenses_def_amount, daily_expenses.def_location AS daily_expenses_def_location, daily_expenses.other_expense_description AS daily_expenses_other_expense_description, daily_expenses.other_expense_amount AS daily_expenses_other_expense_amount, daily_expenses.other_expense_location AS daily_expenses_other_expense_location, daily_expenses.total AS daily_expenses_total, daily_expenses.user_id AS daily_expenses_user_id 
+FROM daily_expenses 
+WHERE daily_expenses.user_id = %(user_id_1)s
+2025-06-18 13:05:25 - routers.transaction - INFO - Found 5 daily expenses
+2025-06-18 13:05:25 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 6, 6), 'diesel_amount': 500.0, 'diesel_location': 'sasa', 'def_amount': 1000.0, 'def_location': 'sasaa', 'other_expense_description': '500', 'other_expense_amount': 522.0, 'other_expense_location': 'sasa', 'total': 2022.0, 'id': 1, 'user_id': 1}
+2025-06-18 13:05:25 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(1990, 10, 2), 'diesel_amount': 1000.0, 'diesel_location': 'ssas', 'def_amount': 1000.0, 'def_location': 'sas', 'other_expense_description': 'sasa', 'other_expense_amount': 1000.0, 'other_expense_location': 'sasa', 'total': 3000.0, 'id': 2, 'user_id': 1}
+2025-06-18 13:05:25 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 6, 17), 'diesel_amount': 500.0, 'diesel_location': 'abc', 'def_amount': 5000.0, 'def_location': 'sas', 'other_expense_description': 'sas', 'other_expense_amount': 2000.0, 'other_expense_location': 'sas', 'total': 7500.0, 'id': 3, 'user_id': 1}
+2025-06-18 13:05:25 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(1990, 10, 2), 'diesel_amount': 500.0, 'diesel_location': 'sasa', 'def_amount': 500.0, 'def_location': 'sasasa', 'other_expense_description': 'ssa', 'other_expense_amount': 500.0, 'other_expense_location': 'sas', 'total': 1500.0, 'id': 4, 'user_id': 1}
+2025-06-18 13:05:25 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(1990, 10, 2), 'diesel_amount': 800.0, 'diesel_location': 'pradeep', 'def_amount': 500.0, 'def_location': 'pradeep', 'other_expense_description': 'pradeep', 'other_expense_amount': 800.0, 'other_expense_location': 'pradeep', 'total': 2100.0, 'id': 5, 'user_id': 1}
+2025-06-18 13:05:26 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2025-06-18 13:05:26 - routers.transaction - INFO - User ID: 1
+2025-06-18 13:05:26 - routers.transaction - INFO - SQL Query: SELECT daily_expenses.id AS daily_expenses_id, daily_expenses.date AS daily_expenses_date, daily_expenses.diesel_amount AS daily_expenses_diesel_amount, daily_expenses.diesel_location AS daily_expenses_diesel_location, daily_expenses.def_amount AS daily_expenses_def_amount, daily_expenses.def_location AS daily_expenses_def_location, daily_expenses.other_expense_description AS daily_expenses_other_expense_description, daily_expenses.other_expense_amount AS daily_expenses_other_expense_amount, daily_expenses.other_expense_location AS daily_expenses_other_expense_location, daily_expenses.total AS daily_expenses_total, daily_expenses.user_id AS daily_expenses_user_id 
+FROM daily_expenses 
+WHERE daily_expenses.user_id = %(user_id_1)s
+2025-06-18 13:05:26 - routers.transaction - INFO - Found 5 daily expenses
+2025-06-18 13:05:26 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 6, 6), 'diesel_amount': 500.0, 'diesel_location': 'sasa', 'def_amount': 1000.0, 'def_location': 'sasaa', 'other_expense_description': '500', 'other_expense_amount': 522.0, 'other_expense_location': 'sasa', 'total': 2022.0, 'id': 1, 'user_id': 1}
+2025-06-18 13:05:26 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(1990, 10, 2), 'diesel_amount': 1000.0, 'diesel_location': 'ssas', 'def_amount': 1000.0, 'def_location': 'sas', 'other_expense_description': 'sasa', 'other_expense_amount': 1000.0, 'other_expense_location': 'sasa', 'total': 3000.0, 'id': 2, 'user_id': 1}
+2025-06-18 13:05:26 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 6, 17), 'diesel_amount': 500.0, 'diesel_location': 'abc', 'def_amount': 5000.0, 'def_location': 'sas', 'other_expense_description': 'sas', 'other_expense_amount': 2000.0, 'other_expense_location': 'sas', 'total': 7500.0, 'id': 3, 'user_id': 1}
+2025-06-18 13:05:26 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(1990, 10, 2), 'diesel_amount': 500.0, 'diesel_location': 'sasa', 'def_amount': 500.0, 'def_location': 'sasasa', 'other_expense_description': 'ssa', 'other_expense_amount': 500.0, 'other_expense_location': 'sas', 'total': 1500.0, 'id': 4, 'user_id': 1}
+2025-06-18 13:05:26 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(1990, 10, 2), 'diesel_amount': 800.0, 'diesel_location': 'pradeep', 'def_amount': 500.0, 'def_location': 'pradeep', 'other_expense_description': 'pradeep', 'other_expense_amount': 800.0, 'other_expense_location': 'pradeep', 'total': 2100.0, 'id': 5, 'user_id': 1}
+2025-06-18 13:05:29 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-06-18 13:05:29 - routers.transaction - INFO - Found 5 transactions
+2025-06-18 13:05:30 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-06-18 13:05:30 - routers.transaction - INFO - Found 5 transactions
