@@ -17,6 +17,117 @@ logger = setup_logger(__name__, "transaction.log")
 
 router = APIRouter()
 
+# Daily Expense Endpoints
+@router.post("/daily-expenses", response_model=DailyExpenseSchema)
+def create_daily_expense(
+    expense: DailyExpenseCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        logger.info(f"Creating new daily expense for user: {current_user.email}")
+        
+        db_expense = DailyExpense(
+            date=expense.date,
+            diesel_amount=expense.diesel_amount,
+            diesel_location=expense.diesel_location,
+            def_amount=expense.def_amount,
+            def_location=expense.def_location,
+            other_expense_description=expense.other_expense_description,
+            other_expense_amount=expense.other_expense_amount,
+            other_expense_location=expense.other_expense_location,
+            total=expense.total,
+            user_id=current_user.id
+        )
+        
+        db.add(db_expense)
+        db.commit()
+        db.refresh(db_expense)
+        
+        logger.info(f"Daily expense created successfully with ID: {db_expense.id}")
+        return db_expense
+        
+    except Exception as e:
+        logger.error(f"Error creating daily expense: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error creating daily expense"
+        )
+
+@router.get("/daily-expenses", response_model=List[DailyExpenseSchema])
+def get_daily_expenses(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        logger.info(f"Fetching daily expenses for user: {current_user.email}")
+        logger.info(f"User ID: {current_user.id}")
+        
+        # Log the query before execution
+        query = db.query(DailyExpense).filter(DailyExpense.user_id == current_user.id)
+        logger.info(f"SQL Query: {query}")
+        
+        expenses = query.all()
+        logger.info(f"Found {len(expenses)} daily expenses")
+        
+        # Convert each expense to a dictionary and validate
+        result = []
+        for expense in expenses:
+            try:
+                # Convert to dict first
+                expense_dict = {
+                    "id": expense.id,
+                    "date": expense.date,
+                    "diesel_amount": float(expense.diesel_amount),
+                    "diesel_location": expense.diesel_location,
+                    "def_amount": float(expense.def_amount),
+                    "def_location": expense.def_location,
+                    "other_expense_description": expense.other_expense_description,
+                    "other_expense_amount": float(expense.other_expense_amount) if expense.other_expense_amount is not None else None,
+                    "other_expense_location": expense.other_expense_location,
+                    "total": float(expense.total),
+                    "user_id": expense.user_id
+                }
+                
+                # Validate using schema
+                validated_expense = DailyExpenseSchema(**expense_dict)
+                result.append(validated_expense)
+                logger.info(f"Validated expense data: {validated_expense.dict()}")
+            except Exception as e:
+                logger.error(f"Validation error for expense {expense.id}: {str(e)}")
+                if hasattr(e, 'errors'):
+                    logger.error(f"Validation error details: {e.errors()}")
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"Validation error for expense {expense.id}: {str(e)}"
+                )
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in get_daily_expenses: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+@router.get("/daily-expenses/{expense_id}", response_model=DailyExpenseSchema)
+def get_daily_expense(
+    expense_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    logger.info(f"Fetching daily expense for user: {current_user.email}")
+    expense = db.query(DailyExpense).filter(
+        DailyExpense.id == expense_id,
+        DailyExpense.user_id == current_user.id
+    ).first()
+    if not expense:
+        raise HTTPException(status_code=404, detail="Daily expense not found")
+    return expense
+
+# Transaction Endpoints
 @router.post("/", response_model=TransactionSchema)
 def create_transaction(
     transaction: TransactionCreate,
@@ -119,65 +230,4 @@ def delete_transaction(
     
     db.delete(transaction)
     db.commit()
-    return {"message": "Transaction deleted successfully"}
-
-# Daily Expense Endpoints
-@router.post("/daily-expenses", response_model=DailyExpenseSchema)
-def create_daily_expense(
-    expense: DailyExpenseCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    try:
-        logger.info(f"Creating new daily expense for user: {current_user.email}")
-        
-        db_expense = DailyExpense(
-            date=expense.date,
-            diesel_amount=expense.diesel_amount,
-            diesel_location=expense.diesel_location,
-            def_amount=expense.def_amount,
-            def_location=expense.def_location,
-            other_expense_description=expense.other_expense_description,
-            other_expense_amount=expense.other_expense_amount,
-            other_expense_location=expense.other_expense_location,
-            total=expense.total,
-            user_id=current_user.id
-        )
-        
-        db.add(db_expense)
-        db.commit()
-        db.refresh(db_expense)
-        
-        logger.info(f"Daily expense created successfully with ID: {db_expense.id}")
-        return db_expense
-        
-    except Exception as e:
-        logger.error(f"Error creating daily expense: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error creating daily expense"
-        )
-
-@router.get("/daily-expenses", response_model=List[DailyExpenseSchema])
-def get_daily_expenses(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    logger.info(f"Fetching daily expenses for user: {current_user.email}")
-    expenses = db.query(DailyExpense).filter(DailyExpense.user_id == current_user.id).all()
-    logger.info(f"Found {len(expenses)} daily expenses")
-    return expenses
-
-@router.get("/daily-expenses/{expense_id}", response_model=DailyExpenseSchema)
-def get_daily_expense(
-    expense_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    expense = db.query(DailyExpense).filter(
-        DailyExpense.id == expense_id,
-        DailyExpense.user_id == current_user.id
-    ).first()
-    if not expense:
-        raise HTTPException(status_code=404, detail="Daily expense not found")
-    return expense 
+    return {"message": "Transaction deleted successfully"} 
