@@ -31,37 +31,155 @@ function formatCurrency(amount: number) {
   }).format(amount)
 }
 
-function downloadTransactionPdf(transaction: Transaction) {
+// Function to load logo as base64
+async function loadLogoAsBase64(): Promise<string | null> {
+  try {
+    const response = await fetch('/logo.jpeg');
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Error loading logo:', error);
+    return null;
+  }
+}
+
+async function downloadTransactionPdf(transaction: Transaction) {
   const doc = new jsPDF()
-  let y = 10
+  let y = -2 // Pulled logo up to match BOL layout
+
+  // Company Header with Logo and Address on same line
+  try {
+    const logoBase64 = await loadLogoAsBase64();
+    if (logoBase64) {
+      // Larger logo on the left (same size as BOL: 80x40)
+      doc.addImage(logoBase64, 'JPEG', 5, y, 80, 40);
+      // Company name and address on the right, same positioning as BOL
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Ideal Transportation Solutions Private Limited', 85, y + 12, { align: 'left' });
+      y += 12;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('16 Palmero Way, Manvel, Texas 77578', 85, y + 8, { align: 'left' });
+      y += 25; // Same spacing as BOL
+    } else {
+      // Fallback without logo
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Ideal Transportation Solutions Private Limited', 105, y, { align: 'center' });
+      y += 6;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('16 Palmero Way, Manvel, Texas 77578', 105, y, { align: 'center' });
+      y += 8;
+    }
+  } catch (err) {
+    console.error('Error loading logo:', err);
+    // Fallback without logo
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Ideal Transportation Solutions Private Limited', 105, y, { align: 'center' });
+    y += 6;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('16 Palmero Way, Manvel, Texas 77578', 105, y, { align: 'center' });
+    y += 8;
+  }
+
+  // Divider line
+  doc.setDrawColor(200, 200, 200)
+  doc.line(14, y, 196, y)
+  y += 10
 
   // Title
   doc.setFontSize(18)
+  doc.setFont('helvetica', 'bold')
   doc.text('Transaction Report', 105, y, { align: 'center' })
-  y += 10
+  y += 15
+
+  // Report Details Box
+  doc.setDrawColor(59, 130, 246) // Blue border
+  doc.setFillColor(239, 246, 255) // Light blue background
+  doc.roundedRect(14, y, 182, 25, 3, 3, 'FD')
+  y += 8
 
   // Transaction Details
   doc.setFontSize(12)
-  doc.text(`Date: ${formatDate(transaction.date)}`, 14, y)
+  doc.setFont('helvetica', 'bold')
+  doc.text(`Date: ${formatDate(transaction.date)}`, 20, y)
+  doc.text(`Transaction ID: ${transaction.id}`, 120, y)
   y += 8
-  doc.text(`Vehicle: ${transaction.car_year} ${transaction.car_make} ${transaction.car_model}`, 14, y)
-  y += 8
-  doc.text(`VIN: ${transaction.car_vin}`, 14, y)
-  y += 8
-  doc.text(`Pickup Location: ${transaction.pickup_location}`, 14, y)
-  y += 8
-  doc.text(`Dropoff Location: ${transaction.dropoff_location}`, 14, y)
-  y += 8
-  doc.text(`Payment Type: ${transaction.payment_type}`, 14, y)
-  y += 8
-  doc.text(`Amount: ${formatCurrency(transaction.amount)}`, 14, y)
-  y += 8
+  doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, y)
+  y += 15
 
+  // Vehicle Information Section
+  doc.setDrawColor(59, 130, 246)
+  doc.setFillColor(239, 246, 255)
+  doc.roundedRect(14, y, 182, 40, 3, 3, 'FD')
+  y += 8
+  doc.setFont('helvetica', 'bold')
+  doc.text('Vehicle Information:', 20, y)
+  y += 8
+  doc.setFont('helvetica', 'normal')
+  doc.text(`Vehicle: ${transaction.car_year} ${transaction.car_make} ${transaction.car_model}`, 25, y)
+  y += 6
+  doc.text(`VIN: ${transaction.car_vin}`, 25, y)
+  y += 15
+
+  // Location Information Section
+  doc.setDrawColor(59, 130, 246)
+  doc.setFillColor(248, 250, 252) // Light gray background
+  doc.roundedRect(14, y, 182, 35, 3, 3, 'FD')
+  y += 8
+  doc.setFont('helvetica', 'bold')
+  doc.text('Location Information:', 20, y)
+  y += 8
+  doc.setFont('helvetica', 'normal')
+  doc.text(`Pickup Location: ${transaction.pickup_location}`, 25, y)
+  y += 6
+  doc.text(`Dropoff Location: ${transaction.dropoff_location}`, 25, y)
+  y += 15
+
+  // Payment Information Section
+  doc.setDrawColor(59, 130, 246)
+  doc.setFillColor(239, 246, 255)
+  doc.roundedRect(14, y, 182, 30, 3, 3, 'FD')
+  y += 8
+  doc.setFont('helvetica', 'bold')
+  doc.text('Payment Information:', 20, y)
+  y += 8
+  doc.setFont('helvetica', 'normal')
+  doc.text(`Payment Type: ${transaction.payment_type}`, 25, y)
+  y += 6
+  doc.setFont('helvetica', 'bold')
+  doc.text(`Amount: ${formatCurrency(transaction.amount)}`, 25, y)
+  y += 15
+
+  // Comments Section (if exists)
   if (transaction.comments) {
-    doc.text('Comments:', 14, y)
+    doc.setDrawColor(59, 130, 246)
+    doc.setFillColor(248, 250, 252)
+    doc.roundedRect(14, y, 182, 30, 3, 3, 'FD')
     y += 8
-    doc.text(transaction.comments, 14, y, { maxWidth: 180 })
+    doc.setFont('helvetica', 'bold')
+    doc.text('Additional Comments:', 20, y)
+    y += 8
+    doc.setFont('helvetica', 'normal')
+    doc.text(transaction.comments, 25, y, { maxWidth: 160 })
+    y += 15
   }
+
+  // Footer
+  doc.setDrawColor(200, 200, 200)
+  doc.line(14, y, 196, y)
+  y += 8
+  doc.setFontSize(8)
+  doc.setFont('helvetica', 'normal')
+  doc.text('This report was generated by Ideal Transportation Solutions Private Limited', 105, y, { align: 'center' })
 
   doc.save(`Transaction_${transaction.id}.pdf`)
 }
@@ -123,7 +241,7 @@ export default function TransactionReportsPage() {
                   <td className="border px-2 py-1 text-center">
                     <button
                       className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto"
-                      onClick={() => downloadTransactionPdf(transaction)}
+                      onClick={async () => await downloadTransactionPdf(transaction)}
                     >
                       <ArrowDownTrayIcon className="h-5 w-5" /> Download
                     </button>

@@ -1,78 +1,479 @@
 import Link from 'next/link'
-import { TruckIcon, ClockIcon, ChartBarIcon } from '@heroicons/react/24/outline'
+import Image from 'next/image'
+import { 
+  TruckIcon, 
+  ClockIcon, 
+  ChartBarIcon, 
+  ShieldCheckIcon,
+  GlobeAltIcon,
+  UserGroupIcon,
+  StarIcon,
+  ArrowRightIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  MapPinIcon
+} from '@heroicons/react/24/outline'
 
 export default function Home() {
   return (
-    <main>
-      {/* Hero Section */}
-      <div className="relative bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10 lg:px-8 lg:py-40">
-          <div className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto">
-            <h1 className="mt-10 max-w-lg text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              Your Trusted Partner in Transportation Solutions
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
-              Delivering excellence through innovative logistics solutions, reliable service, and cutting-edge technology.
-            </p>
-            <div className="mt-10 flex items-center gap-x-6">
-              <Link
-                href="/dashboard"
-                className="rounded-md bg-primary-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
-              >
-                Start Using the App
-              </Link>
-              <Link href="/contact" className="text-sm font-semibold leading-6 text-gray-900">
-                Contact Us <span aria-hidden="true">→</span>
-              </Link>
+    <>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes carousel-0 {
+            0%, 25% { opacity: 1; }
+            33%, 100% { opacity: 0; }
+          }
+          @keyframes carousel-1 {
+            0%, 25% { opacity: 0; }
+            33%, 50% { opacity: 1; }
+            58%, 100% { opacity: 0; }
+          }
+          @keyframes carousel-2 {
+            0%, 50% { opacity: 0; }
+            58%, 75% { opacity: 1; }
+            83%, 100% { opacity: 0; }
+          }
+          @keyframes carousel-3 {
+            0%, 75% { opacity: 0; }
+            83%, 100% { opacity: 1; }
+          }
+        `
+      }} />
+      <main className="min-h-screen">
+      {/* Hero Section with Carousel */}
+      <section className="relative h-[600px]">
+        {/* Carousel */}
+        <div className="absolute inset-0 overflow-hidden">
+          {carouselImages.map((image, index) => (
+            <div
+              key={index}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                index === 0 ? 'opacity-100' : 'opacity-0'
+              }`}
+              style={{
+                animation: `carousel-${index} 12s infinite`
+              }}
+            >
+                             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70"></div>
+              <Image
+                src={image.src}
+                alt={image.alt}
+                fill
+                className="object-cover"
+                priority={index === 0}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Content Overlay */}
+        <div className="relative z-10 flex items-center justify-center h-full">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="space-y-8 text-white">
+                <h1 className="text-4xl lg:text-6xl font-bold leading-tight drop-shadow-2xl">
+                  Your Trusted Partner in 
+                  <span className="text-primary-300 drop-shadow-2xl"> Transportation Solutions</span>
+                </h1>
+                <p className="text-xl text-white leading-relaxed drop-shadow-lg font-medium">
+                  Delivering excellence through innovative logistics solutions, reliable service, 
+                  and cutting-edge technology. We connect businesses with seamless transportation.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Link
+                    href="/dashboard"
+                    className="inline-flex items-center justify-center px-8 py-4 bg-primary-600 hover:bg-primary-500 text-white font-semibold rounded-lg transition-colors"
+                  >
+                    Start Using the App
+                    <ArrowRightIcon className="ml-2 h-5 w-5" />
+                  </Link>
+                  <Link 
+                    href="/contact" 
+                    className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-primary-900 font-semibold rounded-lg transition-colors"
+                  >
+                    Contact Us
+                  </Link>
+                </div>
+              </div>
+              <div className="relative">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    <div className="bg-black/60 backdrop-blur-md rounded-lg p-6 border border-white/20 shadow-2xl">
+                      <TruckIcon className="h-12 w-12 text-primary-300 mb-4 drop-shadow-lg" />
+                      <h3 className="text-lg font-semibold mb-2 text-white drop-shadow-lg">Fleet Management</h3>
+                      <p className="text-white drop-shadow-md">Advanced tracking and management solutions</p>
+                    </div>
+                    <div className="bg-black/60 backdrop-blur-md rounded-lg p-6 border border-white/20 shadow-2xl">
+                      <ClockIcon className="h-12 w-12 text-primary-300 mb-4 drop-shadow-lg" />
+                      <h3 className="text-lg font-semibold mb-2 text-white drop-shadow-lg">24/7 Support</h3>
+                      <p className="text-white drop-shadow-md">Round-the-clock customer service</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4 pt-8">
+                    <div className="bg-black/60 backdrop-blur-md rounded-lg p-6 border border-white/20 shadow-2xl">
+                      <ChartBarIcon className="h-12 w-12 text-primary-300 mb-4 drop-shadow-lg" />
+                      <h3 className="text-lg font-semibold mb-2 text-white drop-shadow-lg">Analytics</h3>
+                      <p className="text-white drop-shadow-md">Comprehensive reporting and insights</p>
+                    </div>
+                    <div className="bg-black/60 backdrop-blur-md rounded-lg p-6 border border-white/20 shadow-2xl">
+                      <ShieldCheckIcon className="h-12 w-12 text-primary-300 mb-4 drop-shadow-lg" />
+                      <h3 className="text-lg font-semibold mb-2 text-white drop-shadow-lg">Secure Transport</h3>
+                      <p className="text-white drop-shadow-md">Safe and reliable delivery services</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Features Section */}
-      <div className="bg-white py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl lg:text-center">
-            <h2 className="text-base font-semibold leading-7 text-primary-600">Efficient Solutions</h2>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Everything you need to manage your logistics
-            </p>
-          </div>
-          <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-            <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
-              {features.map((feature) => (
-                <div key={feature.name} className="flex flex-col">
-                  <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-gray-900">
-                    <feature.icon className="h-5 w-5 flex-none text-primary-600" aria-hidden="true" />
-                    {feature.name}
-                  </dt>
-                  <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
-                    <p className="flex-auto">{feature.description}</p>
-                  </dd>
-                </div>
-              ))}
-            </dl>
+        {/* Carousel Indicators */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+          <div className="flex space-x-3">
+            {carouselImages.map((_, index) => (
+              <button
+                key={index}
+                className="w-3 h-3 rounded-full bg-white/50 hover:bg-white transition-colors"
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* About Us Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <div className="inline-flex items-center px-4 py-2 bg-primary-100 text-primary-800 rounded-full text-sm font-semibold">
+                About Ideal Transportation
+              </div>
+              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
+                Leading the Way in Transportation Excellence
+              </h2>
+              <p className="text-lg text-gray-600 leading-relaxed">
+                With years of experience in the transportation industry, Ideal Transportation Solutions 
+                has established itself as a trusted partner for businesses across Texas and beyond. 
+                Our commitment to quality, reliability, and innovation sets us apart.
+              </p>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary-600">500+</div>
+                  <div className="text-gray-600">Happy Clients</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary-600">10K+</div>
+                  <div className="text-gray-600">Successful Deliveries</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary-600">24/7</div>
+                  <div className="text-gray-600">Support Available</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary-600">99%</div>
+                  <div className="text-gray-600">On-time Delivery</div>
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="bg-primary-600 rounded-2xl p-8 text-white">
+                <h3 className="text-2xl font-bold mb-6">Why Choose Us?</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold">Professional Team</h4>
+                      <p className="text-primary-100">Experienced drivers and logistics experts</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold">Modern Fleet</h4>
+                      <p className="text-primary-100">Well-maintained vehicles with latest technology</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold">Comprehensive Coverage</h4>
+                      <p className="text-primary-100">State-wide and cross-country transportation</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section className="py-20 bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Our Comprehensive Services
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              From local deliveries to cross-country logistics, we provide end-to-end transportation 
+              solutions tailored to your business needs.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {services.map((service) => (
+              <div key={service.name} className="group bg-white border border-gray-200 rounded-xl p-8 hover:shadow-lg hover:border-primary-300 transition-all">
+                <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary-600 transition-colors">
+                  <service.icon className="h-6 w-6 text-primary-600 group-hover:text-white transition-colors" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">{service.name}</h3>
+                <p className="text-gray-600 mb-6">{service.description}</p>
+                <ul className="space-y-2">
+                  {service.features.map((feature, index) => (
+                    <li key={index} className="flex items-center text-sm text-gray-600">
+                      <div className="w-1.5 h-1.5 bg-primary-600 rounded-full mr-3"></div>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Client Feedback Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              What Our Clients Say
+            </h2>
+            <p className="text-lg text-gray-600">
+              Don't just take our word for it - hear from our satisfied customers
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <div key={index} className="bg-white rounded-xl p-8 shadow-lg">
+                <div className="flex items-center mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <StarIcon key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <p className="text-gray-600 mb-6 italic">"{testimonial.quote}"</p>
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mr-4">
+                    <UserGroupIcon className="h-6 w-6 text-primary-600" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">{testimonial.name}</div>
+                    <div className="text-sm text-gray-600">{testimonial.company}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Company Associations Section */}
+      <section className="py-20 bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Trusted by Industry Leaders
+            </h2>
+            <p className="text-lg text-gray-600">
+              We're proud to work with leading companies across various industries
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center">
+            {companies.map((company, index) => (
+              <div key={index} className="flex items-center justify-center">
+                <div className="w-24 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <span className="text-gray-600 font-semibold text-sm">{company}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-primary-900 text-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+            Ready to Transform Your Transportation?
+          </h2>
+          <p className="text-xl text-primary-100 mb-8 max-w-3xl mx-auto">
+            Join hundreds of satisfied customers who trust Ideal Transportation Solutions 
+            for their logistics needs.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center px-8 py-4 bg-white text-primary-900 hover:bg-gray-100 font-semibold rounded-lg transition-colors"
+            >
+              Get Started Today
+            </Link>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-primary-900 font-semibold rounded-lg transition-colors"
+            >
+              Client Portal
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="space-y-4">
+              <Image
+                src="/logo.jpeg"
+                alt="Ideal Transportation Logo"
+                width={200}
+                height={43}
+                className="w-auto"
+              />
+              <p className="text-gray-400">
+                Your trusted partner in transportation solutions, delivering excellence 
+                through innovation and reliability.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+              <ul className="space-y-2">
+                <li><Link href="/" className="text-gray-400 hover:text-white transition-colors">Home</Link></li>
+                <li><Link href="/services" className="text-gray-400 hover:text-white transition-colors">Services</Link></li>
+                <li><Link href="/about" className="text-gray-400 hover:text-white transition-colors">About</Link></li>
+                <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors">Contact</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Services</h3>
+              <ul className="space-y-2">
+                <li><Link href="/services" className="text-gray-400 hover:text-white transition-colors">Freight Transport</Link></li>
+                <li><Link href="/services" className="text-gray-400 hover:text-white transition-colors">Logistics Solutions</Link></li>
+                <li><Link href="/services" className="text-gray-400 hover:text-white transition-colors">Fleet Management</Link></li>
+                <li><Link href="/services" className="text-gray-400 hover:text-white transition-colors">Tracking & Analytics</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <PhoneIcon className="h-5 w-5 text-primary-400" />
+                  <span className="text-gray-400">+1 (555) 123-4567</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <EnvelopeIcon className="h-5 w-5 text-primary-400" />
+                  <span className="text-gray-400">info@idealtransportation.com</span>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <MapPinIcon className="h-5 w-5 text-primary-400 mt-0.5" />
+                  <span className="text-gray-400">16 Palmero Way, Manvel, Texas 77578</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-12 pt-8 text-center">
+            <p className="text-gray-400">
+              © 2024 Ideal Transportation Solutions Private Limited. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </main>
+    </>
   )
 }
 
-const features = [
+const services = [
   {
-    name: 'Real-time Tracking',
-    description: 'Track your shipments in real-time with our advanced GPS tracking system.',
+    name: 'Freight Transportation',
+    description: 'Reliable freight transportation services across Texas and nationwide.',
     icon: TruckIcon,
+    features: ['Full truckload services', 'Less-than-truckload (LTL)', 'Expedited shipping', 'Temperature-controlled transport']
   },
   {
-    name: 'On-time Delivery',
-    description: 'We pride ourselves on maintaining strict delivery schedules.',
-    icon: ClockIcon,
-  },
-  {
-    name: 'Analytics Dashboard',
-    description: 'Comprehensive analytics to optimize your logistics operations.',
+    name: 'Logistics Management',
+    description: 'End-to-end logistics solutions to optimize your supply chain.',
     icon: ChartBarIcon,
+    features: ['Route optimization', 'Inventory management', 'Real-time tracking', 'Performance analytics']
   },
+  {
+    name: 'Fleet Management',
+    description: 'Comprehensive fleet management and maintenance services.',
+    icon: ShieldCheckIcon,
+    features: ['Vehicle maintenance', 'Driver training', 'Safety compliance', 'Fuel management']
+  },
+  {
+    name: 'Global Shipping',
+    description: 'International shipping and customs clearance services.',
+    icon: GlobeAltIcon,
+    features: ['International freight', 'Customs clearance', 'Documentation support', 'Multi-modal transport']
+  },
+  {
+    name: 'Specialized Transport',
+    description: 'Specialized transportation for unique cargo requirements.',
+    icon: ClockIcon,
+    features: ['Oversized loads', 'Hazardous materials', 'Refrigerated transport', 'Express delivery']
+  },
+  {
+    name: 'Customer Support',
+    description: '24/7 customer support and dedicated account management.',
+    icon: UserGroupIcon,
+    features: ['24/7 support hotline', 'Dedicated account managers', 'Online tracking portal', 'Proactive notifications']
+  }
+]
+
+const testimonials = [
+  {
+    quote: "Ideal Transportation has transformed our logistics operations. Their reliability and professional service are unmatched.",
+    name: "Sarah Johnson",
+    company: "TechCorp Industries"
+  },
+  {
+    quote: "The team at Ideal Transportation goes above and beyond. They've become an essential part of our supply chain.",
+    name: "Michael Chen",
+    company: "Global Manufacturing Co."
+  },
+  {
+    quote: "Outstanding service and competitive pricing. They've helped us reduce costs while improving delivery times.",
+    name: "Emily Rodriguez",
+    company: "Retail Solutions Inc."
+  }
+]
+
+const companies = [
+  "TechCorp", "GlobalMfg", "RetailSol", "LogiTech", "SupplyCo", "TransportPro"
+]
+
+const carouselImages = [
+  {
+    src: "/header1.jpg",
+    alt: "Truck hauling cargo on highway"
+  },
+  {
+    src: "/header2.jpg",
+    alt: "Logistics warehouse with trucks"
+  },
+  {
+    src: "/header3.jpg",
+    alt: "Transportation fleet on road"
+  },
+  {
+    src: "/header4.jpg",
+    alt: "Professional trucking services"
+  }
 ] 

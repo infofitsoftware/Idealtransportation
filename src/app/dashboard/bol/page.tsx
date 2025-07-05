@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast';
+import FormHeader from '@/components/FormHeader';
 
 interface Vehicle {
   year: string;
@@ -186,6 +187,8 @@ export default function BillOfLadingForm() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
+      <FormHeader />
+      
       <h1 className="text-3xl font-extrabold mb-2 text-blue-700 tracking-tight flex items-center gap-2">
         <DocumentTextIcon className="h-8 w-8 text-blue-500" /> Bill of Lading
       </h1>
