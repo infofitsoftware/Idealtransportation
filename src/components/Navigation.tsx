@@ -31,26 +31,28 @@ export default function Navigation() {
       {/* Info Header */}
       <div className="bg-primary-900 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-2 text-sm">
-            <div className="flex items-center space-x-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between py-2 text-xs sm:text-sm">
+            <div className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-6 mb-2 sm:mb-0">
               <div className="flex items-center space-x-2">
-                <PhoneIcon className="h-4 w-4" />
-                <span>+1 (555) 123-4567</span>
+                <PhoneIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline sm:inline">+1 (555) 123-4567</span>
+                <span className="xs:hidden sm:hidden">+1 (555) 123-4567</span>
               </div>
               <div className="flex items-center space-x-2">
-                <EnvelopeIcon className="h-4 w-4" />
-                <span>info@idealtransportation.com</span>
+                <EnvelopeIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">info@idealtransportation.com</span>
+                <span className="sm:hidden">info@idealtransportation.com</span>
               </div>
-              <div className="hidden md:flex items-center space-x-2">
-                <MapPinIcon className="h-4 w-4" />
+              <div className="hidden lg:flex items-center space-x-2">
+                <MapPinIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>16 Palmero Way, Manvel, Texas 77578</span>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="hidden sm:inline">24/7 Support Available</span>
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <span className="hidden md:inline text-xs">24/7 Support Available</span>
               <button
                 onClick={handleLoginClick}
-                className="rounded-md bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-primary-500 transition-colors"
+                className="rounded-md bg-primary-600 px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-primary-500 transition-colors"
               >
                 Client Login
               </button>

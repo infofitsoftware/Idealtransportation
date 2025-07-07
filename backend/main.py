@@ -42,7 +42,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://13.221.221.48"
+        "http://13.221.221.48",
+        "http://app.ditsxpress.com",
+        "https://app.ditsxpress.com"
     ],
     allow_credentials=True,
     allow_methods=["*"],

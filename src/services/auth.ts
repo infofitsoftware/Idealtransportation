@@ -1,13 +1,20 @@
 import axios from 'axios';
 
-// Ensure the base URL does not end with /api
-let API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-if (API_URL.endsWith('/api')) {
-  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-    // Warn in dev mode
-    console.warn('NEXT_PUBLIC_API_URL should NOT end with /api. Removing /api automatically.');
+// Determine the API URL based on the current domain
+let API_URL = 'http://13.221.221.48'; // Default for production
+
+if (typeof window !== 'undefined') {
+  const currentDomain = window.location.hostname;
+  const currentPort = window.location.port;
+  
+  if (currentDomain === 'localhost' || currentDomain === '127.0.0.1') {
+    // Use localhost:8000 for local development
+    API_URL = 'http://localhost:8000';
+  } else if (currentDomain === 'app.ditsxpress.com') {
+    // Use the same domain for production to avoid CORS issues
+    API_URL = window.location.protocol + '//' + currentDomain;
   }
-  API_URL = API_URL.replace(/\/api$/, '');
+  // For other domains, keep the default (13.221.221.48)
 }
 
 // Create axios instance with default config
