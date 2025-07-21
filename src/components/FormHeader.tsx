@@ -13,7 +13,7 @@ export default function FormHeader() {
             className="h-20 w-auto"
           />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Ideal Transportation Solutions Private Limited</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Ideal Transportation Solutions LLC</h1>
             <p className="text-sm text-gray-600">16 Palmero Way, Manvel, Texas 77578</p>
           </div>
         </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { 
@@ -320,14 +322,28 @@ export default function Home() {
               We're proud to work with leading companies across various industries
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6 lg:gap-8 items-center">
-            {companies.map((company, index) => (
-              <div key={index} className="flex items-center justify-center">
-                <div className="w-16 h-12 sm:w-20 sm:h-14 lg:w-24 lg:h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-600 font-semibold text-xs sm:text-sm">{company}</span>
+          {/* Logo Carousel */}
+          <div className="relative overflow-hidden">
+            <div className="flex items-center space-x-8 animate-logo-carousel min-w-max" style={{ animation: 'logo-carousel 30s linear infinite' }}>
+              {clientLogos.concat(clientLogos).map((logo, idx) => (
+                <div key={idx} className="flex-shrink-0 flex items-center justify-center w-32 h-20 sm:w-40 sm:h-24 lg:w-48 lg:h-28 bg-gray-100 rounded-lg shadow-md mx-2">
+                  <Image
+                    src={logo.src}
+                    alt={logo.alt}
+                    width={160}
+                    height={64}
+                    className="object-contain w-full h-full"
+                    priority={idx < clientLogos.length}
+                  />
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <style jsx>{`
+              @keyframes logo-carousel {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
+              }
+            `}</style>
           </div>
         </div>
       </section>
@@ -414,7 +430,7 @@ export default function Home() {
           </div>
           <div className="border-t border-gray-800 mt-8 sm:mt-12 pt-6 sm:pt-8 text-center">
             <p className="text-sm sm:text-base text-gray-400">
-              © 2024 Ideal Transportation Solutions Private Limited. All rights reserved.
+              © 2024 Ideal Transportation Solutions LLC. All rights reserved.
             </p>
           </div>
         </div>
@@ -481,9 +497,18 @@ const testimonials = [
   }
 ]
 
-const companies = [
-  "TechCorp", "GlobalMfg", "RetailSol", "LogiTech", "SupplyCo", "TransportPro"
-]
+const clientLogos = [
+  { src: '/client1.jpeg', alt: 'Client 1 Logo' },
+  { src: '/client2.jpeg', alt: 'Client 2 Logo' },
+  { src: '/client3.jpeg', alt: 'Client 3 Logo' },
+  { src: '/client4.jpeg', alt: 'Client 4 Logo' },
+  { src: '/client5.jpeg', alt: 'Client 5 Logo' },
+  { src: '/client6.jpeg', alt: 'Client 6 Logo' },
+  { src: '/client7.jpeg', alt: 'Client 7 Logo' },
+  { src: '/client8.jpeg', alt: 'Client 8 Logo' },
+  { src: '/client9.jpeg', alt: 'Client 9 Logo' },
+  { src: '/client10.jpeg', alt: 'Client 10 Logo' },
+];
 
 const carouselImages = [
   {
