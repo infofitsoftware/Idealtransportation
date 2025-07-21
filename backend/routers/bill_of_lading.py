@@ -33,6 +33,10 @@ def create_bill_of_lading(bol: BillOfLadingCreate, db: Session = Depends(get_db)
         delivery_agent_name=bol.delivery_agent_name,
         delivery_signature=bol.delivery_signature,
         delivery_date=bol.delivery_date,
+        # New receiver agent fields
+        receiver_agent_name=bol.receiver_agent_name,
+        receiver_signature=bol.receiver_signature,
+        receiver_date=bol.receiver_date,
     )
     db.add(db_bol)
     db.commit()

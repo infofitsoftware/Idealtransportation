@@ -365,7 +365,7 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="space-y-4 text-center sm:text-left">
               <Image
-                src="/logo.jpeg"
+                src="/logo_ideal.png"
                 alt="Ideal Transportation Logo"
                 width={200}
                 height={43}

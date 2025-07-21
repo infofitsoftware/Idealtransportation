@@ -6,7 +6,7 @@ export default function FormHeader() {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Image
-            src="/logo.jpeg"
+            src="/logo_ideal.png"
             alt="Ideal Transportation Solutions Logo"
             width={240}
             height={80}

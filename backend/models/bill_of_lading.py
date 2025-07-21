@@ -28,6 +28,10 @@ class BillOfLading(BaseModel):
     delivery_agent_name = Column(String(100), nullable=True)
     delivery_signature = Column(Text, nullable=True)  # base64 string
     delivery_date = Column(Date, nullable=True)
+    # New receiver agent fields
+    receiver_agent_name = Column(String(100), nullable=True)
+    receiver_signature = Column(Text, nullable=True)
+    receiver_date = Column(Date, nullable=True)
 
     vehicles = relationship('BOLVehicle', back_populates='bill_of_lading', cascade='all, delete-orphan')
 

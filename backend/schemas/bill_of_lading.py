@@ -39,6 +39,10 @@ class BillOfLadingBase(BaseModel):
     delivery_agent_name: Optional[str]
     delivery_signature: Optional[str]
     delivery_date: Optional[date]
+    # New receiver agent fields
+    receiver_agent_name: Optional[str]
+    receiver_signature: Optional[str]
+    receiver_date: Optional[date]
 
 class BillOfLadingCreate(BillOfLadingBase):
     vehicles: List[BOLVehicleBase]

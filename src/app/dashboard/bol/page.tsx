@@ -106,6 +106,10 @@ export default function BillOfLadingForm() {
     delivery_agent_name: "",
     delivery_signature: "",
     delivery_date: "",
+    // Receiver agent fields
+    receiver_agent_name: "",
+    receiver_signature: "",
+    receiver_date: "",
   });
   const [vehicles, setVehicles] = useState<Vehicle[]>([{ ...initialVehicle }]);
 
@@ -140,6 +144,9 @@ export default function BillOfLadingForm() {
   };
   const handleDeliverySignature = (data: string) => {
     setForm((prev) => ({ ...prev, delivery_signature: data }));
+  };
+  const handleReceiverSignature = (data: string) => {
+    setForm((prev) => ({ ...prev, receiver_signature: data }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -369,6 +376,19 @@ export default function BillOfLadingForm() {
                 label="Delivery Signature (sign below)"
               />
             </div>
+          </div>
+        </div>
+        {/* Receiver Agent Section */}
+        <div className="border border-blue-100 rounded-lg p-4 bg-blue-50 mt-6">
+          <SectionHeader icon={UserIcon} title="Receiver Agent" />
+          <input name="receiver_agent_name" placeholder="Agent Name" value={form.receiver_agent_name} onChange={handleChange} className="input mb-1" />
+          <input type="date" name="receiver_date" value={form.receiver_date} onChange={handleChange} className="input mb-1" />
+          <div className="overflow-x-auto max-w-full">
+            <SignaturePad
+              value={form.receiver_signature}
+              onChange={handleReceiverSignature}
+              label="Receiver Signature (sign below)"
+            />
           </div>
         </div>
 

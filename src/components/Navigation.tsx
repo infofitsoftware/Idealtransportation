@@ -69,7 +69,7 @@ export default function Navigation() {
             <div className="flex-shrink-0">
               <Link href="/" className="flex items-center">
                 <Image
-                  src="/logo.jpeg"
+                  src="/logo_ideal.png"
                   alt="Ideal Transportation Logo"
                   width={200}
                   height={43}
@@ -116,7 +116,7 @@ export default function Navigation() {
             <div className="flex items-center justify-between">
               <Link href="/" className="flex items-center">
                 <Image
-                  src="/logo.jpeg"
+                  src="/logo_ideal.png"
                   alt="Ideal Transportation Logo"
                   width={250}
                   height={54}

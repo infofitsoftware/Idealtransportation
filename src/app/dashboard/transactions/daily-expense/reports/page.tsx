@@ -21,7 +21,7 @@ function formatCurrency(amount: number) {
 // Function to load logo as base64
 async function loadLogoAsBase64(): Promise<string | null> {
   try {
-    const response = await fetch('/logo.jpeg');
+    const response = await fetch('/logo_ideal.png');
     const blob = await response.blob();
     return new Promise((resolve) => {
       const reader = new FileReader();

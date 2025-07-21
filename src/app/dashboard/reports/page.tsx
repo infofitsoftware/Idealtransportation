@@ -39,6 +39,10 @@ interface BillOfLading {
   delivery_agent_name?: string;
   delivery_signature?: string;
   delivery_date?: string;
+  // Receiver agent fields
+  receiver_agent_name?: string;
+  receiver_signature?: string;
+  receiver_date?: string;
   vehicles: Vehicle[];
 }
 
@@ -50,7 +54,7 @@ function formatDate(dateStr?: string) {
 // Function to load logo as base64
 async function loadLogoAsBase64(): Promise<string | null> {
   try {
-    const response = await fetch('/logo.jpeg');
+    const response = await fetch('/logo_ideal.png');
     const blob = await response.blob();
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -272,9 +276,10 @@ async function downloadBOLPdf(bol: BillOfLading) {
   }
 
   // Signatures Section - Increased height to prevent overflow
+  const signatureBoxHeight = 70 + (bol.receiver_agent_name || bol.receiver_signature || bol.receiver_date ? 40 : 0);
   doc.setDrawColor(59, 130, 246);
   doc.setFillColor(248, 250, 252);
-  doc.roundedRect(14, y, 182, 70, 3, 3, 'FD'); // Increased from 50 to 70
+  doc.roundedRect(14, y, 182, signatureBoxHeight, 3, 3, 'FD');
   y += 8;
   doc.setFont('helvetica', 'bold');
   doc.text('Signatures', 20, y);
@@ -291,7 +296,7 @@ async function downloadBOLPdf(bol: BillOfLading) {
       console.error('Error adding pickup signature:', err);
     }
   }
-  y += 25; // Increased spacing between pickup and delivery signatures
+  y += 25; // Spacing between pickup and delivery signatures
   doc.text('Delivery Agent: ' + String(bol.delivery_agent_name ?? ''), 25, y);
   doc.text('Date: ' + String(formatDate(bol.delivery_date) ?? ''), 100, y);
   y += 2;
@@ -303,7 +308,21 @@ async function downloadBOLPdf(bol: BillOfLading) {
       console.error('Error adding delivery signature:', err);
     }
   }
-  y += 30; // Increased final spacing
+  y += 25;
+  if (bol.receiver_agent_name || bol.receiver_signature || bol.receiver_date) {
+    doc.text('Receiver Agent: ' + String(bol.receiver_agent_name ?? ''), 25, y);
+    doc.text('Date: ' + String(formatDate(bol.receiver_date) ?? ''), 100, y);
+    y += 2;
+    if (bol.receiver_signature && typeof bol.receiver_signature === 'string') {
+      try {
+        const base64Data = bol.receiver_signature.split(',')[1] || bol.receiver_signature;
+        doc.addImage(base64Data, 'PNG', 25, y + 2, 40, 16);
+      } catch (err) {
+        console.error('Error adding receiver signature:', err);
+      }
+    }
+    y += 25;
+  }
 
   // Footer
   doc.setDrawColor(200, 200, 200);
