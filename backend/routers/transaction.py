@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List
 from datetime import datetime
 
 from models.transaction import Transaction
 from models.daily_expense import DailyExpense
 from models.user import User
+from models.bill_of_lading import BillOfLading
 from schemas.transaction import TransactionCreate, Transaction as TransactionSchema
 from schemas.daily_expense import DailyExpenseCreate, DailyExpense as DailyExpenseSchema
 from database import get_db
@@ -138,19 +140,41 @@ def create_transaction(
         logger.info(f"Creating new transaction for user: {current_user.email}")
         logger.debug(f"Transaction data: {transaction.dict()}")
         
-        # Convert amount to float explicitly
-        amount = float(transaction.amount)
+        # Validate work order exists
+        bol = db.query(BillOfLading).filter(
+            BillOfLading.work_order_no == transaction.work_order_no
+        ).first()
+        
+        if not bol:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Work order '{transaction.work_order_no}' not found"
+            )
+        
+        # Calculate total collected amount for this work order
+        total_collected = db.query(func.sum(Transaction.collected_amount)).filter(
+            Transaction.work_order_no == transaction.work_order_no
+        ).scalar() or 0.0
+        
+        # Calculate due amount
+        due_amount = bol.total_amount - total_collected - transaction.collected_amount
+        
+        # Validate payment doesn't exceed total amount
+        if due_amount < 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Payment amount ${transaction.collected_amount} exceeds remaining due amount ${bol.total_amount - total_collected}"
+            )
         
         db_transaction = Transaction(
             date=transaction.date,
-            car_year=transaction.car_year,
-            car_make=transaction.car_make,
-            car_model=transaction.car_model,
-            car_vin=transaction.car_vin,
+            work_order_no=transaction.work_order_no,
+            collected_amount=transaction.collected_amount,
+            due_amount=due_amount,
+            bol_id=bol.id,
             pickup_location=transaction.pickup_location,
             dropoff_location=transaction.dropoff_location,
             payment_type=transaction.payment_type,
-            amount=amount,
             comments=transaction.comments,
             user_id=current_user.id
         )
@@ -163,6 +187,8 @@ def create_transaction(
         logger.info(f"Transaction created successfully with ID: {db_transaction.id}")
         return db_transaction
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating transaction: {str(e)}")
         raise HTTPException(
@@ -230,4 +256,111 @@ def delete_transaction(
     
     db.delete(transaction)
     db.commit()
-    return {"message": "Transaction deleted successfully"} 
+    return {"message": "Transaction deleted successfully"}
+
+# New Work Order Endpoints
+@router.get("/work-orders/pending")
+def get_pending_work_orders(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    """
+    Get BOLs with pending payments for dropdown selection
+    """
+    # Subquery to get total collected amount for each work order
+    collected_amounts = db.query(
+        Transaction.work_order_no,
+        func.sum(Transaction.collected_amount).label('total_collected')
+    ).group_by(Transaction.work_order_no).subquery()
+    
+    # Query BOLs with pending payments
+    pending_bols = db.query(
+        BillOfLading.id,
+        BillOfLading.work_order_no,
+        BillOfLading.driver_name,
+        BillOfLading.date,
+        BillOfLading.total_amount,
+        func.coalesce(collected_amounts.c.total_collected, 0).label('total_collected'),
+        (BillOfLading.total_amount - func.coalesce(collected_amounts.c.total_collected, 0)).label('due_amount')
+    ).outerjoin(
+        collected_amounts, 
+        BillOfLading.work_order_no == collected_amounts.c.work_order_no
+    ).filter(
+        BillOfLading.total_amount > func.coalesce(collected_amounts.c.total_collected, 0)
+    ).all()
+    
+    return [
+        {
+            "id": bol.id,
+            "work_order_no": bol.work_order_no,
+            "driver_name": bol.driver_name,
+            "date": bol.date,
+            "total_amount": bol.total_amount,
+            "total_collected": float(bol.total_collected),
+            "due_amount": float(bol.due_amount)
+        }
+        for bol in pending_bols
+    ]
+
+@router.get("/work-order/{work_order_no}/status")
+def get_work_order_payment_status(work_order_no: str, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    """
+    Get payment status for a specific work order
+    """
+    # Get BOL details
+    bol = db.query(BillOfLading).filter(
+        BillOfLading.work_order_no == work_order_no
+    ).first()
+    
+    if not bol:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Work order '{work_order_no}' not found"
+        )
+    
+    # Get total collected amount
+    total_collected = db.query(func.sum(Transaction.collected_amount)).filter(
+        Transaction.work_order_no == work_order_no
+    ).scalar() or 0.0
+    
+    due_amount = bol.total_amount - total_collected if bol.total_amount else 0.0
+    
+    return {
+        "work_order_no": work_order_no,
+        "total_amount": bol.total_amount,
+        "total_collected": float(total_collected),
+        "due_amount": float(due_amount),
+        "is_fully_paid": due_amount <= 0,
+        "payment_percentage": (total_collected / bol.total_amount * 100) if bol.total_amount else 0
+    }
+
+@router.get("/work-order/{work_order_no}/transactions")
+def get_transactions_by_work_order(work_order_no: str, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    """
+    Get all transactions for a specific work order
+    """
+    # Verify work order exists
+    bol = db.query(BillOfLading).filter(
+        BillOfLading.work_order_no == work_order_no
+    ).first()
+    
+    if not bol:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Work order '{work_order_no}' not found"
+        )
+    
+    # Get all transactions for this work order
+    transactions = db.query(Transaction).filter(
+        Transaction.work_order_no == work_order_no,
+        Transaction.user_id == current_user.id
+    ).order_by(Transaction.date).all()
+    
+    return [
+        {
+            "id": t.id,
+            "date": t.date,
+            "collected_amount": t.collected_amount,
+            "due_amount": t.due_amount,
+            "payment_type": t.payment_type,
+            "comments": t.comments
+        }
+        for t in transactions
+    ] 

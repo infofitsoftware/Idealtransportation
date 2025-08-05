@@ -4,14 +4,15 @@ from datetime import date
 
 class TransactionBase(BaseModel):
     date: date
-    car_year: str
-    car_make: str
-    car_model: str
-    car_vin: str
+    # Work order and payment tracking fields
+    work_order_no: str
+    collected_amount: float
+    due_amount: float
+    bol_id: int
+    # Location and payment information (kept from original)
     pickup_location: str
     dropoff_location: str
     payment_type: str
-    amount: float
     comments: Optional[str] = None
 
 class TransactionCreate(TransactionBase):

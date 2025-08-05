@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import {
   UserIcon,
@@ -10,6 +10,7 @@ import {
   CalendarDaysIcon,
   PhoneIcon,
   BuildingOffice2Icon,
+  ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast';
@@ -112,6 +113,48 @@ export default function BillOfLadingForm() {
     receiver_date: "",
   });
   const [vehicles, setVehicles] = useState<Vehicle[]>([{ ...initialVehicle }]);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [workOrderError, setWorkOrderError] = useState<string | null>(null);
+  const [checkingWorkOrder, setCheckingWorkOrder] = useState(false);
+
+  // Calculate total amount as vehicles are added/edited
+  useEffect(() => {
+    let sum = 0;
+    vehicles.forEach(v => {
+      const price = parseFloat(v.price || '0');
+      if (!isNaN(price)) sum += price;
+    });
+    setTotalAmount(sum);
+  }, [vehicles]);
+
+  // Validate work order number uniqueness
+  useEffect(() => {
+    const checkUnique = async () => {
+      if (!form.work_order_no) {
+        setWorkOrderError(null);
+        return;
+      }
+      setCheckingWorkOrder(true);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/bol/?work_order_no=${encodeURIComponent(form.work_order_no)}`);
+        if (res.ok) {
+          const bols = await res.json();
+          if (Array.isArray(bols) && bols.some((b: any) => b.work_order_no === form.work_order_no)) {
+            setWorkOrderError('Work order number already exists. Please use a unique number.');
+          } else {
+            setWorkOrderError(null);
+          }
+        } else {
+          setWorkOrderError(null);
+        }
+      } catch {
+        setWorkOrderError(null);
+      } finally {
+        setCheckingWorkOrder(false);
+      }
+    };
+    checkUnique();
+  }, [form.work_order_no]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -151,11 +194,20 @@ export default function BillOfLadingForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.work_order_no) {
+      setWorkOrderError('Work order number is required.');
+      return;
+    }
+    if (workOrderError) {
+      toast.error(workOrderError);
+      return;
+    }
     try {
       const payload = {
         ...form,
         vehicles,
         condition_codes: form.condition_codes.join(','),
+        total_amount: totalAmount,
       };
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/bol/`, {
         method: 'POST',
@@ -200,6 +252,11 @@ export default function BillOfLadingForm() {
         <DocumentTextIcon className="h-8 w-8 text-blue-500" /> Bill of Lading
       </h1>
       <p className="text-gray-500 mb-6">Fill out the form below to create a new Bill of Lading.</p>
+      {/* Show total amount prominently */}
+      <div className="mb-6 flex items-center gap-4">
+        <span className="text-lg font-semibold text-gray-700">Total Amount:</span>
+        <span className="text-2xl font-bold text-green-700">${totalAmount.toFixed(2)}</span>
+      </div>
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Header */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-blue-50 rounded-lg p-4 border border-blue-100">
@@ -212,8 +269,15 @@ export default function BillOfLadingForm() {
             <input type="date" name="date" value={form.date} onChange={handleChange} className="input" required />
           </div>
           <div>
-            <label className="block font-semibold text-gray-700 mb-1 flex items-center gap-1"><PencilSquareIcon className="h-5 w-5 text-blue-400" />Work Order No.</label>
-            <input name="work_order_no" value={form.work_order_no} onChange={handleChange} className="input" />
+            <label className="block font-semibold text-gray-700 mb-1 flex items-center gap-1"><PencilSquareIcon className="h-5 w-5 text-blue-400" />Work Order No. <span className="text-red-500">*</span></label>
+            <input name="work_order_no" value={form.work_order_no} onChange={handleChange} className="input" required />
+            {checkingWorkOrder && <span className="text-xs text-gray-500">Checking uniqueness...</span>}
+            {workOrderError && (
+              <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                <ExclamationCircleIcon className="h-4 w-4" />
+                {workOrderError}
+              </div>
+            )}
           </div>
         </div>
 

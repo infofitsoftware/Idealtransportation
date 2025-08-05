@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text, DateTime
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text, DateTime, Float
 from sqlalchemy.orm import relationship
 from .base import BaseModel
 
@@ -32,6 +32,8 @@ class BillOfLading(BaseModel):
     receiver_agent_name = Column(String(100), nullable=True)
     receiver_signature = Column(Text, nullable=True)
     receiver_date = Column(Date, nullable=True)
+    # Total amount field for payment tracking
+    total_amount = Column(Float, nullable=True)
 
     vehicles = relationship('BOLVehicle', back_populates='bill_of_lading', cascade='all, delete-orphan')
 

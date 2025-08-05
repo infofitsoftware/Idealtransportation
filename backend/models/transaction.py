@@ -7,16 +7,18 @@ class Transaction(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     date = Column(Date, nullable=False)
-    car_year = Column(String)
-    car_make = Column(String)
-    car_model = Column(String)
-    car_vin = Column(String)
+    # Work order and payment tracking fields
+    work_order_no = Column(String(50), nullable=False)
+    collected_amount = Column(Float, nullable=False)
+    due_amount = Column(Float, nullable=False)
+    bol_id = Column(Integer, ForeignKey("bill_of_lading.id"), nullable=False)
+    # Location and payment information (kept from original)
     pickup_location = Column(String, nullable=False)
     dropoff_location = Column(String, nullable=False)
     payment_type = Column(String, nullable=False)  # Cash, Check, Zelle
-    amount = Column(Float, nullable=False)
     comments = Column(String)
     user_id = Column(Integer, ForeignKey("users.id"))
     
     # Relationships
-    user = relationship("User", back_populates="transactions") 
+    user = relationship("User", back_populates="transactions")
+    bill_of_lading = relationship("BillOfLading") 

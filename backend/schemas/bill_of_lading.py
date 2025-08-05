@@ -43,6 +43,8 @@ class BillOfLadingBase(BaseModel):
     receiver_agent_name: Optional[str]
     receiver_signature: Optional[str]
     receiver_date: Optional[date]
+    # Total amount field for payment tracking
+    total_amount: Optional[float]
 
 class BillOfLadingCreate(BillOfLadingBase):
     vehicles: List[BOLVehicleBase]
