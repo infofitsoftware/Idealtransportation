@@ -52,6 +52,8 @@ async function downloadDailyExpensePdf(expense: DailyExpenseData) {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text('16 Palmero Way, Manvel, Texas 77578', 85, y + 8, { align: 'left' });
+      y += 8;
+      doc.text('USDOT NO: 4193929', 85, y + 8, { align: 'left' });
       y += 25; // Same spacing as BOL and transaction
     } else {
       // Fallback without logo
@@ -62,6 +64,8 @@ async function downloadDailyExpensePdf(expense: DailyExpenseData) {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text('16 Palmero Way, Manvel, Texas 77578', 105, y, { align: 'center' });
+      y += 6;
+      doc.text('USDOT NO: 4193929', 105, y, { align: 'center' });
       y += 8;
     }
   } catch (err) {
@@ -74,6 +78,8 @@ async function downloadDailyExpensePdf(expense: DailyExpenseData) {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text('16 Palmero Way, Manvel, Texas 77578', 105, y, { align: 'center' });
+    y += 6;
+    doc.text('USDOT NO: 4193929', 105, y, { align: 'center' });
     y += 8;
   }
 

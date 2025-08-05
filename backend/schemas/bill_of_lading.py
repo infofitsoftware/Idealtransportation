@@ -52,5 +52,9 @@ class BillOfLadingCreate(BillOfLadingBase):
 class BillOfLading(BillOfLadingBase):
     id: int
     vehicles: List[BOLVehicle]
+    # Payment tracking fields (calculated from transactions)
+    total_collected: Optional[float] = None
+    due_amount: Optional[float] = None
+    
     class Config:
         from_attributes = True 

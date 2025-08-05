@@ -84,7 +84,29 @@ def create_bill_of_lading(bol: BillOfLadingCreate, db: Session = Depends(get_db)
 
 @router.get("/", response_model=List[BillOfLadingSchema])
 def list_bill_of_lading(db: Session = Depends(get_db)):
+    # Get all BOLs with payment information
     bol_list = db.query(BillOfLading).all()
+    
+    # For each BOL, calculate payment information
+    for bol in bol_list:
+        if bol.work_order_no:
+            # Get total collected amount for this work order
+            total_collected = db.query(func.coalesce(func.sum(Transaction.collected_amount), 0)).filter(
+                Transaction.work_order_no == bol.work_order_no
+            ).scalar()
+            
+            # Calculate due amount
+            total_amount = bol.total_amount or 0.0
+            due_amount = max(0.0, total_amount - total_collected)
+            
+            # Add payment info to the BOL object (these will be included in the response)
+            bol.total_collected = total_collected
+            bol.due_amount = due_amount
+        else:
+            # If no work order number, set payment info to 0
+            bol.total_collected = 0.0
+            bol.due_amount = bol.total_amount or 0.0
+    
     return bol_list
 
 @router.get("/pending-payments")

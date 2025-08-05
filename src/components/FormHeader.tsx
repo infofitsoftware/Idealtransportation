@@ -15,6 +15,7 @@ export default function FormHeader() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Ideal Transportation Solutions LLC</h1>
             <p className="text-sm text-gray-600">16 Palmero Way, Manvel, Texas 77578</p>
+            <p className="text-sm text-gray-600">USDOT NO:-4193929</p>
           </div>
         </div>
         <div className="text-right">

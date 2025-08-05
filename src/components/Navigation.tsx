@@ -46,6 +46,7 @@ export default function Navigation() {
               <div className="hidden lg:flex items-center space-x-2">
                 <MapPinIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>16 Palmero Way, Manvel, Texas 77578</span>
+                <span>USDOT NO:-4193929</span>
               </div>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">

@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { DocumentTextIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { bolService } from "@/services/transaction";
+import * as XLSX from 'xlsx';
 
 interface Vehicle {
   year: string;
@@ -19,6 +21,9 @@ interface BillOfLading {
   driver_name: string;
   date: string;
   work_order_no?: string;
+  total_amount?: number;
+  total_collected?: number;
+  due_amount?: number;
   pickup_name?: string;
   pickup_address?: string;
   pickup_city?: string;
@@ -49,6 +54,14 @@ interface BillOfLading {
 function formatDate(dateStr?: string) {
   if (!dateStr) return "";
   return new Date(dateStr).toLocaleDateString();
+}
+
+function formatCurrency(amount?: number) {
+  if (amount === undefined || amount === null) return "$0.00";
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(amount);
 }
 
 // Function to load logo as base64
@@ -85,6 +98,8 @@ async function downloadBOLPdf(bol: BillOfLading) {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text('16 Palmero Way, Manvel, Texas 77578', 85, y + 8, { align: 'left' });
+      y += 8;
+      doc.text('USDOT NO: 4193929', 85, y + 8, { align: 'left' });
       y += 25; // Increased space after header to avoid divider touching logo
     } else {
       // Fallback without logo
@@ -95,6 +110,8 @@ async function downloadBOLPdf(bol: BillOfLading) {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text('16 Palmero Way, Manvel, Texas 77578', 105, y, { align: 'center' });
+      y += 6;
+      doc.text('USDOT NO: 4193929', 105, y, { align: 'center' });
       y += 8;
     }
   } catch (err) {
@@ -107,6 +124,8 @@ async function downloadBOLPdf(bol: BillOfLading) {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text('16 Palmero Way, Manvel, Texas 77578', 105, y, { align: 'center' });
+    y += 6;
+    doc.text('USDOT NO: 4193929', 105, y, { align: 'center' });
     y += 8;
   }
 
@@ -337,16 +356,18 @@ async function downloadBOLPdf(bol: BillOfLading) {
 
 export default function ReportsPage() {
   const [data, setData] = useState<BillOfLading[]>([]);
+  const [filteredData, setFilteredData] = useState<BillOfLading[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/bol/`);
-        if (!res.ok) throw new Error("Failed to fetch reports");
-        const json = await res.json();
-        setData(json);
+        const bols = await bolService.getBOLs();
+        setData(bols);
+        setFilteredData(bols);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -356,11 +377,268 @@ export default function ReportsPage() {
     fetchData();
   }, []);
 
+  // Filter data based on date range
+  useEffect(() => {
+    let filtered = data;
+
+    if (fromDate) {
+      filtered = filtered.filter(bol => 
+        new Date(bol.date) >= new Date(fromDate)
+      );
+    }
+
+    if (toDate) {
+      filtered = filtered.filter(bol => 
+        new Date(bol.date) <= new Date(toDate)
+      );
+    }
+
+    setFilteredData(filtered);
+  }, [data, fromDate, toDate]);
+
+  const clearFilters = () => {
+    setFromDate('');
+    setToDate('');
+  };
+
+  // Calculate payment statistics for each BOL
+  const getPaymentInfo = (bol: BillOfLading) => {
+    const totalAmount = bol.total_amount || 0;
+    const collectedAmount = bol.total_collected || 0;
+    const dueAmount = bol.due_amount || 0;
+    
+    return {
+      totalAmount: totalAmount,
+      collectedAmount: collectedAmount,
+      dueAmount: dueAmount
+    };
+  };
+
+  // Calculate overall payment statistics
+  const paymentStats = React.useMemo(() => {
+    const totalBOLs = filteredData.length;
+    const totalAmount = filteredData.reduce((sum, bol) => sum + (bol.total_amount || 0), 0);
+    const totalCollected = filteredData.reduce((sum, bol) => sum + (bol.total_collected || 0), 0);
+    const totalDue = filteredData.reduce((sum, bol) => sum + (bol.due_amount || 0), 0);
+    const completionPercentage = totalAmount > 0 ? ((totalCollected / totalAmount) * 100).toFixed(1) : '0.0';
+    const fullyPaidCount = filteredData.filter(bol => (bol.due_amount || 0) <= 0).length;
+    const partiallyPaidCount = filteredData.filter(bol => (bol.due_amount || 0) > 0 && (bol.total_collected || 0) > 0).length;
+    const pendingCount = filteredData.filter(bol => (bol.due_amount || 0) > 0 && (bol.total_collected || 0) <= 0).length;
+
+    return {
+      totalBOLs,
+      totalAmount,
+      totalCollected,
+      totalDue,
+      completionPercentage,
+      fullyPaidCount,
+      partiallyPaidCount,
+      pendingCount
+    };
+  }, [filteredData]);
+
+  const exportToExcel = () => {
+    // Prepare data for Excel export
+    const excelData = filteredData.map(bol => {
+      const paymentInfo = getPaymentInfo(bol);
+      const isFullyPaid = paymentInfo.dueAmount <= 0;
+      const hasPartialPayment = paymentInfo.collectedAmount > 0;
+      
+      return {
+        'Driver': bol.driver_name,
+        'Date': formatDate(bol.date),
+        'Work Order No': bol.work_order_no || 'N/A',
+        'Pickup Name': bol.pickup_name || '',
+        'Pickup Address': bol.pickup_address || '',
+        'Pickup City': bol.pickup_city || '',
+        'Pickup State': bol.pickup_state || '',
+        'Pickup Zip': bol.pickup_zip || '',
+        'Delivery Name': bol.delivery_name || '',
+        'Delivery Address': bol.delivery_address || '',
+        'Delivery City': bol.delivery_city || '',
+        'Delivery State': bol.delivery_state || '',
+        'Delivery Zip': bol.delivery_zip || '',
+        'Total Amount': paymentInfo.totalAmount,
+        'Amount Paid': paymentInfo.collectedAmount,
+        'Due Amount': paymentInfo.dueAmount,
+        'Status': isFullyPaid ? 'Paid' : hasPartialPayment ? 'Partial' : 'Pending',
+        'Vehicle Count': bol.vehicles.length,
+        'Vehicles': bol.vehicles.map(v => `${v.year} ${v.make} ${v.model} (${v.vin})`).join('; '),
+        'Condition Codes': bol.condition_codes || '',
+        'Remarks': bol.remarks || ''
+      };
+    });
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    
+    // Add BOLs worksheet
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    
+    // Set column widths for BOLs
+    const colWidths = [
+      { wch: 15 }, // Driver
+      { wch: 12 }, // Date
+      { wch: 15 }, // Work Order No
+      { wch: 20 }, // Pickup Name
+      { wch: 25 }, // Pickup Address
+      { wch: 15 }, // Pickup City
+      { wch: 10 }, // Pickup State
+      { wch: 10 }, // Pickup Zip
+      { wch: 20 }, // Delivery Name
+      { wch: 25 }, // Delivery Address
+      { wch: 15 }, // Delivery City
+      { wch: 10 }, // Delivery State
+      { wch: 10 }, // Delivery Zip
+      { wch: 15 }, // Total Amount
+      { wch: 15 }, // Amount Paid
+      { wch: 15 }, // Due Amount
+      { wch: 10 }, // Status
+      { wch: 12 }, // Vehicle Count
+      { wch: 40 }, // Vehicles
+      { wch: 20 }, // Condition Codes
+      { wch: 30 }  // Remarks
+    ];
+    ws['!cols'] = colWidths;
+    XLSX.utils.book_append_sheet(wb, ws, 'Bill of Lading');
+
+    // Add summary worksheet
+    const summaryData = [
+      { 'Metric': 'Total BOLs', 'Value': paymentStats.totalBOLs },
+      { 'Metric': 'Total Amount', 'Value': paymentStats.totalAmount },
+      { 'Metric': 'Total Amount Collected', 'Value': paymentStats.totalCollected },
+      { 'Metric': 'Total Amount Due', 'Value': paymentStats.totalDue },
+      { 'Metric': 'Payment Completion Rate', 'Value': `${paymentStats.completionPercentage}%` },
+      { 'Metric': 'Fully Paid BOLs', 'Value': paymentStats.fullyPaidCount },
+      { 'Metric': 'Partially Paid BOLs', 'Value': paymentStats.partiallyPaidCount },
+      { 'Metric': 'Pending Payment BOLs', 'Value': paymentStats.pendingCount }
+    ];
+    
+    const summaryWs = XLSX.utils.json_to_sheet(summaryData);
+    summaryWs['!cols'] = [{ wch: 30 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, summaryWs, 'Payment Summary');
+
+    // Generate filename with date range
+    let filename = 'BOL_Report';
+    if (fromDate && toDate) {
+      filename += `_${fromDate}_to_${toDate}`;
+    } else if (fromDate) {
+      filename += `_from_${fromDate}`;
+    } else if (toDate) {
+      filename += `_until_${toDate}`;
+    }
+    filename += '.xlsx';
+
+    // Save the file
+    XLSX.writeFile(wb, filename);
+  };
+
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
-      <h1 className="text-3xl font-extrabold mb-6 text-blue-700 tracking-tight flex items-center gap-2">
-        <DocumentTextIcon className="h-8 w-8 text-blue-500" /> Reports
-      </h1>
+    <div className="max-w-7xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight flex items-center gap-2">
+          <DocumentTextIcon className="h-8 w-8 text-blue-500" /> Bill of Lading Reports
+        </h1>
+        <button
+          onClick={exportToExcel}
+          disabled={filteredData.length === 0}
+          className={`px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 ${
+            filteredData.length === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
+          }`}
+        >
+          <ArrowDownTrayIcon className="h-5 w-5" />
+          Export to Excel
+        </button>
+      </div>
+
+      {/* Date Filters */}
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Filter by Date Range</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div>
+            <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
+              From Date
+            </label>
+            <input
+              type="date"
+              id="fromDate"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+          <div>
+            <label htmlFor="toDate" className="block text-sm font-medium text-gray-700 mb-1">
+              To Date
+            </label>
+            <input
+              type="date"
+              id="toDate"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+          <div>
+            <button
+              onClick={clearFilters}
+              className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+        {(fromDate || toDate) && (
+          <div className="mt-3 text-sm text-gray-600">
+            Showing {filteredData.length} of {data.length} BOLs
+            {fromDate && toDate && ` from ${fromDate} to ${toDate}`}
+            {fromDate && !toDate && ` from ${fromDate}`}
+            {!fromDate && toDate && ` until ${toDate}`}
+          </div>
+        )}
+      </div>
+
+      {/* Payment Statistics */}
+      {filteredData.length > 0 && (
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Payment Summary</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white p-3 rounded-lg border border-blue-200">
+              <div className="text-sm text-gray-600">Total BOLs</div>
+              <div className="text-2xl font-bold text-blue-600">{paymentStats.totalBOLs}</div>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-green-200">
+              <div className="text-sm text-gray-600">Total Collected</div>
+              <div className="text-2xl font-bold text-green-600">{formatCurrency(paymentStats.totalCollected)}</div>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-red-200">
+              <div className="text-sm text-gray-600">Total Due</div>
+              <div className="text-2xl font-bold text-red-600">{formatCurrency(paymentStats.totalDue)}</div>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-purple-200">
+              <div className="text-sm text-gray-600">Completion Rate</div>
+              <div className="text-2xl font-bold text-purple-600">{paymentStats.completionPercentage}%</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div className="bg-green-100 p-3 rounded-lg border border-green-300">
+              <div className="text-sm text-green-700">Fully Paid</div>
+              <div className="text-lg font-bold text-green-800">{paymentStats.fullyPaidCount} BOLs</div>
+            </div>
+            <div className="bg-yellow-100 p-3 rounded-lg border border-yellow-300">
+              <div className="text-sm text-yellow-700">Partially Paid</div>
+              <div className="text-lg font-bold text-yellow-800">{paymentStats.partiallyPaidCount} BOLs</div>
+            </div>
+            <div className="bg-red-100 p-3 rounded-lg border border-red-300">
+              <div className="text-sm text-red-700">Pending Payment</div>
+              <div className="text-lg font-bold text-red-800">{paymentStats.pendingCount} BOLs</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="text-gray-500">Loading...</div>
       ) : error ? (
@@ -372,44 +650,80 @@ export default function ReportsPage() {
               <tr className="bg-blue-100 text-blue-800">
                 <th className="border px-2 py-1">Driver</th>
                 <th className="border px-2 py-1">Date</th>
+                <th className="border px-2 py-1">Work Order</th>
                 <th className="border px-2 py-1">Pickup</th>
                 <th className="border px-2 py-1">Delivery</th>
+                <th className="border px-2 py-1">Total Amount</th>
+                <th className="border px-2 py-1">Amount Paid</th>
+                <th className="border px-2 py-1">Due Amount</th>
+                <th className="border px-2 py-1">Status</th>
                 <th className="border px-2 py-1">Vehicles</th>
                 <th className="border px-2 py-1">Download</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((bol) => (
-                <tr key={bol.id} className="hover:bg-blue-50">
-                  <td className="border px-2 py-1 font-medium">{bol.driver_name}</td>
-                  <td className="border px-2 py-1">{bol.date}</td>
-                  <td className="border px-2 py-1">
-                    <div className="font-semibold">{bol.pickup_name}</div>
-                    <div className="text-xs text-gray-500">{bol.pickup_address}</div>
-                    <div className="text-xs text-gray-400">{bol.pickup_city}, {bol.pickup_state} {bol.pickup_zip}</div>
-                  </td>
-                  <td className="border px-2 py-1">
-                    <div className="font-semibold">{bol.delivery_name}</div>
-                    <div className="text-xs text-gray-500">{bol.delivery_address}</div>
-                    <div className="text-xs text-gray-400">{bol.delivery_city}, {bol.delivery_state} {bol.delivery_zip}</div>
-                  </td>
-                  <td className="border px-2 py-1">
-                    <ul className="list-disc pl-4">
-                      {bol.vehicles.map((v, i) => (
-                        <li key={i}>{v.year} {v.make} {v.model} ({v.vin})</li>
-                      ))}
-                    </ul>
-                  </td>
-                  <td className="border px-2 py-1 text-center">
-                    <button
-                      className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto"
-                      onClick={async () => await downloadBOLPdf(bol)}
-                    >
-                      <ArrowDownTrayIcon className="h-5 w-5" /> Download
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {filteredData.map((bol) => {
+                const paymentInfo = getPaymentInfo(bol);
+                const isFullyPaid = paymentInfo.dueAmount <= 0;
+                const hasPartialPayment = paymentInfo.collectedAmount > 0;
+                
+                return (
+                  <tr key={bol.id} className={`hover:bg-blue-50 ${!isFullyPaid ? 'bg-red-50' : ''}`}>
+                    <td className="border px-2 py-1 font-medium">{bol.driver_name}</td>
+                    <td className="border px-2 py-1">{formatDate(bol.date)}</td>
+                    <td className="border px-2 py-1 font-medium">{bol.work_order_no || 'N/A'}</td>
+                    <td className="border px-2 py-1">
+                      <div className="font-semibold">{bol.pickup_name}</div>
+                      <div className="text-xs text-gray-500">{bol.pickup_address}</div>
+                      <div className="text-xs text-gray-400">{bol.pickup_city}, {bol.pickup_state} {bol.pickup_zip}</div>
+                    </td>
+                    <td className="border px-2 py-1">
+                      <div className="font-semibold">{bol.delivery_name}</div>
+                      <div className="text-xs text-gray-500">{bol.delivery_address}</div>
+                      <div className="text-xs text-gray-400">{bol.delivery_city}, {bol.delivery_state} {bol.delivery_zip}</div>
+                    </td>
+                    <td className="border px-2 py-1 font-medium text-blue-600">
+                      {formatCurrency(paymentInfo.totalAmount)}
+                    </td>
+                    <td className="border px-2 py-1 font-medium text-green-600">
+                      {formatCurrency(paymentInfo.collectedAmount)}
+                    </td>
+                    <td className="border px-2 py-1 font-medium text-red-600">
+                      {formatCurrency(paymentInfo.dueAmount)}
+                    </td>
+                    <td className="border px-2 py-1">
+                      {isFullyPaid ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Paid
+                        </span>
+                      ) : hasPartialPayment ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          Partial
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          Pending
+                        </span>
+                      )}
+                    </td>
+                    <td className="border px-2 py-1">
+                      <ul className="list-disc pl-4">
+                        {bol.vehicles.map((v, i) => (
+                          <li key={i}>{v.year} {v.make} {v.model} ({v.vin})</li>
+                        ))}
+                      </ul>
+                    </td>
+                    <td className="border px-2 py-1 text-center">
+                      <button
+                        className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto"
+                        onClick={async () => await downloadBOLPdf(bol)}
+                      >
+                        <ArrowDownTrayIcon className="h-5 w-5" /> Download
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

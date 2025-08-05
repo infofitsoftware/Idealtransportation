@@ -302,3 +302,15 @@ WHERE daily_expenses.user_id = %(user_id_1)s
 2025-07-05 13:29:31 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(1990, 10, 2), 'diesel_amount': 500.0, 'diesel_location': 'dada', 'def_amount': 500.0, 'def_location': 'dallas', 'other_expense_description': 'dallas', 'other_expense_amount': 500.0, 'other_expense_location': 'dallas', 'total': 1500.0, 'id': 7, 'user_id': 1}
 2025-07-05 13:29:31 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 6, 18), 'diesel_amount': 500.0, 'diesel_location': 'Dallas', 'def_amount': 128.0, 'def_location': 'Dalla', 'other_expense_description': 'Others', 'other_expense_amount': 500.0, 'other_expense_location': 'Dalla', 'total': 1128.0, 'id': 8, 'user_id': 1}
 2025-07-05 13:29:31 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 6, 25), 'diesel_amount': 200.0, 'diesel_location': 'Dallas', 'def_amount': 25.0, 'def_location': 'Dallas', 'other_expense_description': 'Others ', 'other_expense_amount': 200.0, 'other_expense_location': 'Dallas', 'total': 425.0, 'id': 9, 'user_id': 1}
+2025-08-05 14:34:36 - routers.transaction - INFO - Creating new transaction for user: admin@idealtransport.com
+2025-08-05 14:34:36 - routers.transaction - DEBUG - Transaction data: {'date': datetime.date(2025, 8, 5), 'work_order_no': '1', 'collected_amount': 400.0, 'due_amount': 60.0, 'bol_id': 22, 'pickup_location': 'dallas', 'dropoff_location': 'california', 'payment_type': 'CASH', 'comments': 'good service'}
+2025-08-05 14:34:36 - routers.transaction - INFO - Adding transaction to database
+2025-08-05 14:34:37 - routers.transaction - INFO - Transaction created successfully with ID: 14
+2025-08-05 14:35:26 - routers.transaction - INFO - Creating new transaction for user: admin@idealtransport.com
+2025-08-05 14:35:26 - routers.transaction - DEBUG - Transaction data: {'date': datetime.date(2025, 8, 5), 'work_order_no': '1', 'collected_amount': 60.0, 'due_amount': 0.0, 'bol_id': 22, 'pickup_location': 'dallas', 'dropoff_location': 'california', 'payment_type': 'CASH', 'comments': 'All payment collected'}
+2025-08-05 14:35:27 - routers.transaction - INFO - Adding transaction to database
+2025-08-05 14:35:28 - routers.transaction - INFO - Transaction created successfully with ID: 15
+2025-08-05 17:12:56 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-05 17:12:56 - routers.transaction - INFO - Found 2 transactions
+2025-08-05 17:12:57 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-05 17:12:57 - routers.transaction - INFO - Found 2 transactions

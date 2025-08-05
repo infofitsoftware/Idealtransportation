@@ -391,6 +391,7 @@ export default function Home() {
                 Your trusted partner in transportation solutions, delivering excellence 
                 through innovation and reliability.
               </p>
+              <span>USDOT NO:-4193929</span>
             </div>
             <div className="text-center sm:text-left">
               <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Quick Links</h3>

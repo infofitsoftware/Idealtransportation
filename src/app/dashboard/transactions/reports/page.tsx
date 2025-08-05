@@ -4,20 +4,24 @@ import React, { useEffect, useState } from 'react'
 import { DocumentTextIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import { transactionService } from '@/services/transaction'
+import { transactionService, Transaction as ServiceTransaction } from '@/services/transaction'
+import * as XLSX from 'xlsx'
 
+// Updated interface to match the service interface
 interface Transaction {
   id: number
   date: string
-  car_year: string
-  car_make: string
-  car_model: string
-  car_vin: string
+  work_order_no: string
+  collected_amount: number
+  due_amount: number
+  bol_id: number
   pickup_location: string
   dropoff_location: string
   payment_type: string
-  amount: number
   comments?: string
+  user_id: number
+  created_at: string
+  updated_at: string
 }
 
 function formatDate(dateStr: string) {
@@ -65,6 +69,8 @@ async function downloadTransactionPdf(transaction: Transaction) {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text('16 Palmero Way, Manvel, Texas 77578', 85, y + 8, { align: 'left' });
+      y += 8;
+      doc.text('USDOT NO: 4193929', 85, y + 8, { align: 'left' });
       y += 25; // Same spacing as BOL
     } else {
       // Fallback without logo
@@ -75,6 +81,8 @@ async function downloadTransactionPdf(transaction: Transaction) {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text('16 Palmero Way, Manvel, Texas 77578', 105, y, { align: 'center' });
+      y += 6;
+      doc.text('USDOT NO: 4193929', 105, y, { align: 'center' });
       y += 8;
     }
   } catch (err) {
@@ -87,6 +95,8 @@ async function downloadTransactionPdf(transaction: Transaction) {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text('16 Palmero Way, Manvel, Texas 77578', 105, y, { align: 'center' });
+    y += 6;
+    doc.text('USDOT NO: 4193929', 105, y, { align: 'center' });
     y += 8;
   }
 
@@ -98,65 +108,74 @@ async function downloadTransactionPdf(transaction: Transaction) {
   // Title
   doc.setFontSize(18)
   doc.setFont('helvetica', 'bold')
-  doc.text('Transaction Report', 105, y, { align: 'center' })
+  doc.text('Payment Transaction Report', 105, y, { align: 'center' })
   y += 15
 
   // Report Details Box
   doc.setDrawColor(59, 130, 246) // Blue border
   doc.setFillColor(239, 246, 255) // Light blue background
-  doc.roundedRect(14, y, 182, 25, 3, 3, 'FD')
+  doc.roundedRect(14, y, 182, 30, 3, 3, 'FD')
   y += 8
 
   // Transaction Details
   doc.setFontSize(12)
   doc.setFont('helvetica', 'bold')
-  doc.text(`Date: ${formatDate(transaction.date)}`, 20, y)
+  doc.text(`Transaction Date: ${formatDate(transaction.date)}`, 20, y)
   doc.text(`Transaction ID: ${transaction.id}`, 120, y)
   y += 8
   doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, y)
-  y += 15
+  y += 20
 
-  // Vehicle Information Section
+  // Work Order Information Section
   doc.setDrawColor(59, 130, 246)
   doc.setFillColor(239, 246, 255)
-  doc.roundedRect(14, y, 182, 40, 3, 3, 'FD')
+  doc.roundedRect(14, y, 182, 45, 3, 3, 'FD')
   y += 8
   doc.setFont('helvetica', 'bold')
-  doc.text('Vehicle Information:', 20, y)
+  doc.text('Work Order Information:', 20, y)
   y += 8
   doc.setFont('helvetica', 'normal')
-  doc.text(`Vehicle: ${transaction.car_year} ${transaction.car_make} ${transaction.car_model}`, 25, y)
+  doc.text(`Work Order Number: ${transaction.work_order_no}`, 25, y)
   y += 6
-  doc.text(`VIN: ${transaction.car_vin}`, 25, y)
+  doc.text(`Bill of Lading ID: ${transaction.bol_id}`, 25, y)
+  y += 6
+  doc.setFont('helvetica', 'bold')
+  doc.text(`Payment Status: ${transaction.due_amount <= 0 ? 'FULLY PAID' : transaction.collected_amount > 0 ? 'PARTIALLY PAID' : 'PENDING PAYMENT'}`, 25, y)
   y += 15
 
-  // Location Information Section
+  // Payment Summary Section
   doc.setDrawColor(59, 130, 246)
   doc.setFillColor(248, 250, 252) // Light gray background
-  doc.roundedRect(14, y, 182, 35, 3, 3, 'FD')
+  doc.roundedRect(14, y, 182, 50, 3, 3, 'FD')
   y += 8
   doc.setFont('helvetica', 'bold')
-  doc.text('Location Information:', 20, y)
-  y += 8
-  doc.setFont('helvetica', 'normal')
-  doc.text(`Pickup Location: ${transaction.pickup_location}`, 25, y)
-  y += 6
-  doc.text(`Dropoff Location: ${transaction.dropoff_location}`, 25, y)
-  y += 15
-
-  // Payment Information Section
-  doc.setDrawColor(59, 130, 246)
-  doc.setFillColor(239, 246, 255)
-  doc.roundedRect(14, y, 182, 30, 3, 3, 'FD')
-  y += 8
-  doc.setFont('helvetica', 'bold')
-  doc.text('Payment Information:', 20, y)
+  doc.text('Payment Summary:', 20, y)
   y += 8
   doc.setFont('helvetica', 'normal')
   doc.text(`Payment Type: ${transaction.payment_type}`, 25, y)
   y += 6
   doc.setFont('helvetica', 'bold')
-  doc.text(`Amount: ${formatCurrency(transaction.amount)}`, 25, y)
+  doc.text(`Amount Collected in This Transaction: ${formatCurrency(transaction.collected_amount)}`, 25, y)
+  y += 6
+  doc.text(`Remaining Due After This Payment: ${formatCurrency(transaction.due_amount)}`, 25, y)
+  y += 6
+  // Calculate total amount (collected + due)
+  const totalAmount = transaction.collected_amount + transaction.due_amount
+  doc.text(`Total Work Order Amount: ${formatCurrency(totalAmount)}`, 25, y)
+  y += 15
+
+  // Location Information Section
+  doc.setDrawColor(59, 130, 246)
+  doc.setFillColor(239, 246, 255)
+  doc.roundedRect(14, y, 182, 35, 3, 3, 'FD')
+  y += 8
+  doc.setFont('helvetica', 'bold')
+  doc.text('Transportation Details:', 20, y)
+  y += 8
+  doc.setFont('helvetica', 'normal')
+  doc.text(`Pickup Location: ${transaction.pickup_location}`, 25, y)
+  y += 6
+  doc.text(`Dropoff Location: ${transaction.dropoff_location}`, 25, y)
   y += 15
 
   // Comments Section (if exists)
@@ -173,27 +192,50 @@ async function downloadTransactionPdf(transaction: Transaction) {
     y += 15
   }
 
+  // Payment Status Summary Box
+  doc.setDrawColor(transaction.due_amount <= 0 ? 34 : transaction.collected_amount > 0 ? 245 : 239, 
+                   transaction.due_amount <= 0 ? 197 : transaction.collected_amount > 0 ? 158 : 68, 
+                   transaction.due_amount <= 0 ? 94 : transaction.collected_amount > 0 ? 11 : 54) // Green/Yellow/Red
+  doc.setFillColor(transaction.due_amount <= 0 ? 240 : transaction.collected_amount > 0 ? 254 : 254, 
+                   transaction.due_amount <= 0 ? 253 : transaction.collected_amount > 0 ? 243 : 242, 
+                   transaction.due_amount <= 0 ? 244 : transaction.collected_amount > 0 ? 199 : 235) // Light green/yellow/red
+  doc.roundedRect(14, y, 182, 20, 3, 3, 'FD')
+  y += 8
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(12)
+  const statusText = transaction.due_amount <= 0 ? 
+    '✓ PAYMENT COMPLETE - All amounts have been collected' : 
+    transaction.collected_amount > 0 ? 
+    '⚠ PARTIAL PAYMENT - Additional payments may be required' : 
+    '⚠ PAYMENT PENDING - No payments have been collected yet'
+  doc.text(statusText, 20, y)
+  y += 20
+
   // Footer
   doc.setDrawColor(200, 200, 200)
   doc.line(14, y, 196, y)
   y += 8
   doc.setFontSize(8)
   doc.setFont('helvetica', 'normal')
-  doc.text('This report was generated by Ideal Transportation Solutions LLC', 105, y, { align: 'center' })
+  doc.text('This payment transaction report was generated by Ideal Transportation Solutions LLC', 105, y, { align: 'center' })
 
-  doc.save(`Transaction_${transaction.id}.pdf`)
+  doc.save(`Payment_Transaction_${transaction.work_order_no}_${transaction.id}.pdf`)
 }
 
 export default function TransactionReportsPage() {
   const [data, setData] = useState<Transaction[]>([])
+  const [filteredData, setFilteredData] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const transactions = await transactionService.getTransactions()
         setData(transactions)
+        setFilteredData(transactions)
       } catch (err: any) {
         setError(err.message)
       } finally {
@@ -203,11 +245,227 @@ export default function TransactionReportsPage() {
     fetchData()
   }, [])
 
+  // Filter data based on date range
+  useEffect(() => {
+    let filtered = data
+
+    if (fromDate) {
+      filtered = filtered.filter(transaction => 
+        new Date(transaction.date) >= new Date(fromDate)
+      )
+    }
+
+    if (toDate) {
+      filtered = filtered.filter(transaction => 
+        new Date(transaction.date) <= new Date(toDate)
+      )
+    }
+
+    setFilteredData(filtered)
+  }, [data, fromDate, toDate])
+
+  const clearFilters = () => {
+    setFromDate('')
+    setToDate('')
+  }
+
+  // Calculate payment statistics
+  const paymentStats = React.useMemo(() => {
+    const totalTransactions = filteredData.length
+    const totalCollected = filteredData.reduce((sum, t) => sum + t.collected_amount, 0)
+    const totalDue = filteredData.reduce((sum, t) => sum + t.due_amount, 0)
+    const totalAmount = totalCollected + totalDue
+    const completionPercentage = totalAmount > 0 ? ((totalCollected / totalAmount) * 100).toFixed(1) : '0.0'
+    const fullyPaidCount = filteredData.filter(t => t.due_amount <= 0).length
+    const partiallyPaidCount = filteredData.filter(t => t.due_amount > 0 && t.collected_amount > 0).length
+    const pendingCount = filteredData.filter(t => t.due_amount > 0 && t.collected_amount <= 0).length
+
+    return {
+      totalTransactions,
+      totalCollected,
+      totalDue,
+      totalAmount,
+      completionPercentage,
+      fullyPaidCount,
+      partiallyPaidCount,
+      pendingCount
+    }
+  }, [filteredData])
+
+  const exportToExcel = () => {
+    // Prepare data for Excel export
+    const excelData = filteredData.map(transaction => ({
+      'Date': formatDate(transaction.date),
+      'Work Order No': transaction.work_order_no,
+      'BOL ID': transaction.bol_id,
+      'Pickup Location': transaction.pickup_location,
+      'Dropoff Location': transaction.dropoff_location,
+      'Payment Type': transaction.payment_type,
+      'Amount Collected': transaction.collected_amount,
+      'Due Amount': transaction.due_amount,
+      'Status': transaction.due_amount <= 0 ? 'Paid' : transaction.collected_amount > 0 ? 'Partial' : 'Pending',
+      'Comments': transaction.comments || ''
+    }))
+
+    // Create workbook
+    const wb = XLSX.utils.book_new()
+    
+    // Add transactions worksheet
+    const ws = XLSX.utils.json_to_sheet(excelData)
+    
+    // Set column widths for transactions
+    const colWidths = [
+      { wch: 12 }, // Date
+      { wch: 15 }, // Work Order No
+      { wch: 10 }, // BOL ID
+      { wch: 20 }, // Pickup Location
+      { wch: 20 }, // Dropoff Location
+      { wch: 15 }, // Payment Type
+      { wch: 15 }, // Amount Collected
+      { wch: 15 }, // Due Amount
+      { wch: 10 }, // Status
+      { wch: 30 }  // Comments
+    ]
+    ws['!cols'] = colWidths
+    XLSX.utils.book_append_sheet(wb, ws, 'Transactions')
+
+    // Add summary worksheet
+    const summaryData = [
+      { 'Metric': 'Total Transactions', 'Value': paymentStats.totalTransactions },
+      { 'Metric': 'Total Amount Collected', 'Value': paymentStats.totalCollected },
+      { 'Metric': 'Total Amount Due', 'Value': paymentStats.totalDue },
+      { 'Metric': 'Total Work Order Value', 'Value': paymentStats.totalAmount },
+      { 'Metric': 'Payment Completion Rate', 'Value': `${paymentStats.completionPercentage}%` },
+      { 'Metric': 'Fully Paid Transactions', 'Value': paymentStats.fullyPaidCount },
+      { 'Metric': 'Partially Paid Transactions', 'Value': paymentStats.partiallyPaidCount },
+      { 'Metric': 'Pending Payment Transactions', 'Value': paymentStats.pendingCount }
+    ]
+    
+    const summaryWs = XLSX.utils.json_to_sheet(summaryData)
+    summaryWs['!cols'] = [{ wch: 30 }, { wch: 20 }]
+    XLSX.utils.book_append_sheet(wb, summaryWs, 'Payment Summary')
+
+    // Generate filename with date range
+    let filename = 'Transaction_Report'
+    if (fromDate && toDate) {
+      filename += `_${fromDate}_to_${toDate}`
+    } else if (fromDate) {
+      filename += `_from_${fromDate}`
+    } else if (toDate) {
+      filename += `_until_${toDate}`
+    }
+    filename += '.xlsx'
+
+    // Save the file
+    XLSX.writeFile(wb, filename)
+  }
+
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
-      <h1 className="text-3xl font-extrabold mb-6 text-blue-700 tracking-tight flex items-center gap-2">
-        <DocumentTextIcon className="h-8 w-8 text-blue-500" /> Transaction Reports
-      </h1>
+    <div className="max-w-7xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight flex items-center gap-2">
+          <DocumentTextIcon className="h-8 w-8 text-blue-500" /> Transaction Reports
+        </h1>
+        <button
+          onClick={exportToExcel}
+          disabled={filteredData.length === 0}
+          className={`px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 ${
+            filteredData.length === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
+          }`}
+        >
+          <ArrowDownTrayIcon className="h-5 w-5" />
+          Export to Excel
+        </button>
+      </div>
+
+      {/* Date Filters */}
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Filter by Date Range</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div>
+            <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
+              From Date
+            </label>
+            <input
+              type="date"
+              id="fromDate"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+          <div>
+            <label htmlFor="toDate" className="block text-sm font-medium text-gray-700 mb-1">
+              To Date
+            </label>
+            <input
+              type="date"
+              id="toDate"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+          <div>
+            <button
+              onClick={clearFilters}
+              className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+        {(fromDate || toDate) && (
+          <div className="mt-3 text-sm text-gray-600">
+            Showing {filteredData.length} of {data.length} transactions
+            {fromDate && toDate && ` from ${fromDate} to ${toDate}`}
+            {fromDate && !toDate && ` from ${fromDate}`}
+            {!fromDate && toDate && ` until ${toDate}`}
+          </div>
+        )}
+      </div>
+
+      {/* Payment Statistics */}
+      {filteredData.length > 0 && (
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Payment Summary</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white p-3 rounded-lg border border-blue-200">
+              <div className="text-sm text-gray-600">Total Transactions</div>
+              <div className="text-2xl font-bold text-blue-600">{paymentStats.totalTransactions}</div>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-green-200">
+              <div className="text-sm text-gray-600">Total Collected</div>
+              <div className="text-2xl font-bold text-green-600">{formatCurrency(paymentStats.totalCollected)}</div>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-red-200">
+              <div className="text-sm text-gray-600">Total Due</div>
+              <div className="text-2xl font-bold text-red-600">{formatCurrency(paymentStats.totalDue)}</div>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-purple-200">
+              <div className="text-sm text-gray-600">Completion Rate</div>
+              <div className="text-2xl font-bold text-purple-600">{paymentStats.completionPercentage}%</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div className="bg-green-100 p-3 rounded-lg border border-green-300">
+              <div className="text-sm text-green-700">Fully Paid</div>
+              <div className="text-lg font-bold text-green-800">{paymentStats.fullyPaidCount} transactions</div>
+            </div>
+            <div className="bg-yellow-100 p-3 rounded-lg border border-yellow-300">
+              <div className="text-sm text-yellow-700">Partially Paid</div>
+              <div className="text-lg font-bold text-yellow-800">{paymentStats.partiallyPaidCount} transactions</div>
+            </div>
+            <div className="bg-red-100 p-3 rounded-lg border border-red-300">
+              <div className="text-sm text-red-700">Pending Payment</div>
+              <div className="text-lg font-bold text-red-800">{paymentStats.pendingCount} transactions</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="text-gray-500">Loading...</div>
       ) : error ? (
@@ -218,26 +476,43 @@ export default function TransactionReportsPage() {
             <thead>
               <tr className="bg-blue-100 text-blue-800">
                 <th className="border px-2 py-1">Date</th>
-                <th className="border px-2 py-1">Vehicle</th>
+                <th className="border px-2 py-1">Work Order</th>
+                <th className="border px-2 py-1">BOL ID</th>
                 <th className="border px-2 py-1">Pickup</th>
                 <th className="border px-2 py-1">Dropoff</th>
-                <th className="border px-2 py-1">Payment</th>
-                <th className="border px-2 py-1">Amount</th>
+                <th className="border px-2 py-1">Payment Type</th>
+                <th className="border px-2 py-1">Amount Collected</th>
+                <th className="border px-2 py-1">Due Amount</th>
+                <th className="border px-2 py-1">Status</th>
                 <th className="border px-2 py-1">Download</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((transaction) => (
+              {filteredData.map((transaction) => (
                 <tr key={transaction.id} className="hover:bg-blue-50">
                   <td className="border px-2 py-1">{formatDate(transaction.date)}</td>
-                  <td className="border px-2 py-1">
-                    {transaction.car_year} {transaction.car_make} {transaction.car_model}
-                    <div className="text-xs text-gray-500">VIN: {transaction.car_vin}</div>
-                  </td>
+                  <td className="border px-2 py-1 font-medium">{transaction.work_order_no}</td>
+                  <td className="border px-2 py-1">{transaction.bol_id}</td>
                   <td className="border px-2 py-1">{transaction.pickup_location}</td>
                   <td className="border px-2 py-1">{transaction.dropoff_location}</td>
                   <td className="border px-2 py-1">{transaction.payment_type}</td>
-                  <td className="border px-2 py-1 font-medium">{formatCurrency(transaction.amount)}</td>
+                  <td className="border px-2 py-1 font-medium text-green-600">{formatCurrency(transaction.collected_amount)}</td>
+                  <td className="border px-2 py-1 font-medium text-red-600">{formatCurrency(transaction.due_amount)}</td>
+                  <td className="border px-2 py-1">
+                    {transaction.due_amount <= 0 ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Paid
+                      </span>
+                    ) : transaction.collected_amount > 0 ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        Partial
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        Pending
+                      </span>
+                    )}
+                  </td>
                   <td className="border px-2 py-1 text-center">
                     <button
                       className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto"
