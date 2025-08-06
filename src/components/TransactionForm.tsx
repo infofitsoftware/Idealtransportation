@@ -10,14 +10,13 @@ interface TransactionFormProps {
 export default function TransactionForm({ transaction, onSubmit, onCancel }: TransactionFormProps) {
   const [formData, setFormData] = useState<Omit<Transaction, 'id'>>({
     date: new Date().toISOString().split('T')[0],
-    car_year: '',
-    car_make: '',
-    car_model: '',
-    car_vin: '',
+    work_order_no: '',
+    collected_amount: 0,
+    due_amount: 0,
+    bol_id: 0,
     pickup_location: '',
     dropoff_location: '',
-    payment_type: 'Cash',
-    amount: 0,
+    payment_type: 'CASH',
     comments: '',
     user_id: 0,
     created_at: new Date().toISOString(),
@@ -28,14 +27,13 @@ export default function TransactionForm({ transaction, onSubmit, onCancel }: Tra
     if (transaction) {
       setFormData({
         date: transaction.date,
-        car_year: transaction.car_year,
-        car_make: transaction.car_make,
-        car_model: transaction.car_model,
-        car_vin: transaction.car_vin,
+        work_order_no: transaction.work_order_no,
+        collected_amount: transaction.collected_amount,
+        due_amount: transaction.due_amount,
+        bol_id: transaction.bol_id,
         pickup_location: transaction.pickup_location,
         dropoff_location: transaction.dropoff_location,
         payment_type: transaction.payment_type,
-        amount: transaction.amount,
         comments: transaction.comments || '',
         user_id: transaction.user_id,
         created_at: transaction.created_at,
@@ -48,7 +46,7 @@ export default function TransactionForm({ transaction, onSubmit, onCancel }: Tra
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'amount' ? parseFloat(value) : value
+      [name]: name === 'collected_amount' || name === 'due_amount' || name === 'bol_id' ? parseFloat(value) || 0 : value
     }))
   }
 
@@ -76,16 +74,32 @@ export default function TransactionForm({ transaction, onSubmit, onCancel }: Tra
           />
         </div>
 
-        {/* Amount */}
+        {/* Work Order Number */}
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-            Amount
+          <label htmlFor="work_order_no" className="block text-sm font-medium text-gray-700">
+            Work Order Number
+          </label>
+          <input
+            type="text"
+            name="work_order_no"
+            id="work_order_no"
+            value={formData.work_order_no}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+            required
+          />
+        </div>
+
+        {/* Collected Amount */}
+        <div>
+          <label htmlFor="collected_amount" className="block text-sm font-medium text-gray-700">
+            Collected Amount
           </label>
           <input
             type="number"
-            name="amount"
-            id="amount"
-            value={formData.amount}
+            name="collected_amount"
+            id="collected_amount"
+            value={formData.collected_amount}
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
             required
@@ -94,64 +108,38 @@ export default function TransactionForm({ transaction, onSubmit, onCancel }: Tra
           />
         </div>
 
-        {/* Car Details */}
+        {/* Due Amount */}
         <div>
-          <label htmlFor="car_year" className="block text-sm font-medium text-gray-700">
-            Car Year
+          <label htmlFor="due_amount" className="block text-sm font-medium text-gray-700">
+            Due Amount
           </label>
           <input
-            type="text"
-            name="car_year"
-            id="car_year"
-            value={formData.car_year}
+            type="number"
+            name="due_amount"
+            id="due_amount"
+            value={formData.due_amount}
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
             required
+            min="0"
+            step="0.01"
           />
         </div>
 
+        {/* BOL ID */}
         <div>
-          <label htmlFor="car_make" className="block text-sm font-medium text-gray-700">
-            Car Make
+          <label htmlFor="bol_id" className="block text-sm font-medium text-gray-700">
+            BOL ID
           </label>
           <input
-            type="text"
-            name="car_make"
-            id="car_make"
-            value={formData.car_make}
+            type="number"
+            name="bol_id"
+            id="bol_id"
+            value={formData.bol_id}
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
             required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="car_model" className="block text-sm font-medium text-gray-700">
-            Car Model
-          </label>
-          <input
-            type="text"
-            name="car_model"
-            id="car_model"
-            value={formData.car_model}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="car_vin" className="block text-sm font-medium text-gray-700">
-            VIN
-          </label>
-          <input
-            type="text"
-            name="car_vin"
-            id="car_vin"
-            value={formData.car_vin}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            required
+            min="1"
           />
         </div>
 
@@ -199,9 +187,11 @@ export default function TransactionForm({ transaction, onSubmit, onCancel }: Tra
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
             required
           >
-            <option value="Cash">Cash</option>
-            <option value="Check">Check</option>
-            <option value="Zelle">Zelle</option>
+            <option value="CASH">Cash</option>
+            <option value="CREDIT_CARD">Credit Card</option>
+            <option value="BANK_TRANSFER">Bank Transfer</option>
+            <option value="CHECK">Check</option>
+            <option value="ZELLE">Zelle</option>
           </select>
         </div>
       </div>

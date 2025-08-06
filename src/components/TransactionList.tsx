@@ -51,7 +51,7 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
   )
 
   // Get unique work order numbers for filter dropdown
-  const uniqueWorkOrders = [...new Set(transactions.map(t => t.work_order_no))].sort()
+  const uniqueWorkOrders = Array.from(new Set(transactions.map(t => t.work_order_no))).sort()
 
   // Get payment status indicator
   const getPaymentStatusIndicator = (transaction: Transaction) => {
