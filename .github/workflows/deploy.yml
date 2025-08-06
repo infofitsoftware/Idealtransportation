@@ -410,7 +410,7 @@ jobs:
                   proxy_cache_bypass $http_upgrade;
               }
           }
-EOF
+          EOF
             echo "HTTPS configuration created."
           else
             echo "SSL certificates not found. Creating HTTP-only configuration..."
@@ -479,7 +479,7 @@ EOF
                   proxy_cache_bypass $http_upgrade;
               }
           }
-EOF
+          EOF
             echo "HTTP-only configuration created."
           fi
           
