@@ -333,8 +333,10 @@ jobs:
         command_timeout: 30m
         debug: true
         script: |
-          # Create nginx configuration with SSL support
-          sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
+          # Check if SSL certificates exist and create appropriate configuration
+          if [ -f "/etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem" ]; then
+            echo "SSL certificates found. Creating HTTPS configuration with redirect..."
+            sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
           # HTTP server - redirect to HTTPS
           server {
               listen 80;
@@ -431,9 +433,8 @@ jobs:
               }
           }
           EOF
-          
-          # Check if SSL certificates exist and create appropriate configuration
-          if [ ! -f "/etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem" ]; then
+            echo "HTTPS configuration created."
+          else
             echo "SSL certificates not found. Creating HTTP-only configuration..."
             sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
           server {
@@ -502,8 +503,6 @@ jobs:
           }
           EOF
             echo "HTTP-only configuration created."
-          else
-            echo "SSL certificates found. Using HTTPS configuration with redirect."
           fi
           
           # Enable site and restart nginx
