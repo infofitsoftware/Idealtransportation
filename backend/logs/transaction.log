@@ -314,3 +314,39 @@ WHERE daily_expenses.user_id = %(user_id_1)s
 2025-08-05 17:12:56 - routers.transaction - INFO - Found 2 transactions
 2025-08-05 17:12:57 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
 2025-08-05 17:12:57 - routers.transaction - INFO - Found 2 transactions
+2025-08-05 23:24:28 - routers.transaction - INFO - Creating new transaction for user: admin@idealtransport.com
+2025-08-05 23:24:29 - routers.transaction - DEBUG - Transaction data: {'date': datetime.date(2025, 8, 5), 'work_order_no': '2', 'collected_amount': 110.0, 'due_amount': 0.0, 'bol_id': 23, 'pickup_location': 'dallas', 'dropoff_location': 'california', 'payment_type': 'CHECK', 'comments': 'All paid'}
+2025-08-05 23:24:29 - routers.transaction - INFO - Adding transaction to database
+2025-08-05 23:24:30 - routers.transaction - INFO - Transaction created successfully with ID: 16
+2025-08-05 23:24:40 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-05 23:24:40 - routers.transaction - INFO - Found 3 transactions
+2025-08-05 23:24:41 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-05 23:24:41 - routers.transaction - INFO - Found 3 transactions
+2025-08-06 08:12:52 - routers.transaction - INFO - Creating new transaction for user: admin@idealtransport.com
+2025-08-06 08:12:52 - routers.transaction - DEBUG - Transaction data: {'date': datetime.date(2025, 8, 6), 'work_order_no': '3', 'collected_amount': 100.0, 'due_amount': 50.0, 'bol_id': 24, 'pickup_location': 'dallas', 'dropoff_location': 'dalls', 'payment_type': 'CASH', 'comments': 'payment due by 50'}
+2025-08-06 08:12:53 - routers.transaction - INFO - Adding transaction to database
+2025-08-06 08:12:54 - routers.transaction - INFO - Transaction created successfully with ID: 17
+2025-08-06 08:13:26 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-06 08:13:26 - routers.transaction - INFO - Found 4 transactions
+2025-08-06 08:13:26 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-06 08:13:27 - routers.transaction - INFO - Found 4 transactions
+2025-08-06 08:18:31 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-06 08:18:31 - routers.transaction - INFO - Found 4 transactions
+2025-08-06 08:18:32 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-06 08:18:32 - routers.transaction - INFO - Found 4 transactions
+2025-08-06 08:25:49 - routers.transaction - INFO - Creating new transaction for user: admin@idealtransport.com
+2025-08-06 08:25:49 - routers.transaction - DEBUG - Transaction data: {'date': datetime.date(2025, 8, 6), 'work_order_no': '4', 'collected_amount': 100.0, 'due_amount': 0.0, 'bol_id': 25, 'pickup_location': 'dallas', 'dropoff_location': 'dallas', 'payment_type': 'CASH', 'comments': 'paid fully'}
+2025-08-06 08:25:49 - routers.transaction - INFO - Adding transaction to database
+2025-08-06 08:25:50 - routers.transaction - INFO - Transaction created successfully with ID: 18
+2025-08-06 08:26:26 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-06 08:26:26 - routers.transaction - INFO - Found 5 transactions
+2025-08-06 08:26:27 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-06 08:26:27 - routers.transaction - INFO - Found 5 transactions
+2025-08-06 08:49:10 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-06 08:49:10 - routers.transaction - INFO - Found 5 transactions
+2025-08-06 08:49:10 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-06 08:49:11 - routers.transaction - INFO - Found 5 transactions
+2025-08-06 08:49:53 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-06 08:49:53 - routers.transaction - INFO - Found 5 transactions
+2025-08-06 08:49:54 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-06 08:49:54 - routers.transaction - INFO - Found 5 transactions

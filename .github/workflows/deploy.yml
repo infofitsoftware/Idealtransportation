@@ -1,6 +1,6 @@
 name: Deploy to EC2
 
-# This workflow will deploy the application to EC2
+# This workflow will deploy the application to the ec2 instance
 # Last updated: 2024-06-14
 
 on:
