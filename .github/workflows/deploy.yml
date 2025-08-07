@@ -294,7 +294,7 @@ jobs:
           sudo systemctl stop nginx || true
           
           # Step 1: Install SSL certificate if it doesn't exist
-          if [ ! -f "/etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem" ]; then
+          if sudo test -f "/etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem"; then
             echo "SSL certificate not found. Installing Let's Encrypt SSL..."
             
             # Install Certbot if not already installed
@@ -320,7 +320,7 @@ jobs:
           fi
           
           # Step 2: Always configure Nginx based on SSL certificate availability
-          if [ sudo test -f "/etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem" ]; then
+          if sudo test -f "/etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem"; then
             echo "SSL certificates found. Creating HTTPS configuration with redirect..."
             sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
           # HTTP server - redirect to HTTPS
@@ -517,7 +517,7 @@ jobs:
           sudo find /home/ubuntu/ideal-transportation/frontend -type f -exec touch {} \;
           
           # Verify certificate status
-          if [ sudo test -f "/etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem" ]; then
+          if sudo test -f "/etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem"; then
             echo "✅ SSL Certificate is installed"
             sudo certbot certificates
             echo "Testing HTTPS connection..."
@@ -566,7 +566,7 @@ jobs:
           sudo ls -la /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/pages/
           
           echo "=== Final SSL Certificate Status ==="
-          if [ sudo test -f "/etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem" ]; then
+          if sudo test -f "/etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem"; then
             echo "✅ SSL Certificate is installed and configured"
             sudo certbot certificates
             echo "Testing HTTPS connection..."
