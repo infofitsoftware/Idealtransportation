@@ -280,106 +280,106 @@ jobs:
           ls -la /home/ubuntu/ideal-transportation/frontend/_next/static/chunks/app/auth/login/*.js || true
 
     - name: Setup SSL and Configure Nginx
-  uses: appleboy/ssh-action@master
-  with:
-    host: ${{ secrets.EC2_HOST }}
-    username: ${{ secrets.EC2_USERNAME }}
-    key: ${{ secrets.EC2_SSH_KEY }}
-    port: 22
-    timeout: 60s
-    command_timeout: 30m
-    debug: true
-    script: |
-      # Ensure nginx is stopped before certificate generation
-      sudo systemctl stop nginx || true
-      
-      # Install Certbot if not installed
-      if ! command -v certbot &> /dev/null; then
-        sudo apt-get update
-        sudo apt-get install -y certbot python3-certbot-nginx
-      fi
-      
-      # Generate SSL certificate if it doesn't exist
-      SSL_CERT_PATH="/etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem"
-      if [ ! -f "$SSL_CERT_PATH" ]; then
-        echo "Attempting to generate SSL certificate..."
-        sudo certbot certonly --standalone \
-          --non-interactive \
-          --agree-tos \
-          --email idealtransolutions@gmail.com \
-          --domains app.ditsxpress.com \
-          --pre-hook "sudo systemctl stop nginx" \
-          --post-hook "sudo systemctl start nginx" || \
-          echo "Certificate generation may have failed, continuing with HTTP configuration"
-      fi
-      
-      # Start nginx if not running
-      sudo systemctl start nginx || true
-      
-      # Configure Nginx based on certificate availability
-      if [ -f "$SSL_CERT_PATH" ]; then
-        echo "Configuring Nginx for HTTPS..."
-        sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
-      # HTTP redirect to HTTPS
-      server {
-          listen 80;
-          server_name app.ditsxpress.com;
-          return 301 https://$host$request_uri;
-      }
-      
-      # HTTPS server
-      server {
-          listen 443 ssl;
-          server_name app.ditsxpress.com;
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
+        timeout: 60s
+        command_timeout: 30m
+        debug: true
+        script: |
+          # Ensure nginx is stopped before certificate generation
+          sudo systemctl stop nginx || true
           
-          ssl_certificate /etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem;
-          ssl_certificate_key /etc/letsencrypt/live/app.ditsxpress.com/privkey.pem;
+          # Install Certbot if not installed
+          if ! command -v certbot &> /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y certbot python3-certbot-nginx
+          fi
           
-          # Rest of your HTTPS configuration...
-          root /home/ubuntu/ideal-transportation/frontend;
+          # Generate SSL certificate if it doesn't exist
+          SSL_CERT_PATH="/etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem"
+          if [ ! -f "$SSL_CERT_PATH" ]; then
+            echo "Attempting to generate SSL certificate..."
+            sudo certbot certonly --standalone \
+              --non-interactive \
+              --agree-tos \
+              --email idealtransolutions@gmail.com \
+              --domains app.ditsxpress.com \
+              --pre-hook "sudo systemctl stop nginx" \
+              --post-hook "sudo systemctl start nginx" || \
+              echo "Certificate generation may have failed, continuing with HTTP configuration"
+          fi
           
-          # Your existing location blocks...
-          location / {
-              try_files $uri $uri/ /index.html;
+          # Start nginx if not running
+          sudo systemctl start nginx || true
+          
+          # Configure Nginx based on certificate availability
+          if [ -f "$SSL_CERT_PATH" ]; then
+            echo "Configuring Nginx for HTTPS..."
+            sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
+          # HTTP redirect to HTTPS
+          server {
+              listen 80;
+              server_name app.ditsxpress.com;
+              return 301 https://$host$request_uri;
           }
           
-          location /api/ {
-              proxy_pass http://localhost:8000;
-              # proxy settings...
+          # HTTPS server
+          server {
+              listen 443 ssl;
+              server_name app.ditsxpress.com;
+              
+              ssl_certificate /etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem;
+              ssl_certificate_key /etc/letsencrypt/live/app.ditsxpress.com/privkey.pem;
+              
+              # Rest of your HTTPS configuration...
+              root /home/ubuntu/ideal-transportation/frontend;
+              
+              # Your existing location blocks...
+              location / {
+                  try_files $uri $uri/ /index.html;
+              }
+              
+              location /api/ {
+                  proxy_pass http://localhost:8000;
+                  # proxy settings...
+              }
           }
-      }
-      EOF
-      else
-        echo "Configuring Nginx for HTTP only..."
-        sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
-      server {
-          listen 80;
-          server_name app.ditsxpress.com;
-          
-          root /home/ubuntu/ideal-transportation/frontend;
-          
-          location / {
-              try_files $uri $uri/ /index.html;
+          EOF
+          else
+            echo "Configuring Nginx for HTTP only..."
+            sudo tee /etc/nginx/sites-available/ideal-transportation << 'EOF'
+          server {
+              listen 80;
+              server_name app.ditsxpress.com;
+              
+              root /home/ubuntu/ideal-transportation/frontend;
+              
+              location / {
+                  try_files $uri $uri/ /index.html;
+              }
+              
+              location /api/ {
+                  proxy_pass http://localhost:8000;
+                  # proxy settings...
+              }
           }
+          EOF
+          fi
           
-          location /api/ {
-              proxy_pass http://localhost:8000;
-              # proxy settings...
-          }
-      }
-      EOF
-      fi
-      
-      # Ensure proper symlink
-      sudo rm -f /etc/nginx/sites-enabled/ideal-transportation
-      sudo ln -s /etc/nginx/sites-available/ideal-transportation /etc/nginx/sites-enabled/
-      sudo rm -f /etc/nginx/sites-enabled/default
-      
-      # Test and reload nginx
-      sudo nginx -t && sudo systemctl restart nginx
-      
-      # Set up auto-renewal
-      #echo "0 12 * * * /usr/bin/certbot renew --quiet --pre-hook \"systemctl stop nginx\" --post-hook \"systemctl start nginx\"" | sudo crontab -
+          # Ensure proper symlink
+          sudo rm -f /etc/nginx/sites-enabled/ideal-transportation
+          sudo ln -s /etc/nginx/sites-available/ideal-transportation /etc/nginx/sites-enabled/
+          sudo rm -f /etc/nginx/sites-enabled/default
+          
+          # Test and reload nginx
+          sudo nginx -t && sudo systemctl restart nginx
+          
+          # Set up auto-renewal
+          #echo "0 12 * * * /usr/bin/certbot renew --quiet --pre-hook \"systemctl stop nginx\" --post-hook \"systemctl start nginx\"" | sudo crontab -
 
     - name: Verify Deployment
       uses: appleboy/ssh-action@master
