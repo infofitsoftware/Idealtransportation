@@ -500,6 +500,9 @@ jobs:
           # Step 4: Verify setup
           sudo systemctl status nginx
           
+          # Clear browser cache by updating file timestamps
+          sudo find /home/ubuntu/ideal-transportation/frontend -type f -exec touch {} \;
+          
           # Verify certificate status
           if [ -f "/etc/letsencrypt/live/app.ditsxpress.com/fullchain.pem" ]; then
             echo "✅ SSL Certificate is installed"

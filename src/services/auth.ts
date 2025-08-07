@@ -28,6 +28,11 @@ if (typeof window !== 'undefined') {
 // Create axios instance with default config
 export const api = axios.create({
   baseURL: API_URL,
+  // Add cache-busting headers
+  headers: {
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache'
+  }
 });
 
 // Add request interceptor to include token in headers
