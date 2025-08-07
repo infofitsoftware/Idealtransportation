@@ -51,6 +51,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add middleware to handle forwarded headers
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
+
 # Include routers
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(transaction.router, prefix="/api/transactions", tags=["transactions"])
