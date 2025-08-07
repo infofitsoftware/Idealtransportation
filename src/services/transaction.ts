@@ -77,6 +77,7 @@ export const transactionService = {
   },
 
   async getTransactions(): Promise<Transaction[]> {
+    console.log('Transaction Service - Making API call to:', api.defaults.baseURL + '/api/transactions');
     const response = await api.get('/api/transactions');
     return response.data;
   },

@@ -15,6 +15,14 @@ if (typeof window !== 'undefined') {
     API_URL = window.location.protocol + '//' + currentDomain;
   }
   // For other domains, keep the default (13.221.221.48)
+  
+  // Debug logging
+  console.log('API URL Configuration:', {
+    currentDomain,
+    currentPort,
+    protocol: window.location.protocol,
+    resolvedAPI_URL: API_URL
+  });
 }
 
 // Create axios instance with default config
