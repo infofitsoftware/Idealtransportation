@@ -15,6 +15,7 @@ import {
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast';
 import FormHeader from '@/components/FormHeader';
+import { api } from '@/services/auth';
 
 interface Vehicle {
   year: string;
@@ -136,14 +137,10 @@ export default function BillOfLadingForm() {
       }
       setCheckingWorkOrder(true);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/bol/?work_order_no=${encodeURIComponent(form.work_order_no)}`);
-        if (res.ok) {
-          const bols = await res.json();
-          if (Array.isArray(bols) && bols.some((b: any) => b.work_order_no === form.work_order_no)) {
-            setWorkOrderError('Work order number already exists. Please use a unique number.');
-          } else {
-            setWorkOrderError(null);
-          }
+        const response = await api.get(`/api/bol/?work_order_no=${encodeURIComponent(form.work_order_no)}`);
+        const bols = response.data;
+        if (Array.isArray(bols) && bols.some((b: any) => b.work_order_no === form.work_order_no)) {
+          setWorkOrderError('Work order number already exists. Please use a unique number.');
         } else {
           setWorkOrderError(null);
         }
@@ -209,16 +206,11 @@ export default function BillOfLadingForm() {
         condition_codes: form.condition_codes.join(','),
         total_amount: totalAmount,
       };
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/bol/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error('Failed to save Bill of Lading');
+      await api.post('/api/bol/', payload);
       toast.success('Bill of Lading saved successfully!');
       setTimeout(() => router.push('/dashboard'), 1200);
     } catch (err: any) {
-      toast.error('Error: ' + err.message);
+      toast.error('Error: ' + (err.response?.data?.detail || err.message));
     }
   };
 
