@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { DocumentTextIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { DocumentTextIcon, ArrowDownTrayIcon, ShieldExclamationIcon } from "@heroicons/react/24/outline";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { bolService } from "@/services/transaction";
+import { useAccessControl } from "@/hooks/useAccessControl";
 import * as XLSX from 'xlsx';
 
 interface Vehicle {
@@ -355,6 +356,7 @@ async function downloadBOLPdf(bol: BillOfLading) {
 }
 
 export default function ReportsPage() {
+  const { currentUser, loading: accessLoading, hasAccess, isSuperuser } = useAccessControl();
   const [data, setData] = useState<BillOfLading[]>([]);
   const [filteredData, setFilteredData] = useState<BillOfLading[]>([]);
   const [loading, setLoading] = useState(true);
@@ -533,24 +535,59 @@ export default function ReportsPage() {
     XLSX.writeFile(wb, filename);
   };
 
+  // Access control check
+  if (accessLoading) {
+    return (
+      <div className="max-w-7xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
+        <div className="text-center py-8">
+          <div className="text-gray-500">Checking access permissions...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="max-w-7xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-red-100">
+        <div className="text-center py-8">
+          <ShieldExclamationIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-red-700 mb-2">Access Denied</h1>
+          <p className="text-gray-600 mb-4">
+            You don't have permission to access this page. Only authorized users can view reports.
+          </p>
+          <p className="text-sm text-gray-500">
+            Current user: {currentUser?.email || 'Not logged in'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight flex items-center gap-2">
           <DocumentTextIcon className="h-8 w-8 text-blue-500" /> Bill of Lading Reports
         </h1>
-        <button
-          onClick={exportToExcel}
-          disabled={filteredData.length === 0}
-          className={`px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 ${
-            filteredData.length === 0
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
-          }`}
-        >
-          <ArrowDownTrayIcon className="h-5 w-5" />
-          Export to Excel
-        </button>
+        <div className="flex items-center gap-4">
+          {isSuperuser && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              Superuser Access
+            </span>
+          )}
+          <button
+            onClick={exportToExcel}
+            disabled={filteredData.length === 0}
+            className={`px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 ${
+              filteredData.length === 0
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
+            }`}
+          >
+            <ArrowDownTrayIcon className="h-5 w-5" />
+            Export to Excel
+          </button>
+        </div>
       </div>
 
       {/* Date Filters */}

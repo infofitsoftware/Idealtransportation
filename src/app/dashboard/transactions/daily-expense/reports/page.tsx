@@ -1,10 +1,11 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { DocumentTextIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
+import { DocumentTextIcon, ArrowDownTrayIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { dailyExpenseService, DailyExpenseData } from '@/services/dailyExpense'
+import { useAccessControl } from '@/hooks/useAccessControl'
 import { api } from '@/services/auth'
 
 function formatDate(dateStr: string) {
@@ -179,6 +180,7 @@ async function downloadDailyExpensePdf(expense: DailyExpenseData) {
 }
 
 export default function DailyExpenseReportsPage() {
+  const { currentUser, loading: accessLoading, hasAccess, isSuperuser } = useAccessControl();
   const [data, setData] = useState<DailyExpenseData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -190,7 +192,7 @@ export default function DailyExpenseReportsPage() {
       try {
         // Test API connection first
         console.log('Testing API connection...')
-        const testResponse = await api.get('/api/transactions')
+        const testResponse = await api.get('/transactions')
         console.log('API test response:', testResponse)
         
         setLoading(true)
@@ -217,11 +219,46 @@ export default function DailyExpenseReportsPage() {
 
   console.log('Rendering DailyExpenseReportsPage with:', { data, loading, error })
 
+  // Access control check
+  if (accessLoading) {
+    return (
+      <div className="max-w-5xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
+        <div className="text-center py-8">
+          <div className="text-gray-500">Checking access permissions...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="max-w-5xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-red-100">
+        <div className="text-center py-8">
+          <ShieldExclamationIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-red-700 mb-2">Access Denied</h1>
+          <p className="text-gray-600 mb-4">
+            You don't have permission to access this page. Only authorized users can view reports.
+          </p>
+          <p className="text-sm text-gray-500">
+            Current user: {currentUser?.email || 'Not logged in'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
-      <h1 className="text-3xl font-extrabold mb-6 text-blue-700 tracking-tight flex items-center gap-2">
-        <DocumentTextIcon className="h-8 w-8 text-blue-500" /> Daily Expense Reports
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight flex items-center gap-2">
+          <DocumentTextIcon className="h-8 w-8 text-blue-500" /> Daily Expense Reports
+        </h1>
+        {isSuperuser && (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            Superuser Access
+          </span>
+        )}
+      </div>
       {loading ? (
         <div className="text-gray-500">Loading...</div>
       ) : error ? (
