@@ -50,7 +50,7 @@ export const dailyExpenseService = {
         total: Number(data.total)
       }
       
-      const response = await api.post('/api/transactions/daily-expenses', processedData)
+      const response = await api.post('/transactions/daily-expenses/', processedData)
       return response.data
     } catch (error: any) {
       console.error('Error creating daily expense:', {
@@ -63,7 +63,7 @@ export const dailyExpenseService = {
   },
 
   async getExpenses(): Promise<DailyExpenseData[]> {
-    console.log('Making API call to /api/transactions/daily-expenses')
+    console.log('Making API call to /transactions/daily-expenses/')
     try {
       // Get the token
       const token = localStorage.getItem('token') || sessionStorage.getItem('token')
@@ -79,7 +79,7 @@ export const dailyExpenseService = {
       }
       console.log('Request config:', config)
       
-      const response = await api.get('/api/transactions/daily-expenses', config)
+      const response = await api.get('/transactions/daily-expenses/', config)
       console.log('API Response:', response)
       return response.data
     } catch (error: any) {
@@ -103,7 +103,7 @@ export const dailyExpenseService = {
 
   async getExpense(id: number): Promise<DailyExpenseData> {
     try {
-      const response = await api.get(`/api/transactions/daily-expenses/${id}`)
+      const response = await api.get(`/transactions/daily-expenses/${id}/`)
       return response.data
     } catch (error: any) {
       console.error('Error fetching daily expense:', {
@@ -126,7 +126,7 @@ export const dailyExpenseService = {
         total: data.total ? Number(data.total) : undefined
       }
       
-      const response = await api.put(`/api/transactions/daily-expenses/${id}`, processedData)
+      const response = await api.put(`/transactions/daily-expenses/${id}/`, processedData)
       return response.data
     } catch (error: any) {
       console.error('Error updating daily expense:', {
@@ -140,7 +140,7 @@ export const dailyExpenseService = {
 
   async deleteExpense(id: number): Promise<void> {
     try {
-      await api.delete(`/api/transactions/daily-expenses/${id}`)
+      await api.delete(`/transactions/daily-expenses/${id}/`)
     } catch (error: any) {
       console.error('Error deleting daily expense:', {
         status: error.response?.status,
