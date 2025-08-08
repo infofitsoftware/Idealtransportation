@@ -82,14 +82,41 @@ export const transactionService = {
     console.log('[transactionService] API Instance BaseURL:', api.defaults.baseURL);
     console.log('[transactionService] Protocol:', window.location.protocol);
     
+    // NUCLEAR OPTION: Create a fresh axios instance for this request
+    const { api: freshApi } = await import('./auth');
+    
     // Force HTTPS if we're on HTTPS
-    if (window.location.protocol === 'https:' && api.defaults.baseURL) {
-      api.defaults.baseURL = api.defaults.baseURL.replace('http://', 'https://');
-      console.log('[transactionService] Forced HTTPS BaseURL:', api.defaults.baseURL);
+    if (window.location.protocol === 'https:' && freshApi.defaults.baseURL) {
+      freshApi.defaults.baseURL = freshApi.defaults.baseURL.replace('http://', 'https://');
+      console.log('[transactionService] Fresh API HTTPS BaseURL:', freshApi.defaults.baseURL);
     }
     
-    const response = await api.get('/api/transactions');
-    return response.data;
+    try {
+      const response = await freshApi.get('/api/transactions');
+      return response.data;
+    } catch (error: any) {
+      console.log('[transactionService] Fresh API failed, trying hardcoded HTTPS...');
+      
+      // Fallback: Create a completely new axios instance with hardcoded HTTPS
+      const axios = (await import('axios')).default;
+      const fallbackApi = axios.create({
+        baseURL: 'https://app.ditsxpress.com',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
+      
+      // Add token if available
+      const token = localStorage.getItem('token');
+      if (token) {
+        fallbackApi.defaults.headers.Authorization = `Bearer ${token}`;
+      }
+      
+      const fallbackResponse = await fallbackApi.get('/api/transactions');
+      return fallbackResponse.data;
+    }
   },
 
   async getTransaction(id: number): Promise<Transaction> {
