@@ -79,6 +79,15 @@ export const transactionService = {
 
   async getTransactions(): Promise<Transaction[]> {
     console.log('[transactionService] GET', api.defaults.baseURL + '/api/transactions');
+    console.log('[transactionService] API Instance BaseURL:', api.defaults.baseURL);
+    console.log('[transactionService] Protocol:', window.location.protocol);
+    
+    // Force HTTPS if we're on HTTPS
+    if (window.location.protocol === 'https:' && api.defaults.baseURL) {
+      api.defaults.baseURL = api.defaults.baseURL.replace('http://', 'https://');
+      console.log('[transactionService] Forced HTTPS BaseURL:', api.defaults.baseURL);
+    }
+    
     const response = await api.get('/api/transactions');
     return response.data;
   },

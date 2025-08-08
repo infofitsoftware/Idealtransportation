@@ -6,6 +6,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Add build timestamp to force cache invalidation
+  env: {
+    BUILD_TIME: Date.now().toString(),
+  },
   // Add cache-busting headers
   async headers() {
     return [

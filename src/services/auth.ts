@@ -30,9 +30,24 @@ export const api = axios.create({
   baseURL: API_URL,
   // Add cache-busting headers
   headers: {
-    'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache'
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
   }
+});
+
+// Add a unique timestamp to force cache invalidation
+api.interceptors.request.use((config) => {
+  // Add timestamp to force cache invalidation
+  if (config.method === 'get') {
+    config.params = { ...config.params, _t: Date.now() };
+  }
+  
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // Add request interceptor to include token in headers
