@@ -85,7 +85,7 @@ export const authService = {
     formData.append('username', email);
     formData.append('password', password);
 
-    const response = await api.post('/api/auth/token', formData);
+    const response = await api.post('/auth/token', formData);
     if (response.data.access_token) {
       const token = response.data.access_token;
       // Store token in localStorage
@@ -100,7 +100,7 @@ export const authService = {
   },
 
   async register(userData: { email: string; password: string; full_name: string }) {
-    const response = await api.post('/api/auth/register', userData);
+    const response = await api.post('/auth/register', userData);
     return response.data;
   },
 
@@ -109,7 +109,7 @@ export const authService = {
     if (!token) return null;
 
     try {
-      const response = await api.get('/api/auth/me');
+      const response = await api.get('/auth/me');
       return response.data;
     } catch (error) {
       this.logout();
