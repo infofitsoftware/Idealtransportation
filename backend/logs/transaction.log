@@ -350,3 +350,15 @@ WHERE daily_expenses.user_id = %(user_id_1)s
 2025-08-06 08:49:53 - routers.transaction - INFO - Found 5 transactions
 2025-08-06 08:49:54 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
 2025-08-06 08:49:54 - routers.transaction - INFO - Found 5 transactions
+2025-08-08 12:31:08 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-08 12:31:08 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-08 12:31:08 - routers.transaction - INFO - Found 6 transactions
+2025-08-08 12:31:08 - routers.transaction - INFO - Found 6 transactions
+2025-08-08 12:47:18 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-08 12:47:18 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-08 12:47:18 - routers.transaction - INFO - Found 6 transactions
+2025-08-08 12:47:18 - routers.transaction - INFO - Found 6 transactions
+2025-08-08 12:48:00 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-08 12:48:00 - routers.transaction - INFO - Found 6 transactions
+2025-08-08 12:48:00 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-08 12:48:00 - routers.transaction - INFO - Found 6 transactions
