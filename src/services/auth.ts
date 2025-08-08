@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Determine the API URL based on the current domain
-let API_URL = 'http://13.221.221.48'; // Default for production
+let API_URL = 'http://13.221.221.48/api'; // Default for production with /api
 
 if (typeof window !== 'undefined') {
   const currentDomain = window.location.hostname;
@@ -9,12 +9,12 @@ if (typeof window !== 'undefined') {
   
   if (currentDomain === 'localhost' || currentDomain === '127.0.0.1') {
     // Use localhost:8000 for local development
-    API_URL = 'http://localhost:8000';
+    API_URL = 'http://localhost:8000/api';
   } else if (currentDomain === 'app.ditsxpress.com') {
     // Use the same domain for production to avoid CORS issues
-    API_URL = window.location.protocol + '//' + currentDomain;
+    API_URL = window.location.protocol + '//' + currentDomain + '/api';
   }
-  // For other domains, keep the default (13.221.221.48)
+  // For other domains, keep the default (13.221.221.48/api)
   
   // Debug logging
   console.log('API URL Configuration:', {
@@ -36,13 +36,8 @@ export const api = axios.create({
   }
 });
 
-// Add a unique timestamp to force cache invalidation
+// Simplified request interceptor
 api.interceptors.request.use((config) => {
-  // Add timestamp to force cache invalidation
-  if (config.method === 'get') {
-    config.params = { ...config.params, _t: Date.now() };
-  }
-  
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
