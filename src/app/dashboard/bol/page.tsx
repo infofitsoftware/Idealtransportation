@@ -137,7 +137,7 @@ export default function BillOfLadingForm() {
       }
       setCheckingWorkOrder(true);
       try {
-        const response = await api.get(`/api/bol/?work_order_no=${encodeURIComponent(form.work_order_no)}`);
+        const response = await api.get(`/bol/?work_order_no=${encodeURIComponent(form.work_order_no)}`);
         const bols = response.data;
         if (Array.isArray(bols) && bols.some((b: any) => b.work_order_no === form.work_order_no)) {
           setWorkOrderError('Work order number already exists. Please use a unique number.');
@@ -206,7 +206,7 @@ export default function BillOfLadingForm() {
         condition_codes: form.condition_codes.join(','),
         total_amount: totalAmount,
       };
-      await api.post('/api/bol/', payload);
+      await api.post('/bol/', payload);
       toast.success('Bill of Lading saved successfully!');
       setTimeout(() => router.push('/dashboard'), 1200);
     } catch (err: any) {
