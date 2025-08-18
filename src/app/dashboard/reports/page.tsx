@@ -49,6 +49,10 @@ interface BillOfLading {
   receiver_agent_name?: string;
   receiver_signature?: string;
   receiver_date?: string;
+  // Broker information fields
+  broker_name?: string;
+  broker_address?: string;
+  broker_phone?: string;
   vehicles: Vehicle[];
 }
 
@@ -154,6 +158,17 @@ async function downloadBOLPdf(bol: BillOfLading) {
   y += 8;
   doc.text('Work Order No: ' + String(bol.work_order_no ?? ''), 20, y);
   doc.text('Generated: ' + new Date().toLocaleDateString(), 120, y);
+  y += 8;
+  // Add broker information if available
+  if (bol.broker_name || bol.broker_address || bol.broker_phone) {
+    doc.text('Broker: ' + String(bol.broker_name ?? ''), 20, y);
+    doc.text('Phone: ' + String(bol.broker_phone ?? ''), 120, y);
+    y += 6;
+    if (bol.broker_address) {
+      doc.text('Address: ' + String(bol.broker_address), 20, y);
+      y += 6;
+    }
+  }
   y += 15;
 
   // Check page overflow before Pickup Section
@@ -450,6 +465,9 @@ export default function ReportsPage() {
         'Driver': bol.driver_name,
         'Date': formatDate(bol.date),
         'Work Order No': bol.work_order_no || 'N/A',
+        'Broker Name': bol.broker_name || '',
+        'Broker Address': bol.broker_address || '',
+        'Broker Phone': bol.broker_phone || '',
         'Pickup Name': bol.pickup_name || '',
         'Pickup Address': bol.pickup_address || '',
         'Pickup City': bol.pickup_city || '',
@@ -482,6 +500,9 @@ export default function ReportsPage() {
       { wch: 15 }, // Driver
       { wch: 12 }, // Date
       { wch: 15 }, // Work Order No
+      { wch: 20 }, // Broker Name
+      { wch: 25 }, // Broker Address
+      { wch: 15 }, // Broker Phone
       { wch: 20 }, // Pickup Name
       { wch: 25 }, // Pickup Address
       { wch: 15 }, // Pickup City
@@ -688,6 +709,7 @@ export default function ReportsPage() {
                 <th className="border px-2 py-1">Driver</th>
                 <th className="border px-2 py-1">Date</th>
                 <th className="border px-2 py-1">Work Order</th>
+                <th className="border px-2 py-1">Broker</th>
                 <th className="border px-2 py-1">Pickup</th>
                 <th className="border px-2 py-1">Delivery</th>
                 <th className="border px-2 py-1">Total Amount</th>
@@ -709,6 +731,11 @@ export default function ReportsPage() {
                     <td className="border px-2 py-1 font-medium">{bol.driver_name}</td>
                     <td className="border px-2 py-1">{formatDate(bol.date)}</td>
                     <td className="border px-2 py-1 font-medium">{bol.work_order_no || 'N/A'}</td>
+                    <td className="border px-2 py-1">
+                      <div className="font-semibold">{bol.broker_name || 'N/A'}</div>
+                      <div className="text-xs text-gray-500">{bol.broker_address}</div>
+                      <div className="text-xs text-gray-400">{bol.broker_phone}</div>
+                    </td>
                     <td className="border px-2 py-1">
                       <div className="font-semibold">{bol.pickup_name}</div>
                       <div className="text-xs text-gray-500">{bol.pickup_address}</div>

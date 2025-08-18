@@ -202,9 +202,40 @@ def get_transactions(
     current_user: dict = Depends(get_current_user)
 ):
     logger.info(f"Fetching transactions for user: {current_user.email}")
-    transactions = db.query(Transaction).filter(Transaction.user_id == current_user.id).all()
-    logger.info(f"Found {len(transactions)} transactions")
-    return transactions
+    
+    # Join with BOL to get broker information
+    transactions_with_broker = db.query(
+        Transaction,
+        BillOfLading.broker_name,
+        BillOfLading.broker_address,
+        BillOfLading.broker_phone
+    ).outerjoin(
+        BillOfLading, Transaction.bol_id == BillOfLading.id
+    ).filter(Transaction.user_id == current_user.id).all()
+    
+    # Convert to response format
+    result = []
+    for transaction, broker_name, broker_address, broker_phone in transactions_with_broker:
+        transaction_dict = {
+            "id": transaction.id,
+            "date": transaction.date,
+            "work_order_no": transaction.work_order_no,
+            "collected_amount": transaction.collected_amount,
+            "due_amount": transaction.due_amount,
+            "bol_id": transaction.bol_id,
+            "pickup_location": transaction.pickup_location,
+            "dropoff_location": transaction.dropoff_location,
+            "payment_type": transaction.payment_type,
+            "comments": transaction.comments,
+            "user_id": transaction.user_id,
+            "broker_name": broker_name,
+            "broker_address": broker_address,
+            "broker_phone": broker_phone
+        }
+        result.append(transaction_dict)
+    
+    logger.info(f"Found {len(result)} transactions with broker information")
+    return result
 
 @router.get("/{transaction_id}", response_model=TransactionSchema)
 def get_transaction(

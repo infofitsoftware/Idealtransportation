@@ -13,8 +13,10 @@ export interface Transaction {
   payment_type: string;
   comments?: string;
   user_id: number;
-  created_at: string;
-  updated_at: string;
+  // Broker information (populated from BOL)
+  broker_name?: string;
+  broker_address?: string;
+  broker_phone?: string;
 }
 
 export interface TransactionCreate {

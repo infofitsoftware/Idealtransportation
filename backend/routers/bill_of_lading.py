@@ -36,6 +36,10 @@ def create_bill_of_lading(bol: BillOfLadingCreate, db: Session = Depends(get_db)
         driver_name=bol.driver_name,
         date=bol.date,
         work_order_no=bol.work_order_no,
+        # Broker information fields
+        broker_name=bol.broker_name,
+        broker_address=bol.broker_address,
+        broker_phone=bol.broker_phone,
         pickup_name=bol.pickup_name,
         pickup_address=bol.pickup_address,
         pickup_city=bol.pickup_city,

@@ -88,6 +88,10 @@ export default function BillOfLadingForm() {
     driver_name: "",
     date: "",
     work_order_no: "",
+    // Broker information fields
+    broker_name: "",
+    broker_address: "",
+    broker_phone: "",
     pickup_name: "",
     pickup_address: "",
     pickup_city: "",
@@ -270,6 +274,22 @@ export default function BillOfLadingForm() {
                 {workOrderError}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Broker Information */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-green-50 rounded-lg p-4 border border-green-100">
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1 flex items-center gap-1"><BuildingOffice2Icon className="h-5 w-5 text-green-400" />Broker Name</label>
+            <input name="broker_name" value={form.broker_name} onChange={handleChange} className="input" />
+          </div>
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1 flex items-center gap-1"><BuildingOffice2Icon className="h-5 w-5 text-green-400" />Broker Address</label>
+            <input name="broker_address" value={form.broker_address} onChange={handleChange} className="input" />
+          </div>
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1 flex items-center gap-1"><PhoneIcon className="h-5 w-5 text-green-400" />Broker Phone</label>
+            <input name="broker_phone" value={form.broker_phone} onChange={handleChange} className="input" />
           </div>
         </div>
 

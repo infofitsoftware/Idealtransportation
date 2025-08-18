@@ -19,6 +19,10 @@ class BillOfLadingBase(BaseModel):
     driver_name: str
     date: date
     work_order_no: Optional[str]
+    # Broker information fields
+    broker_name: Optional[str]
+    broker_address: Optional[str]
+    broker_phone: Optional[str]
     pickup_name: Optional[str]
     pickup_address: Optional[str]
     pickup_city: Optional[str]

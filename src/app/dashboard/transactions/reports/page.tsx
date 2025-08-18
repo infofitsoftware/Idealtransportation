@@ -23,6 +23,10 @@ interface Transaction {
   user_id: number
   created_at: string
   updated_at: string
+  // Broker information (will be populated from BOL)
+  broker_name?: string
+  broker_address?: string
+  broker_phone?: string
 }
 
 function formatDate(dateStr: string) {
@@ -130,7 +134,7 @@ async function downloadTransactionPdf(transaction: Transaction) {
   // Work Order Information Section
   doc.setDrawColor(59, 130, 246)
   doc.setFillColor(239, 246, 255)
-  doc.roundedRect(14, y, 182, 45, 3, 3, 'FD')
+  doc.roundedRect(14, y, 182, 60, 3, 3, 'FD') // Increased height for broker info
   y += 8
   doc.setFont('helvetica', 'bold')
   doc.text('Work Order Information:', 20, y)
@@ -139,6 +143,11 @@ async function downloadTransactionPdf(transaction: Transaction) {
   doc.text(`Work Order Number: ${transaction.work_order_no}`, 25, y)
   y += 6
   doc.text(`Bill of Lading ID: ${transaction.bol_id}`, 25, y)
+  y += 6
+  // Add broker information (we'll need to fetch this from BOL)
+  doc.text(`Broker: ${transaction.broker_name || 'N/A'}`, 25, y)
+  y += 6
+  doc.text(`Broker Phone: ${transaction.broker_phone || 'N/A'}`, 25, y)
   y += 6
   doc.setFont('helvetica', 'bold')
   doc.text(`Payment Status: ${transaction.due_amount <= 0 ? 'FULLY PAID' : transaction.collected_amount > 0 ? 'PARTIALLY PAID' : 'PENDING PAYMENT'}`, 25, y)
@@ -299,6 +308,8 @@ export default function TransactionReportsPage() {
     const excelData = filteredData.map(transaction => ({
       'Date': formatDate(transaction.date),
       'Work Order No': transaction.work_order_no,
+      'Broker Name': transaction.broker_name || '',
+      'Broker Phone': transaction.broker_phone || '',
       'BOL ID': transaction.bol_id,
       'Pickup Location': transaction.pickup_location,
       'Dropoff Location': transaction.dropoff_location,
@@ -319,6 +330,8 @@ export default function TransactionReportsPage() {
     const colWidths = [
       { wch: 12 }, // Date
       { wch: 15 }, // Work Order No
+      { wch: 20 }, // Broker Name
+      { wch: 15 }, // Broker Phone
       { wch: 10 }, // BOL ID
       { wch: 20 }, // Pickup Location
       { wch: 20 }, // Dropoff Location
@@ -514,6 +527,7 @@ export default function TransactionReportsPage() {
               <tr className="bg-blue-100 text-blue-800">
                 <th className="border px-2 py-1">Date</th>
                 <th className="border px-2 py-1">Work Order</th>
+                <th className="border px-2 py-1">Broker</th>
                 <th className="border px-2 py-1">BOL ID</th>
                 <th className="border px-2 py-1">Pickup</th>
                 <th className="border px-2 py-1">Dropoff</th>
@@ -529,6 +543,10 @@ export default function TransactionReportsPage() {
                 <tr key={transaction.id} className="hover:bg-blue-50">
                   <td className="border px-2 py-1">{formatDate(transaction.date)}</td>
                   <td className="border px-2 py-1 font-medium">{transaction.work_order_no}</td>
+                  <td className="border px-2 py-1">
+                    <div className="font-semibold">{transaction.broker_name || 'N/A'}</div>
+                    <div className="text-xs text-gray-500">{transaction.broker_phone}</div>
+                  </td>
                   <td className="border px-2 py-1">{transaction.bol_id}</td>
                   <td className="border px-2 py-1">{transaction.pickup_location}</td>
                   <td className="border px-2 py-1">{transaction.dropoff_location}</td>

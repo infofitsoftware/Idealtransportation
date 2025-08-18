@@ -21,6 +21,10 @@ class TransactionCreate(TransactionBase):
 class Transaction(TransactionBase):
     id: int
     user_id: int
+    # Broker information (populated from BOL)
+    broker_name: Optional[str] = None
+    broker_address: Optional[str] = None
+    broker_phone: Optional[str] = None
 
     class Config:
         from_attributes = True 

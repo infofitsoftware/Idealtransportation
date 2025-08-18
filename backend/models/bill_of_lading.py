@@ -8,6 +8,10 @@ class BillOfLading(BaseModel):
     driver_name = Column(String(100), nullable=False)
     date = Column(Date, nullable=False)
     work_order_no = Column(String(50), nullable=True)
+    # Broker information fields
+    broker_name = Column(String(100), nullable=True)
+    broker_address = Column(String(200), nullable=True)
+    broker_phone = Column(String(30), nullable=True)
     pickup_name = Column(String(100), nullable=True)
     pickup_address = Column(String(200), nullable=True)
     pickup_city = Column(String(100), nullable=True)

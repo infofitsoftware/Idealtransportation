@@ -422,3 +422,75 @@ WHERE daily_expenses.user_id = %(user_id_1)s
 2025-08-08 15:06:52 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
 2025-08-08 15:06:52 - routers.transaction - INFO - Found 6 transactions
 2025-08-08 15:06:52 - routers.transaction - INFO - Found 6 transactions
+2025-08-18 12:52:06 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 12:52:07 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 12:52:41 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 12:52:41 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 12:52:50 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 12:52:50 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 12:53:55 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 12:53:55 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 13:02:44 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 13:02:44 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 13:02:45 - routers.transaction - INFO - Found 14 transactions with broker information
+2025-08-18 13:02:45 - routers.transaction - INFO - Found 14 transactions with broker information
+2025-08-18 13:02:50 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 13:02:50 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 13:02:50 - routers.transaction - INFO - Found 14 transactions with broker information
+2025-08-18 13:02:50 - routers.transaction - INFO - Found 14 transactions with broker information
+2025-08-18 13:02:51 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2025-08-18 13:02:51 - routers.transaction - INFO - User ID: 1
+2025-08-18 13:02:51 - routers.transaction - INFO - SQL Query: SELECT daily_expenses.id AS daily_expenses_id, daily_expenses.date AS daily_expenses_date, daily_expenses.diesel_amount AS daily_expenses_diesel_amount, daily_expenses.diesel_location AS daily_expenses_diesel_location, daily_expenses.def_amount AS daily_expenses_def_amount, daily_expenses.def_location AS daily_expenses_def_location, daily_expenses.other_expense_description AS daily_expenses_other_expense_description, daily_expenses.other_expense_amount AS daily_expenses_other_expense_amount, daily_expenses.other_expense_location AS daily_expenses_other_expense_location, daily_expenses.total AS daily_expenses_total, daily_expenses.user_id AS daily_expenses_user_id 
+FROM daily_expenses 
+WHERE daily_expenses.user_id = %(user_id_1)s
+2025-08-18 13:02:51 - routers.transaction - INFO - Found 4 daily expenses
+2025-08-18 13:02:51 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 8), 'diesel_amount': 120.0, 'diesel_location': 'Buc’ees katy', 'def_amount': 0.0, 'def_location': '0', 'other_expense_description': '0', 'other_expense_amount': None, 'other_expense_location': '0', 'total': 120.0, 'id': 13, 'user_id': 1}
+2025-08-18 13:02:51 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 12), 'diesel_amount': 132.0, 'diesel_location': 'M.E', 'def_amount': 20.0, 'def_location': 'Buc’ees Katy', 'other_expense_description': 'Truck broke down, I pay Mark to helping me', 'other_expense_amount': 100.0, 'other_expense_location': 'Pearland', 'total': 252.0, 'id': 14, 'user_id': 1}
+2025-08-18 13:02:51 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 13), 'diesel_amount': 140.0, 'diesel_location': 'M.E and Buc’ees Bastrop ( I used the 2016 lulu)', 'def_amount': 0.0, 'def_location': '0000', 'other_expense_description': 'Bearing + brake + labor ( lulu repair)', 'other_expense_amount': 550.0, 'other_expense_location': 'Auto zone and Velasquez', 'total': 690.0, 'id': 15, 'user_id': 1}
+2025-08-18 13:02:51 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 13), 'diesel_amount': 140.0, 'diesel_location': 'M.E', 'def_amount': 0.0, 'def_location': '0000', 'other_expense_description': '0000', 'other_expense_amount': None, 'other_expense_location': '0000', 'total': 140.0, 'id': 16, 'user_id': 1}
+2025-08-18 13:02:52 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2025-08-18 13:02:52 - routers.transaction - INFO - User ID: 1
+2025-08-18 13:02:52 - routers.transaction - INFO - SQL Query: SELECT daily_expenses.id AS daily_expenses_id, daily_expenses.date AS daily_expenses_date, daily_expenses.diesel_amount AS daily_expenses_diesel_amount, daily_expenses.diesel_location AS daily_expenses_diesel_location, daily_expenses.def_amount AS daily_expenses_def_amount, daily_expenses.def_location AS daily_expenses_def_location, daily_expenses.other_expense_description AS daily_expenses_other_expense_description, daily_expenses.other_expense_amount AS daily_expenses_other_expense_amount, daily_expenses.other_expense_location AS daily_expenses_other_expense_location, daily_expenses.total AS daily_expenses_total, daily_expenses.user_id AS daily_expenses_user_id 
+FROM daily_expenses 
+WHERE daily_expenses.user_id = %(user_id_1)s
+2025-08-18 13:02:52 - routers.transaction - INFO - Found 4 daily expenses
+2025-08-18 13:02:52 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 8), 'diesel_amount': 120.0, 'diesel_location': 'Buc’ees katy', 'def_amount': 0.0, 'def_location': '0', 'other_expense_description': '0', 'other_expense_amount': None, 'other_expense_location': '0', 'total': 120.0, 'id': 13, 'user_id': 1}
+2025-08-18 13:02:52 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 12), 'diesel_amount': 132.0, 'diesel_location': 'M.E', 'def_amount': 20.0, 'def_location': 'Buc’ees Katy', 'other_expense_description': 'Truck broke down, I pay Mark to helping me', 'other_expense_amount': 100.0, 'other_expense_location': 'Pearland', 'total': 252.0, 'id': 14, 'user_id': 1}
+2025-08-18 13:02:52 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 13), 'diesel_amount': 140.0, 'diesel_location': 'M.E and Buc’ees Bastrop ( I used the 2016 lulu)', 'def_amount': 0.0, 'def_location': '0000', 'other_expense_description': 'Bearing + brake + labor ( lulu repair)', 'other_expense_amount': 550.0, 'other_expense_location': 'Auto zone and Velasquez', 'total': 690.0, 'id': 15, 'user_id': 1}
+2025-08-18 13:02:52 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 13), 'diesel_amount': 140.0, 'diesel_location': 'M.E', 'def_amount': 0.0, 'def_location': '0000', 'other_expense_description': '0000', 'other_expense_amount': None, 'other_expense_location': '0000', 'total': 140.0, 'id': 16, 'user_id': 1}
+2025-08-18 13:02:56 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 13:02:56 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 13:02:56 - routers.transaction - INFO - Found 14 transactions with broker information
+2025-08-18 13:02:56 - routers.transaction - INFO - Found 14 transactions with broker information
+2025-08-18 13:03:52 - routers.transaction - INFO - Creating new transaction for user: admin@idealtransport.com
+2025-08-18 13:03:52 - routers.transaction - DEBUG - Transaction data: {'date': datetime.date(2025, 8, 18), 'work_order_no': '10', 'collected_amount': 2.99, 'due_amount': 0.009999999999999787, 'bol_id': 45, 'pickup_location': 'sasas', 'dropoff_location': 'sasa', 'payment_type': 'CASH', 'comments': 'fully paid'}
+2025-08-18 13:03:53 - routers.transaction - INFO - Adding transaction to database
+2025-08-18 13:03:54 - routers.transaction - INFO - Transaction created successfully with ID: 36
+2025-08-18 13:03:59 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 13:03:59 - routers.transaction - INFO - Found 15 transactions with broker information
+2025-08-18 13:03:59 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 13:04:00 - routers.transaction - INFO - Found 15 transactions with broker information
+2025-08-18 13:05:08 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 13:05:08 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-18 13:05:08 - routers.transaction - INFO - Found 15 transactions with broker information
+2025-08-18 13:05:08 - routers.transaction - INFO - Found 15 transactions with broker information
+2025-08-18 13:05:09 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2025-08-18 13:05:09 - routers.transaction - INFO - User ID: 1
+2025-08-18 13:05:09 - routers.transaction - INFO - SQL Query: SELECT daily_expenses.id AS daily_expenses_id, daily_expenses.date AS daily_expenses_date, daily_expenses.diesel_amount AS daily_expenses_diesel_amount, daily_expenses.diesel_location AS daily_expenses_diesel_location, daily_expenses.def_amount AS daily_expenses_def_amount, daily_expenses.def_location AS daily_expenses_def_location, daily_expenses.other_expense_description AS daily_expenses_other_expense_description, daily_expenses.other_expense_amount AS daily_expenses_other_expense_amount, daily_expenses.other_expense_location AS daily_expenses_other_expense_location, daily_expenses.total AS daily_expenses_total, daily_expenses.user_id AS daily_expenses_user_id 
+FROM daily_expenses 
+WHERE daily_expenses.user_id = %(user_id_1)s
+2025-08-18 13:05:09 - routers.transaction - INFO - Found 4 daily expenses
+2025-08-18 13:05:09 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 8), 'diesel_amount': 120.0, 'diesel_location': 'Buc’ees katy', 'def_amount': 0.0, 'def_location': '0', 'other_expense_description': '0', 'other_expense_amount': None, 'other_expense_location': '0', 'total': 120.0, 'id': 13, 'user_id': 1}
+2025-08-18 13:05:09 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 12), 'diesel_amount': 132.0, 'diesel_location': 'M.E', 'def_amount': 20.0, 'def_location': 'Buc’ees Katy', 'other_expense_description': 'Truck broke down, I pay Mark to helping me', 'other_expense_amount': 100.0, 'other_expense_location': 'Pearland', 'total': 252.0, 'id': 14, 'user_id': 1}
+2025-08-18 13:05:09 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 13), 'diesel_amount': 140.0, 'diesel_location': 'M.E and Buc’ees Bastrop ( I used the 2016 lulu)', 'def_amount': 0.0, 'def_location': '0000', 'other_expense_description': 'Bearing + brake + labor ( lulu repair)', 'other_expense_amount': 550.0, 'other_expense_location': 'Auto zone and Velasquez', 'total': 690.0, 'id': 15, 'user_id': 1}
+2025-08-18 13:05:09 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 13), 'diesel_amount': 140.0, 'diesel_location': 'M.E', 'def_amount': 0.0, 'def_location': '0000', 'other_expense_description': '0000', 'other_expense_amount': None, 'other_expense_location': '0000', 'total': 140.0, 'id': 16, 'user_id': 1}
+2025-08-18 13:05:09 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2025-08-18 13:05:09 - routers.transaction - INFO - User ID: 1
+2025-08-18 13:05:09 - routers.transaction - INFO - SQL Query: SELECT daily_expenses.id AS daily_expenses_id, daily_expenses.date AS daily_expenses_date, daily_expenses.diesel_amount AS daily_expenses_diesel_amount, daily_expenses.diesel_location AS daily_expenses_diesel_location, daily_expenses.def_amount AS daily_expenses_def_amount, daily_expenses.def_location AS daily_expenses_def_location, daily_expenses.other_expense_description AS daily_expenses_other_expense_description, daily_expenses.other_expense_amount AS daily_expenses_other_expense_amount, daily_expenses.other_expense_location AS daily_expenses_other_expense_location, daily_expenses.total AS daily_expenses_total, daily_expenses.user_id AS daily_expenses_user_id 
+FROM daily_expenses 
+WHERE daily_expenses.user_id = %(user_id_1)s
+2025-08-18 13:05:09 - routers.transaction - INFO - Found 4 daily expenses
+2025-08-18 13:05:09 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 8), 'diesel_amount': 120.0, 'diesel_location': 'Buc’ees katy', 'def_amount': 0.0, 'def_location': '0', 'other_expense_description': '0', 'other_expense_amount': None, 'other_expense_location': '0', 'total': 120.0, 'id': 13, 'user_id': 1}
+2025-08-18 13:05:09 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 12), 'diesel_amount': 132.0, 'diesel_location': 'M.E', 'def_amount': 20.0, 'def_location': 'Buc’ees Katy', 'other_expense_description': 'Truck broke down, I pay Mark to helping me', 'other_expense_amount': 100.0, 'other_expense_location': 'Pearland', 'total': 252.0, 'id': 14, 'user_id': 1}
+2025-08-18 13:05:09 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 13), 'diesel_amount': 140.0, 'diesel_location': 'M.E and Buc’ees Bastrop ( I used the 2016 lulu)', 'def_amount': 0.0, 'def_location': '0000', 'other_expense_description': 'Bearing + brake + labor ( lulu repair)', 'other_expense_amount': 550.0, 'other_expense_location': 'Auto zone and Velasquez', 'total': 690.0, 'id': 15, 'user_id': 1}
+2025-08-18 13:05:09 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 13), 'diesel_amount': 140.0, 'diesel_location': 'M.E', 'def_amount': 0.0, 'def_location': '0000', 'other_expense_description': '0000', 'other_expense_amount': None, 'other_expense_location': '0000', 'total': 140.0, 'id': 16, 'user_id': 1}
