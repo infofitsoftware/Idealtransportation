@@ -92,7 +92,7 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 
-# Reload systemd and enable service
+# Reload systemd and enable service 1
 echo "Enabling backend service..."
 sudo systemctl daemon-reload
 sudo systemctl enable ideal-transportation
