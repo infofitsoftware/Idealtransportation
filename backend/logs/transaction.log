@@ -494,3 +494,11 @@ WHERE daily_expenses.user_id = %(user_id_1)s
 2025-08-18 13:05:09 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 12), 'diesel_amount': 132.0, 'diesel_location': 'M.E', 'def_amount': 20.0, 'def_location': 'Buc’ees Katy', 'other_expense_description': 'Truck broke down, I pay Mark to helping me', 'other_expense_amount': 100.0, 'other_expense_location': 'Pearland', 'total': 252.0, 'id': 14, 'user_id': 1}
 2025-08-18 13:05:09 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 13), 'diesel_amount': 140.0, 'diesel_location': 'M.E and Buc’ees Bastrop ( I used the 2016 lulu)', 'def_amount': 0.0, 'def_location': '0000', 'other_expense_description': 'Bearing + brake + labor ( lulu repair)', 'other_expense_amount': 550.0, 'other_expense_location': 'Auto zone and Velasquez', 'total': 690.0, 'id': 15, 'user_id': 1}
 2025-08-18 13:05:09 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 13), 'diesel_amount': 140.0, 'diesel_location': 'M.E', 'def_amount': 0.0, 'def_location': '0000', 'other_expense_description': '0000', 'other_expense_amount': None, 'other_expense_location': '0000', 'total': 140.0, 'id': 16, 'user_id': 1}
+2025-08-21 15:48:13 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-21 15:48:13 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-21 15:48:13 - routers.transaction - INFO - Found 21 transactions with broker information
+2025-08-21 15:48:13 - routers.transaction - INFO - Found 21 transactions with broker information
+2025-08-21 15:52:06 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-21 15:52:07 - routers.transaction - INFO - Found 21 transactions with broker information
+2025-08-21 15:52:07 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-08-21 15:52:07 - routers.transaction - INFO - Found 21 transactions with broker information

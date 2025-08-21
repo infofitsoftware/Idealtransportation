@@ -28,7 +28,11 @@ interface Transaction {
 }
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString()
+  const date = new Date(dateStr)
+  const day = date.getDate().toString().padStart(2, '0')
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const year = date.getFullYear()
+  return `${day}-${month}-${year}`
 }
 
 function formatCurrency(amount: number) {
@@ -254,9 +258,9 @@ export default function TransactionReportsPage() {
     fetchData()
   }, [])
 
-  // Filter data based on date range
+  // Filter data based on date range and sort by date ascending
   useEffect(() => {
-    let filtered = data
+    let filtered = [...data] // Create a copy to avoid mutating original data
 
     if (fromDate) {
       filtered = filtered.filter(transaction => 
@@ -269,6 +273,13 @@ export default function TransactionReportsPage() {
         new Date(transaction.date) <= new Date(toDate)
       )
     }
+
+    // Sort by date in ascending order (oldest first)
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.date)
+      const dateB = new Date(b.date)
+      return dateA.getTime() - dateB.getTime()
+    })
 
     setFilteredData(filtered)
   }, [data, fromDate, toDate])
@@ -519,66 +530,66 @@ export default function TransactionReportsPage() {
       ) : error ? (
         <div className="text-red-600">{error}</div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full border text-sm">
-            <thead>
-              <tr className="bg-blue-100 text-blue-800">
-                <th className="border px-2 py-1">Date</th>
-                <th className="border px-2 py-1">Work Order</th>
-                <th className="border px-2 py-1">Broker</th>
-                <th className="border px-2 py-1">BOL ID</th>
-                <th className="border px-2 py-1">Pickup</th>
-                <th className="border px-2 py-1">Dropoff</th>
-                <th className="border px-2 py-1">Payment Type</th>
-                <th className="border px-2 py-1">Amount Collected</th>
-                <th className="border px-2 py-1">Due Amount</th>
-                <th className="border px-2 py-1">Status</th>
-                <th className="border px-2 py-1">Download</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((transaction) => (
-                <tr key={transaction.id} className="hover:bg-blue-50">
-                  <td className="border px-2 py-1">{formatDate(transaction.date)}</td>
-                  <td className="border px-2 py-1 font-medium">{transaction.work_order_no}</td>
-                  <td className="border px-2 py-1">
-                    <div className="font-semibold">{transaction.broker_name || 'N/A'}</div>
-                    <div className="text-xs text-gray-500">{transaction.broker_phone}</div>
-                  </td>
-                  <td className="border px-2 py-1">{transaction.bol_id}</td>
-                  <td className="border px-2 py-1">{transaction.pickup_location}</td>
-                  <td className="border px-2 py-1">{transaction.dropoff_location}</td>
-                  <td className="border px-2 py-1">{transaction.payment_type}</td>
-                  <td className="border px-2 py-1 font-medium text-green-600">{formatCurrency(transaction.collected_amount)}</td>
-                  <td className="border px-2 py-1 font-medium text-red-600">{formatCurrency(transaction.due_amount)}</td>
-                  <td className="border px-2 py-1">
-                    {transaction.due_amount <= 0 ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Paid
-                      </span>
-                    ) : transaction.collected_amount > 0 ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                        Partial
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        Pending
-                      </span>
-                    )}
-                  </td>
-                  <td className="border px-2 py-1 text-center">
-                    <button
-                      className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto"
-                      onClick={async () => await downloadTransactionPdf(transaction)}
-                    >
-                      <ArrowDownTrayIcon className="h-5 w-5" /> Download
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                 <div className="overflow-auto max-h-96 border border-gray-200 rounded-lg">
+           <table className="min-w-full border-collapse text-sm">
+             <thead className="sticky top-0 z-10">
+               <tr className="bg-blue-100 text-blue-800">
+                 <th className="border px-3 py-2 text-left min-w-[120px] whitespace-nowrap">Date</th>
+                 <th className="border px-3 py-2 text-left min-w-[140px] whitespace-nowrap">Work Order</th>
+                 <th className="border px-3 py-2 text-left min-w-[180px] whitespace-nowrap">Broker</th>
+                 <th className="border px-3 py-2 text-left min-w-[80px] whitespace-nowrap">BOL ID</th>
+                 <th className="border px-3 py-2 text-left min-w-[150px] whitespace-nowrap">Pickup</th>
+                 <th className="border px-3 py-2 text-left min-w-[150px] whitespace-nowrap">Dropoff</th>
+                 <th className="border px-3 py-2 text-left min-w-[120px] whitespace-nowrap">Payment Type</th>
+                 <th className="border px-3 py-2 text-left min-w-[130px] whitespace-nowrap">Amount Collected</th>
+                 <th className="border px-3 py-2 text-left min-w-[110px] whitespace-nowrap">Due Amount</th>
+                 <th className="border px-3 py-2 text-left min-w-[80px] whitespace-nowrap">Status</th>
+                 <th className="border px-3 py-2 text-center min-w-[100px] whitespace-nowrap">Download</th>
+               </tr>
+             </thead>
+             <tbody>
+               {filteredData.map((transaction) => (
+                 <tr key={transaction.id} className="hover:bg-blue-50">
+                   <td className="border px-3 py-2 whitespace-nowrap">{formatDate(transaction.date)}</td>
+                   <td className="border px-3 py-2 font-medium whitespace-nowrap">{transaction.work_order_no}</td>
+                   <td className="border px-3 py-2">
+                     <div className="font-semibold whitespace-nowrap">{transaction.broker_name || 'N/A'}</div>
+                     <div className="text-xs text-gray-500 whitespace-nowrap">{transaction.broker_phone}</div>
+                   </td>
+                   <td className="border px-3 py-2 whitespace-nowrap">{transaction.bol_id}</td>
+                   <td className="border px-3 py-2 whitespace-nowrap">{transaction.pickup_location}</td>
+                   <td className="border px-3 py-2 whitespace-nowrap">{transaction.dropoff_location}</td>
+                   <td className="border px-3 py-2 whitespace-nowrap">{transaction.payment_type}</td>
+                   <td className="border px-3 py-2 font-medium text-green-600 whitespace-nowrap">{formatCurrency(transaction.collected_amount)}</td>
+                   <td className="border px-3 py-2 font-medium text-red-600 whitespace-nowrap">{formatCurrency(transaction.due_amount)}</td>
+                   <td className="border px-3 py-2">
+                     {transaction.due_amount <= 0 ? (
+                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap">
+                         Paid
+                       </span>
+                     ) : transaction.collected_amount > 0 ? (
+                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 whitespace-nowrap">
+                         Partial
+                       </span>
+                     ) : (
+                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 whitespace-nowrap">
+                         Pending
+                       </span>
+                     )}
+                   </td>
+                   <td className="border px-3 py-2 text-center">
+                     <button
+                       className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto whitespace-nowrap"
+                       onClick={async () => await downloadTransactionPdf(transaction)}
+                     >
+                       <ArrowDownTrayIcon className="h-5 w-5" /> Download
+                     </button>
+                   </td>
+                 </tr>
+               ))}
+             </tbody>
+           </table>
+         </div>
       )}
     </div>
   )
