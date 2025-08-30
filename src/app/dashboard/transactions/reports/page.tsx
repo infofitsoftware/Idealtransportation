@@ -242,6 +242,7 @@ export default function TransactionReportsPage() {
   const [error, setError] = useState('')
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
+  const [workOrderFilter, setWorkOrderFilter] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -258,7 +259,7 @@ export default function TransactionReportsPage() {
     fetchData()
   }, [])
 
-  // Filter data based on date range and sort by date ascending
+  // Filter data based on date range, work order, and sort by date ascending
   useEffect(() => {
     let filtered = [...data] // Create a copy to avoid mutating original data
 
@@ -274,6 +275,12 @@ export default function TransactionReportsPage() {
       )
     }
 
+    if (workOrderFilter.trim()) {
+      filtered = filtered.filter(transaction => 
+        transaction.work_order_no.toLowerCase().includes(workOrderFilter.toLowerCase())
+      )
+    }
+
     // Sort by date in ascending order (oldest first)
     filtered.sort((a, b) => {
       const dateA = new Date(a.date)
@@ -282,11 +289,12 @@ export default function TransactionReportsPage() {
     })
 
     setFilteredData(filtered)
-  }, [data, fromDate, toDate])
+  }, [data, fromDate, toDate, workOrderFilter])
 
   const clearFilters = () => {
     setFromDate('')
     setToDate('')
+    setWorkOrderFilter('')
   }
 
   // Calculate payment statistics
@@ -439,10 +447,10 @@ export default function TransactionReportsPage() {
         </div>
       </div>
 
-      {/* Date Filters */}
+      {/* Filters */}
       <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Filter by Date Range</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Filter Options</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <div>
             <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
               From Date
@@ -468,6 +476,19 @@ export default function TransactionReportsPage() {
             />
           </div>
           <div>
+            <label htmlFor="workOrderFilter" className="block text-sm font-medium text-gray-700 mb-1">
+              Work Order Number
+            </label>
+            <input
+              type="text"
+              id="workOrderFilter"
+              value={workOrderFilter}
+              onChange={(e) => setWorkOrderFilter(e.target.value)}
+              placeholder="Enter work order number..."
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+          <div>
             <button
               onClick={clearFilters}
               className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -476,12 +497,13 @@ export default function TransactionReportsPage() {
             </button>
           </div>
         </div>
-        {(fromDate || toDate) && (
+        {(fromDate || toDate || workOrderFilter) && (
           <div className="mt-3 text-sm text-gray-600">
             Showing {filteredData.length} of {data.length} transactions
             {fromDate && toDate && ` from ${fromDate} to ${toDate}`}
             {fromDate && !toDate && ` from ${fromDate}`}
             {!fromDate && toDate && ` until ${toDate}`}
+            {workOrderFilter && ` matching "${workOrderFilter}"`}
           </div>
         )}
       </div>

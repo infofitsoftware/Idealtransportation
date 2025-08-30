@@ -58,7 +58,11 @@ interface BillOfLading {
 
 function formatDate(dateStr?: string) {
   if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString();
+  const date = new Date(dateStr);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
 }
 
 function formatCurrency(amount?: number) {
@@ -378,6 +382,7 @@ export default function ReportsPage() {
   const [error, setError] = useState("");
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [workOrderFilter, setWorkOrderFilter] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -394,9 +399,9 @@ export default function ReportsPage() {
     fetchData();
   }, []);
 
-  // Filter data based on date range
+  // Filter data based on date range, work order, and sort by date ascending
   useEffect(() => {
-    let filtered = data;
+    let filtered = [...data]; // Create a copy to avoid mutating original data
 
     if (fromDate) {
       filtered = filtered.filter(bol => 
@@ -410,12 +415,26 @@ export default function ReportsPage() {
       );
     }
 
+    if (workOrderFilter.trim()) {
+      filtered = filtered.filter(bol => 
+        bol.work_order_no && bol.work_order_no.toLowerCase().includes(workOrderFilter.toLowerCase())
+      );
+    }
+
+    // Sort by date in ascending order (oldest first)
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return dateA.getTime() - dateB.getTime();
+    });
+
     setFilteredData(filtered);
-  }, [data, fromDate, toDate]);
+  }, [data, fromDate, toDate, workOrderFilter]);
 
   const clearFilters = () => {
     setFromDate('');
     setToDate('');
+    setWorkOrderFilter('');
   };
 
   // Calculate payment statistics for each BOL
@@ -611,10 +630,10 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Date Filters */}
+      {/* Filters */}
       <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Filter by Date Range</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Filter Options</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <div>
             <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
               From Date
@@ -640,6 +659,19 @@ export default function ReportsPage() {
             />
           </div>
           <div>
+            <label htmlFor="workOrderFilter" className="block text-sm font-medium text-gray-700 mb-1">
+              Work Order Number
+            </label>
+            <input
+              type="text"
+              id="workOrderFilter"
+              value={workOrderFilter}
+              onChange={(e) => setWorkOrderFilter(e.target.value)}
+              placeholder="Enter work order number..."
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+          <div>
             <button
               onClick={clearFilters}
               className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -648,12 +680,13 @@ export default function ReportsPage() {
             </button>
           </div>
         </div>
-        {(fromDate || toDate) && (
+        {(fromDate || toDate || workOrderFilter) && (
           <div className="mt-3 text-sm text-gray-600">
             Showing {filteredData.length} of {data.length} BOLs
             {fromDate && toDate && ` from ${fromDate} to ${toDate}`}
             {fromDate && !toDate && ` from ${fromDate}`}
             {!fromDate && toDate && ` until ${toDate}`}
+            {workOrderFilter && ` matching "${workOrderFilter}"`}
           </div>
         )}
       </div>
@@ -702,22 +735,22 @@ export default function ReportsPage() {
       ) : error ? (
         <div className="text-red-600">{error}</div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full border text-sm">
-            <thead>
+        <div className="overflow-auto max-h-96 border border-gray-200 rounded-lg">
+          <table className="min-w-full border-collapse text-sm">
+            <thead className="sticky top-0 z-10">
               <tr className="bg-blue-100 text-blue-800">
-                <th className="border px-2 py-1">Driver</th>
-                <th className="border px-2 py-1">Date</th>
-                <th className="border px-2 py-1">Work Order</th>
-                <th className="border px-2 py-1">Broker</th>
-                <th className="border px-2 py-1">Pickup</th>
-                <th className="border px-2 py-1">Delivery</th>
-                <th className="border px-2 py-1">Total Amount</th>
-                <th className="border px-2 py-1">Amount Paid</th>
-                <th className="border px-2 py-1">Due Amount</th>
-                <th className="border px-2 py-1">Status</th>
-                <th className="border px-2 py-1">Vehicles</th>
-                <th className="border px-2 py-1">Download</th>
+                <th className="border px-3 py-2 text-left min-w-[120px] whitespace-nowrap">Driver</th>
+                <th className="border px-3 py-2 text-left min-w-[120px] whitespace-nowrap">Date</th>
+                <th className="border px-3 py-2 text-left min-w-[140px] whitespace-nowrap">Work Order</th>
+                <th className="border px-3 py-2 text-left min-w-[180px] whitespace-nowrap">Broker</th>
+                <th className="border px-3 py-2 text-left min-w-[200px] whitespace-nowrap">Pickup</th>
+                <th className="border px-3 py-2 text-left min-w-[200px] whitespace-nowrap">Delivery</th>
+                <th className="border px-3 py-2 text-left min-w-[130px] whitespace-nowrap">Total Amount</th>
+                <th className="border px-3 py-2 text-left min-w-[130px] whitespace-nowrap">Amount Paid</th>
+                <th className="border px-3 py-2 text-left min-w-[110px] whitespace-nowrap">Due Amount</th>
+                <th className="border px-3 py-2 text-left min-w-[80px] whitespace-nowrap">Status</th>
+                <th className="border px-3 py-2 text-left min-w-[250px] whitespace-nowrap">Vehicles</th>
+                <th className="border px-3 py-2 text-center min-w-[100px] whitespace-nowrap">Download</th>
               </tr>
             </thead>
             <tbody>
@@ -728,58 +761,58 @@ export default function ReportsPage() {
                 
                 return (
                   <tr key={bol.id} className={`hover:bg-blue-50 ${!isFullyPaid ? 'bg-red-50' : ''}`}>
-                    <td className="border px-2 py-1 font-medium">{bol.driver_name}</td>
-                    <td className="border px-2 py-1">{formatDate(bol.date)}</td>
-                    <td className="border px-2 py-1 font-medium">{bol.work_order_no || 'N/A'}</td>
-                    <td className="border px-2 py-1">
-                      <div className="font-semibold">{bol.broker_name || 'N/A'}</div>
-                      <div className="text-xs text-gray-500">{bol.broker_address}</div>
-                      <div className="text-xs text-gray-400">{bol.broker_phone}</div>
+                    <td className="border px-3 py-2 font-medium whitespace-nowrap">{bol.driver_name}</td>
+                    <td className="border px-3 py-2 whitespace-nowrap">{formatDate(bol.date)}</td>
+                    <td className="border px-3 py-2 font-medium whitespace-nowrap">{bol.work_order_no || 'N/A'}</td>
+                    <td className="border px-3 py-2">
+                      <div className="font-semibold whitespace-nowrap">{bol.broker_name || 'N/A'}</div>
+                      <div className="text-xs text-gray-500 whitespace-nowrap">{bol.broker_address}</div>
+                      <div className="text-xs text-gray-400 whitespace-nowrap">{bol.broker_phone}</div>
                     </td>
-                    <td className="border px-2 py-1">
-                      <div className="font-semibold">{bol.pickup_name}</div>
-                      <div className="text-xs text-gray-500">{bol.pickup_address}</div>
-                      <div className="text-xs text-gray-400">{bol.pickup_city}, {bol.pickup_state} {bol.pickup_zip}</div>
+                    <td className="border px-3 py-2">
+                      <div className="font-semibold whitespace-nowrap">{bol.pickup_name}</div>
+                      <div className="text-xs text-gray-500 whitespace-nowrap">{bol.pickup_address}</div>
+                      <div className="text-xs text-gray-400 whitespace-nowrap">{bol.pickup_city}, {bol.pickup_state} {bol.pickup_zip}</div>
                     </td>
-                    <td className="border px-2 py-1">
-                      <div className="font-semibold">{bol.delivery_name}</div>
-                      <div className="text-xs text-gray-500">{bol.delivery_address}</div>
-                      <div className="text-xs text-gray-400">{bol.delivery_city}, {bol.delivery_state} {bol.delivery_zip}</div>
+                    <td className="border px-3 py-2">
+                      <div className="font-semibold whitespace-nowrap">{bol.delivery_name}</div>
+                      <div className="text-xs text-gray-500 whitespace-nowrap">{bol.delivery_address}</div>
+                      <div className="text-xs text-gray-400 whitespace-nowrap">{bol.delivery_city}, {bol.delivery_state} {bol.delivery_zip}</div>
                     </td>
-                    <td className="border px-2 py-1 font-medium text-blue-600">
+                    <td className="border px-3 py-2 font-medium text-blue-600 whitespace-nowrap">
                       {formatCurrency(paymentInfo.totalAmount)}
                     </td>
-                    <td className="border px-2 py-1 font-medium text-green-600">
+                    <td className="border px-3 py-2 font-medium text-green-600 whitespace-nowrap">
                       {formatCurrency(paymentInfo.collectedAmount)}
                     </td>
-                    <td className="border px-2 py-1 font-medium text-red-600">
+                    <td className="border px-3 py-2 font-medium text-red-600 whitespace-nowrap">
                       {formatCurrency(paymentInfo.dueAmount)}
                     </td>
-                    <td className="border px-2 py-1">
+                    <td className="border px-3 py-2">
                       {isFullyPaid ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap">
                           Paid
                         </span>
                       ) : hasPartialPayment ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 whitespace-nowrap">
                           Partial
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 whitespace-nowrap">
                           Pending
                         </span>
                       )}
                     </td>
-                    <td className="border px-2 py-1">
+                    <td className="border px-3 py-2">
                       <ul className="list-disc pl-4">
                         {bol.vehicles.map((v, i) => (
-                          <li key={i}>{v.year} {v.make} {v.model} ({v.vin})</li>
+                          <li key={i} className="whitespace-nowrap">{v.year} {v.make} {v.model} ({v.vin})</li>
                         ))}
                       </ul>
                     </td>
-                    <td className="border px-2 py-1 text-center">
+                    <td className="border px-3 py-2 text-center">
                       <button
-                        className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto"
+                        className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto whitespace-nowrap"
                         onClick={async () => await downloadBOLPdf(bol)}
                       >
                         <ArrowDownTrayIcon className="h-5 w-5" /> Download
