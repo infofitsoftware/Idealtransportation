@@ -378,18 +378,30 @@ export default function ReportsPage() {
   const { currentUser, loading: accessLoading, hasAccess, isSuperuser } = useAccessControl();
   const [data, setData] = useState<BillOfLading[]>([]);
   const [filteredData, setFilteredData] = useState<BillOfLading[]>([]);
+  const [displayedData, setDisplayedData] = useState<BillOfLading[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [workOrderFilter, setWorkOrderFilter] = useState('');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // Load 10 BOLs at a time
+  const [hasMoreData, setHasMoreData] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const bols = await bolService.getBOLs();
         setData(bols);
         setFilteredData(bols);
+        // Initially display only first 10 items
+        const initialData = bols.slice(0, itemsPerPage);
+        setDisplayedData(initialData);
+        setHasMoreData(bols.length > itemsPerPage);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -397,7 +409,7 @@ export default function ReportsPage() {
       }
     };
     fetchData();
-  }, []);
+  }, [itemsPerPage]);
 
   // Filter data based on date range, work order, and sort by date ascending
   useEffect(() => {
@@ -429,12 +441,38 @@ export default function ReportsPage() {
     });
 
     setFilteredData(filtered);
-  }, [data, fromDate, toDate, workOrderFilter]);
+    
+    // Reset pagination when filters change
+    setCurrentPage(1);
+    const initialData = filtered.slice(0, itemsPerPage);
+    setDisplayedData(initialData);
+    setHasMoreData(filtered.length > itemsPerPage);
+  }, [data, fromDate, toDate, workOrderFilter, itemsPerPage]);
 
   const clearFilters = () => {
     setFromDate('');
     setToDate('');
     setWorkOrderFilter('');
+  };
+
+  // Load more data function
+  const loadMoreData = () => {
+    if (loadingMore || !hasMoreData) return;
+    
+    setLoadingMore(true);
+    
+    // Simulate a small delay for better UX
+    setTimeout(() => {
+      const nextPage = currentPage + 1;
+      const startIndex = 0;
+      const endIndex = nextPage * itemsPerPage;
+      const newData = filteredData.slice(startIndex, endIndex);
+      
+      setDisplayedData(newData);
+      setCurrentPage(nextPage);
+      setHasMoreData(endIndex < filteredData.length);
+      setLoadingMore(false);
+    }, 300);
   };
 
   // Calculate payment statistics for each BOL
@@ -682,14 +720,38 @@ export default function ReportsPage() {
         </div>
         {(fromDate || toDate || workOrderFilter) && (
           <div className="mt-3 text-sm text-gray-600">
-            Showing {filteredData.length} of {data.length} BOLs
+            Showing {displayedData.length} of {filteredData.length} BOLs
             {fromDate && toDate && ` from ${fromDate} to ${toDate}`}
             {fromDate && !toDate && ` from ${fromDate}`}
             {!fromDate && toDate && ` until ${toDate}`}
             {workOrderFilter && ` matching "${workOrderFilter}"`}
+            {hasMoreData && ` (${filteredData.length - displayedData.length} more available)`}
           </div>
         )}
       </div>
+
+      {/* Data Summary */}
+      {!loading && filteredData.length > 0 && (
+        <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">Report Summary</h3>
+              <p className="text-sm text-gray-600">
+                {displayedData.length === filteredData.length 
+                  ? `Showing all ${filteredData.length} BOL reports`
+                  : `Showing ${displayedData.length} of ${filteredData.length} BOL reports`
+                }
+              </p>
+            </div>
+            {hasMoreData && (
+              <div className="text-right">
+                <div className="text-2xl font-bold text-blue-600">{filteredData.length - displayedData.length}</div>
+                <div className="text-sm text-gray-600">More Available</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Payment Statistics */}
       {filteredData.length > 0 && (
@@ -731,100 +793,191 @@ export default function ReportsPage() {
       )}
 
       {loading ? (
-        <div className="text-gray-500">Loading...</div>
-      ) : error ? (
-        <div className="text-red-600">{error}</div>
-      ) : (
-        <div className="overflow-auto max-h-96 border border-gray-200 rounded-lg">
-          <table className="min-w-full border-collapse text-sm">
-            <thead className="sticky top-0 z-10">
-              <tr className="bg-blue-100 text-blue-800">
-                <th className="border px-3 py-2 text-left min-w-[120px] whitespace-nowrap">Driver</th>
-                <th className="border px-3 py-2 text-left min-w-[120px] whitespace-nowrap">Date</th>
-                <th className="border px-3 py-2 text-left min-w-[140px] whitespace-nowrap">Work Order</th>
-                <th className="border px-3 py-2 text-left min-w-[180px] whitespace-nowrap">Broker</th>
-                <th className="border px-3 py-2 text-left min-w-[200px] whitespace-nowrap">Pickup</th>
-                <th className="border px-3 py-2 text-left min-w-[200px] whitespace-nowrap">Delivery</th>
-                <th className="border px-3 py-2 text-left min-w-[130px] whitespace-nowrap">Total Amount</th>
-                <th className="border px-3 py-2 text-left min-w-[130px] whitespace-nowrap">Amount Paid</th>
-                <th className="border px-3 py-2 text-left min-w-[110px] whitespace-nowrap">Due Amount</th>
-                <th className="border px-3 py-2 text-left min-w-[80px] whitespace-nowrap">Status</th>
-                <th className="border px-3 py-2 text-left min-w-[250px] whitespace-nowrap">Vehicles</th>
-                <th className="border px-3 py-2 text-center min-w-[100px] whitespace-nowrap">Download</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((bol) => {
-                const paymentInfo = getPaymentInfo(bol);
-                const isFullyPaid = paymentInfo.dueAmount <= 0;
-                const hasPartialPayment = paymentInfo.collectedAmount > 0;
-                
-                return (
-                  <tr key={bol.id} className={`hover:bg-blue-50 ${!isFullyPaid ? 'bg-red-50' : ''}`}>
-                    <td className="border px-3 py-2 font-medium whitespace-nowrap">{bol.driver_name}</td>
-                    <td className="border px-3 py-2 whitespace-nowrap">{formatDate(bol.date)}</td>
-                    <td className="border px-3 py-2 font-medium whitespace-nowrap">{bol.work_order_no || 'N/A'}</td>
-                    <td className="border px-3 py-2">
-                      <div className="font-semibold whitespace-nowrap">{bol.broker_name || 'N/A'}</div>
-                      <div className="text-xs text-gray-500 whitespace-nowrap">{bol.broker_address}</div>
-                      <div className="text-xs text-gray-400 whitespace-nowrap">{bol.broker_phone}</div>
-                    </td>
-                    <td className="border px-3 py-2">
-                      <div className="font-semibold whitespace-nowrap">{bol.pickup_name}</div>
-                      <div className="text-xs text-gray-500 whitespace-nowrap">{bol.pickup_address}</div>
-                      <div className="text-xs text-gray-400 whitespace-nowrap">{bol.pickup_city}, {bol.pickup_state} {bol.pickup_zip}</div>
-                    </td>
-                    <td className="border px-3 py-2">
-                      <div className="font-semibold whitespace-nowrap">{bol.delivery_name}</div>
-                      <div className="text-xs text-gray-500 whitespace-nowrap">{bol.delivery_address}</div>
-                      <div className="text-xs text-gray-400 whitespace-nowrap">{bol.delivery_city}, {bol.delivery_state} {bol.delivery_zip}</div>
-                    </td>
-                    <td className="border px-3 py-2 font-medium text-blue-600 whitespace-nowrap">
-                      {formatCurrency(paymentInfo.totalAmount)}
-                    </td>
-                    <td className="border px-3 py-2 font-medium text-green-600 whitespace-nowrap">
-                      {formatCurrency(paymentInfo.collectedAmount)}
-                    </td>
-                    <td className="border px-3 py-2 font-medium text-red-600 whitespace-nowrap">
-                      {formatCurrency(paymentInfo.dueAmount)}
-                    </td>
-                    <td className="border px-3 py-2">
-                      {isFullyPaid ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap">
-                          Paid
-                        </span>
-                      ) : hasPartialPayment ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 whitespace-nowrap">
-                          Partial
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 whitespace-nowrap">
-                          Pending
-                        </span>
-                      )}
-                    </td>
-                    <td className="border px-3 py-2">
-                      <ul className="list-disc pl-4">
-                        {bol.vehicles.map((v, i) => (
-                          <li key={i} className="whitespace-nowrap">{v.year} {v.make} {v.model} ({v.vin})</li>
-                        ))}
-                      </ul>
-                    </td>
-                    <td className="border px-3 py-2 text-center">
-                      <button
-                        className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto whitespace-nowrap"
-                        onClick={async () => await downloadBOLPdf(bol)}
-                      >
-                        <ArrowDownTrayIcon className="h-5 w-5" /> Download
-                      </button>
-                    </td>
+        <div className="space-y-4">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-6"></div>
+            <div className="text-xl font-semibold text-gray-700 mb-2">Loading BOL Reports</div>
+            <div className="text-sm text-gray-500">Fetching your data, please wait...</div>
+          </div>
+          
+          {/* Professional Skeleton Table */}
+          <div className="overflow-auto max-h-96 border border-gray-200 rounded-lg">
+            <table className="min-w-full border-collapse text-sm">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-gray-100">
+                  <th className="border px-3 py-2 text-left min-w-[120px] h-12 bg-gray-200 animate-pulse"></th>
+                  <th className="border px-3 py-2 text-left min-w-[120px] h-12 bg-gray-200 animate-pulse"></th>
+                  <th className="border px-3 py-2 text-left min-w-[140px] h-12 bg-gray-200 animate-pulse"></th>
+                  <th className="border px-3 py-2 text-left min-w-[180px] h-12 bg-gray-200 animate-pulse"></th>
+                  <th className="border px-3 py-2 text-left min-w-[200px] h-12 bg-gray-200 animate-pulse"></th>
+                  <th className="border px-3 py-2 text-left min-w-[200px] h-12 bg-gray-200 animate-pulse"></th>
+                  <th className="border px-3 py-2 text-left min-w-[130px] h-12 bg-gray-200 animate-pulse"></th>
+                  <th className="border px-3 py-2 text-left min-w-[130px] h-12 bg-gray-200 animate-pulse"></th>
+                  <th className="border px-3 py-2 text-left min-w-[110px] h-12 bg-gray-200 animate-pulse"></th>
+                  <th className="border px-3 py-2 text-left min-w-[80px] h-12 bg-gray-200 animate-pulse"></th>
+                  <th className="border px-3 py-2 text-left min-w-[250px] h-12 bg-gray-200 animate-pulse"></th>
+                  <th className="border px-3 py-2 text-center min-w-[100px] h-12 bg-gray-200 animate-pulse"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...Array(8)].map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    {[...Array(12)].map((_, j) => (
+                      <td key={j} className="border px-3 py-2 h-16 bg-gray-50"></td>
+                    ))}
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+      ) : error ? (
+        <div className="text-center py-12">
+          <div className="text-red-600 text-lg font-semibold mb-2">Error Loading Data</div>
+          <div className="text-gray-600">{error}</div>
+        </div>
+      ) : displayedData.length === 0 ? (
+        <div className="text-center py-16">
+          <DocumentTextIcon className="h-24 w-24 text-gray-300 mx-auto mb-6" />
+          <div className="text-2xl font-semibold text-gray-700 mb-2">No BOL Reports Found</div>
+          <div className="text-gray-500 mb-6">
+            {filteredData.length === 0 
+              ? "No Bill of Lading reports have been created yet."
+              : "No reports match your current filter criteria."
+            }
+          </div>
+          {filteredData.length === 0 && (
+            <button
+              onClick={() => window.location.href = '/dashboard/bol'}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Create Your First BOL
+            </button>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="overflow-auto max-h-96 border border-gray-200 rounded-lg">
+            <table className="min-w-full border-collapse text-sm">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-blue-100 text-blue-800">
+                  <th className="border px-3 py-2 text-left min-w-[120px] whitespace-nowrap">Driver</th>
+                  <th className="border px-3 py-2 text-left min-w-[120px] whitespace-nowrap">Date</th>
+                  <th className="border px-3 py-2 text-left min-w-[140px] whitespace-nowrap">Work Order</th>
+                  <th className="border px-3 py-2 text-left min-w-[180px] whitespace-nowrap">Broker</th>
+                  <th className="border px-3 py-2 text-left min-w-[200px] whitespace-nowrap">Pickup</th>
+                  <th className="border px-3 py-2 text-left min-w-[200px] whitespace-nowrap">Delivery</th>
+                  <th className="border px-3 py-2 text-left min-w-[130px] whitespace-nowrap">Total Amount</th>
+                  <th className="border px-3 py-2 text-left min-w-[130px] whitespace-nowrap">Amount Paid</th>
+                  <th className="border px-3 py-2 text-left min-w-[110px] whitespace-nowrap">Due Amount</th>
+                  <th className="border px-3 py-2 text-left min-w-[80px] whitespace-nowrap">Status</th>
+                  <th className="border px-3 py-2 text-left min-w-[250px] whitespace-nowrap">Vehicles</th>
+                  <th className="border px-3 py-2 text-center min-w-[100px] whitespace-nowrap">Download</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayedData.map((bol) => {
+                  const paymentInfo = getPaymentInfo(bol);
+                  const isFullyPaid = paymentInfo.dueAmount <= 0;
+                  const hasPartialPayment = paymentInfo.collectedAmount > 0;
+                  
+                  return (
+                    <tr key={bol.id} className={`hover:bg-blue-50 ${!isFullyPaid ? 'bg-red-50' : ''}`}>
+                      <td className="border px-3 py-2 font-medium whitespace-nowrap">{bol.driver_name}</td>
+                      <td className="border px-3 py-2 whitespace-nowrap">{formatDate(bol.date)}</td>
+                      <td className="border px-3 py-2 font-medium whitespace-nowrap">{bol.work_order_no || 'N/A'}</td>
+                      <td className="border px-3 py-2">
+                        <div className="font-semibold whitespace-nowrap">{bol.broker_name || 'N/A'}</div>
+                        <div className="text-xs text-gray-500 whitespace-nowrap">{bol.broker_address}</div>
+                        <div className="text-xs text-gray-400 whitespace-nowrap">{bol.broker_phone}</div>
+                      </td>
+                      <td className="border px-3 py-2">
+                        <div className="font-semibold whitespace-nowrap">{bol.pickup_name}</div>
+                        <div className="text-xs text-gray-500 whitespace-nowrap">{bol.pickup_address}</div>
+                        <div className="text-xs text-gray-400 whitespace-nowrap">{bol.pickup_city}, {bol.pickup_state} {bol.pickup_zip}</div>
+                      </td>
+                      <td className="border px-3 py-2">
+                        <div className="font-semibold whitespace-nowrap">{bol.delivery_name}</div>
+                        <div className="text-xs text-gray-500 whitespace-nowrap">{bol.delivery_address}</div>
+                        <div className="text-xs text-gray-400 whitespace-nowrap">{bol.delivery_city}, {bol.delivery_state} {bol.delivery_zip}</div>
+                      </td>
+                      <td className="border px-3 py-2 font-medium text-blue-600 whitespace-nowrap">
+                        {formatCurrency(paymentInfo.totalAmount)}
+                      </td>
+                      <td className="border px-3 py-2 font-medium text-green-600 whitespace-nowrap">
+                        {formatCurrency(paymentInfo.collectedAmount)}
+                      </td>
+                      <td className="border px-3 py-2 font-medium text-red-600 whitespace-nowrap">
+                        {formatCurrency(paymentInfo.dueAmount)}
+                      </td>
+                      <td className="border px-3 py-2">
+                        {isFullyPaid ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap">
+                            Paid
+                          </span>
+                        ) : hasPartialPayment ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 whitespace-nowrap">
+                            Partial
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 whitespace-nowrap">
+                            Pending
+                          </span>
+                        )}
+                      </td>
+                      <td className="border px-3 py-2">
+                        <ul className="list-disc pl-4">
+                          {bol.vehicles.map((v, i) => (
+                            <li key={i} className="whitespace-nowrap">{v.year} {v.make} {v.model} ({v.vin})</li>
+                          ))}
+                        </ul>
+                      </td>
+                      <td className="border px-3 py-2 text-center">
+                        <button
+                          className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto whitespace-nowrap"
+                          onClick={async () => await downloadBOLPdf(bol)}
+                        >
+                          <ArrowDownTrayIcon className="h-5 w-5" /> Download
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Load More Button */}
+          {hasMoreData && (
+            <div className="mt-6 text-center">
+              <button
+                onClick={loadMoreData}
+                disabled={loadingMore}
+                className={`px-8 py-3 text-sm font-medium rounded-lg flex items-center gap-3 mx-auto transition-all duration-200 ${
+                  loadingMore
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transform hover:scale-105'
+                }`}
+              >
+                {loadingMore ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
+                    Loading More BOLs...
+                  </>
+                ) : (
+                  <>
+                    <ArrowDownTrayIcon className="h-5 w-5" />
+                    Load More BOLs ({filteredData.length - displayedData.length} remaining)
+                  </>
+                )}
+              </button>
+              <p className="text-xs text-gray-500 mt-2">
+                Showing {displayedData.length} of {filteredData.length} BOLs
+              </p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
-} 
+}

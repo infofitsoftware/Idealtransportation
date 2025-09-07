@@ -1364,3 +1364,71 @@
 2025-08-30 18:11:21 - routers.auth - INFO - Validating token for /me endpoint
 2025-08-30 18:11:21 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
 2025-08-30 18:11:22 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-08-30 18:21:48 - routers.auth - INFO - Validating token for /me endpoint
+2025-08-30 18:21:48 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 18:49:01 - routers.auth - INFO - Login attempt for user: admin@idealtransport.com
+2025-09-07 18:49:01 - routers.auth - INFO - Authenticating user: admin@idealtransport.com
+2025-09-07 18:49:01 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 18:49:02 - routers.auth - INFO - User found: admin@idealtransport.com
+2025-09-07 18:49:02 - routers.auth - INFO - Authentication successful: admin@idealtransport.com
+2025-09-07 18:49:02 - routers.auth - INFO - Login successful: admin@idealtransport.com
+2025-09-07 18:49:03 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 18:49:03 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 18:49:04 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 18:49:04 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 18:49:04 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 18:49:05 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 18:49:05 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 18:49:05 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 18:49:06 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 18:49:06 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 18:49:06 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 18:49:08 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 19:13:44 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 19:13:44 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 19:13:45 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 19:13:45 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 19:13:45 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 19:13:45 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 19:13:45 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 19:13:45 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 19:13:46 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 19:13:46 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 19:13:46 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 19:13:47 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 19:13:47 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 19:13:47 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 19:13:49 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 19:13:49 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 19:13:49 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 19:13:49 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 19:15:21 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 19:15:21 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 19:15:21 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 19:15:21 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 19:15:21 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 19:15:22 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 21:23:34 - routers.auth - INFO - Login attempt for user: admin@idealtransport.com
+2025-09-07 21:23:34 - routers.auth - INFO - Authenticating user: admin@idealtransport.com
+2025-09-07 21:23:34 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 21:23:35 - routers.auth - INFO - User found: admin@idealtransport.com
+2025-09-07 21:23:35 - routers.auth - INFO - Authentication successful: admin@idealtransport.com
+2025-09-07 21:23:35 - routers.auth - INFO - Login successful: admin@idealtransport.com
+2025-09-07 21:23:36 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 21:23:36 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 21:23:37 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 21:23:37 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 21:23:37 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 21:23:38 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 21:23:38 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 21:23:38 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 21:23:40 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 21:23:40 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 21:23:40 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-07 21:23:40 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-07 23:02:14 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 23:02:14 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 23:02:14 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 23:02:14 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 23:02:14 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-07 23:02:14 - routers.auth - INFO - Validating token for /me endpoint
