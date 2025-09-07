@@ -145,9 +145,29 @@ export const bolService = {
     return response.data;
   },
 
-  async getBOLs(): Promise<any[]> {
-    console.log('[bolService] GET', api.defaults.baseURL + '/bol/');
-    const response = await api.get('/bol/');
+  async getBOLs(params?: {
+    skip?: number;
+    limit?: number;
+    from_date?: string;
+    to_date?: string;
+    work_order_no?: string;
+    sort_by?: string;
+    sort_order?: string;
+  }): Promise<any[]> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      if (params.skip !== undefined) queryParams.append('skip', params.skip.toString());
+      if (params.limit !== undefined) queryParams.append('limit', params.limit.toString());
+      if (params.from_date) queryParams.append('from_date', params.from_date);
+      if (params.to_date) queryParams.append('to_date', params.to_date);
+      if (params.work_order_no) queryParams.append('work_order_no', params.work_order_no);
+      if (params.sort_by) queryParams.append('sort_by', params.sort_by);
+      if (params.sort_order) queryParams.append('sort_order', params.sort_order);
+    }
+    
+    const url = `/bol/${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    console.log('[bolService] GET', api.defaults.baseURL + url);
+    const response = await api.get(url);
     return response.data;
   }
 }; 

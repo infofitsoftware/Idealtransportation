@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from schemas.bill_of_lading import BillOfLadingCreate, BillOfLading as BillOfLadingSchema
 from models.bill_of_lading import BillOfLading, BOLVehicle
 from models.transaction import Transaction
 from database import get_db
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 router = APIRouter()
 
@@ -87,29 +87,63 @@ def create_bill_of_lading(bol: BillOfLadingCreate, db: Session = Depends(get_db)
     return {"id": db_bol.id, "total_amount": total_amount}
 
 @router.get("/", response_model=List[BillOfLadingSchema])
-def list_bill_of_lading(db: Session = Depends(get_db)):
-    # Get all BOLs with payment information
-    bol_list = db.query(BillOfLading).all()
+def list_bill_of_lading(
+    db: Session = Depends(get_db),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    from_date: Optional[str] = Query(None),
+    to_date: Optional[str] = Query(None),
+    work_order_no: Optional[str] = Query(None),
+    sort_by: str = Query("date", enum=["date", "work_order_no", "driver_name"]),
+    sort_order: str = Query("asc", enum=["asc", "desc"])
+):
+    # Create subquery to get payment information for all work orders at once
+    payment_subquery = db.query(
+        Transaction.work_order_no,
+        func.coalesce(func.sum(Transaction.collected_amount), 0).label('total_collected')
+    ).group_by(Transaction.work_order_no).subquery()
     
-    # For each BOL, calculate payment information
-    for bol in bol_list:
-        if bol.work_order_no:
-            # Get total collected amount for this work order
-            total_collected = db.query(func.coalesce(func.sum(Transaction.collected_amount), 0)).filter(
-                Transaction.work_order_no == bol.work_order_no
-            ).scalar()
-            
-            # Calculate due amount
-            total_amount = bol.total_amount or 0.0
-            due_amount = max(0.0, total_amount - total_collected)
-            
-            # Add payment info to the BOL object (these will be included in the response)
-            bol.total_collected = total_collected
-            bol.due_amount = due_amount
-        else:
-            # If no work order number, set payment info to 0
-            bol.total_collected = 0.0
-            bol.due_amount = bol.total_amount or 0.0
+    # Build the main query with joins to get all data in one go
+    query = db.query(
+        BillOfLading,
+        func.coalesce(payment_subquery.c.total_collected, 0).label('total_collected')
+    ).outerjoin(
+        payment_subquery,
+        BillOfLading.work_order_no == payment_subquery.c.work_order_no
+    )
+    
+    # Apply filters
+    if from_date:
+        query = query.filter(BillOfLading.date >= from_date)
+    if to_date:
+        query = query.filter(BillOfLading.date <= to_date)
+    if work_order_no:
+        query = query.filter(BillOfLading.work_order_no.ilike(f"%{work_order_no}%"))
+    
+    # Apply sorting
+    sort_column = getattr(BillOfLading, sort_by, BillOfLading.date)
+    if sort_order == "desc":
+        query = query.order_by(sort_column.desc())
+    else:
+        query = query.order_by(sort_column.asc())
+    
+    # Get total count before pagination
+    total_count = query.count()
+    
+    # Apply pagination
+    results = query.offset(skip).limit(limit).all()
+    
+    # Process results and add payment information
+    bol_list = []
+    for bol, total_collected in results:
+        # Calculate due amount
+        total_amount = bol.total_amount or 0.0
+        due_amount = max(0.0, total_amount - float(total_collected))
+        
+        # Add payment info to the BOL object
+        bol.total_collected = float(total_collected)
+        bol.due_amount = due_amount
+        bol_list.append(bol)
     
     return bol_list
 

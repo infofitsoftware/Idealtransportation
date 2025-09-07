@@ -170,7 +170,7 @@ async function downloadBOLPdf(bol: BillOfLading) {
     y += 6;
     if (bol.broker_address) {
       doc.text('Address: ' + String(bol.broker_address), 20, y);
-      y += 6;
+  y += 6;
     }
   }
   y += 15;
@@ -246,10 +246,10 @@ async function downloadBOLPdf(bol: BillOfLading) {
     doc.setDrawColor(59, 130, 246);
     doc.setFillColor(239, 246, 255);
     doc.roundedRect(14, y, 182, vehicleTableHeight + 10, 3, 3, 'FD');
-    y += 8;
+  y += 8;
     doc.setFont('helvetica', 'bold');
     doc.text('Vehicles', 20, y);
-    y += 2;
+  y += 2;
   }
 
   autoTable(doc, {
@@ -374,11 +374,87 @@ async function downloadBOLPdf(bol: BillOfLading) {
   doc.save(`BillOfLading_${bol.id}.pdf`);
 }
 
+// Memoized components for better performance
+const MemoizedTableRow = React.memo(({ bol, onDownload }: { bol: BillOfLading; onDownload: (bol: BillOfLading) => void }) => {
+  const paymentInfo = React.useMemo(() => {
+    const totalAmount = bol.total_amount || 0;
+    const collectedAmount = bol.total_collected || 0;
+    const dueAmount = bol.due_amount || 0;
+    return { totalAmount, collectedAmount, dueAmount };
+  }, [bol.total_amount, bol.total_collected, bol.due_amount]);
+  
+  const isFullyPaid = paymentInfo.dueAmount <= 0;
+  const hasPartialPayment = paymentInfo.collectedAmount > 0;
+  
+  return (
+    <tr className={`hover:bg-blue-50 ${!isFullyPaid ? 'bg-red-50' : ''}`}>
+      <td className="border px-3 py-2 font-medium whitespace-nowrap">{bol.driver_name}</td>
+      <td className="border px-3 py-2 whitespace-nowrap">{formatDate(bol.date)}</td>
+      <td className="border px-3 py-2 font-medium whitespace-nowrap">{bol.work_order_no || 'N/A'}</td>
+      <td className="border px-3 py-2">
+        <div className="font-semibold whitespace-nowrap">{bol.broker_name || 'N/A'}</div>
+        <div className="text-xs text-gray-500 whitespace-nowrap">{bol.broker_address}</div>
+        <div className="text-xs text-gray-400 whitespace-nowrap">{bol.broker_phone}</div>
+      </td>
+      <td className="border px-3 py-2">
+        <div className="font-semibold whitespace-nowrap">{bol.pickup_name}</div>
+        <div className="text-xs text-gray-500 whitespace-nowrap">{bol.pickup_address}</div>
+        <div className="text-xs text-gray-400 whitespace-nowrap">{bol.pickup_city}, {bol.pickup_state} {bol.pickup_zip}</div>
+      </td>
+      <td className="border px-3 py-2">
+        <div className="font-semibold whitespace-nowrap">{bol.delivery_name}</div>
+        <div className="text-xs text-gray-500 whitespace-nowrap">{bol.delivery_address}</div>
+        <div className="text-xs text-gray-400 whitespace-nowrap">{bol.delivery_city}, {bol.delivery_state} {bol.delivery_zip}</div>
+      </td>
+      <td className="border px-3 py-2 font-medium text-blue-600 whitespace-nowrap">
+        {formatCurrency(paymentInfo.totalAmount)}
+      </td>
+      <td className="border px-3 py-2 font-medium text-green-600 whitespace-nowrap">
+        {formatCurrency(paymentInfo.collectedAmount)}
+      </td>
+      <td className="border px-3 py-2 font-medium text-red-600 whitespace-nowrap">
+        {formatCurrency(paymentInfo.dueAmount)}
+      </td>
+      <td className="border px-3 py-2">
+        {isFullyPaid ? (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap">
+            Paid
+          </span>
+        ) : hasPartialPayment ? (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 whitespace-nowrap">
+            Partial
+          </span>
+        ) : (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 whitespace-nowrap">
+            Pending
+          </span>
+        )}
+      </td>
+      <td className="border px-3 py-2">
+        <ul className="list-disc pl-4">
+          {bol.vehicles.map((v, i) => (
+            <li key={i} className="whitespace-nowrap">{v.year} {v.make} {v.model} ({v.vin})</li>
+          ))}
+        </ul>
+      </td>
+      <td className="border px-3 py-2 text-center">
+        <button
+          className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto whitespace-nowrap"
+          onClick={() => onDownload(bol)}
+        >
+          <ArrowDownTrayIcon className="h-5 w-5" /> Download
+        </button>
+      </td>
+    </tr>
+  );
+});
+
+MemoizedTableRow.displayName = 'MemoizedTableRow';
+
 export default function ReportsPage() {
   const { currentUser, loading: accessLoading, hasAccess, isSuperuser } = useAccessControl();
-  const [data, setData] = useState<BillOfLading[]>([]);
-  const [filteredData, setFilteredData] = useState<BillOfLading[]>([]);
   const [displayedData, setDisplayedData] = useState<BillOfLading[]>([]);
+  const [allData, setAllData] = useState<BillOfLading[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [fromDate, setFromDate] = useState('');
@@ -386,93 +462,102 @@ export default function ReportsPage() {
   const [workOrderFilter, setWorkOrderFilter] = useState('');
   
   // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10); // Load 10 BOLs at a time
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemsPerPage] = useState(20); // Load 20 BOLs at a time for better performance
   const [hasMoreData, setHasMoreData] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [totalLoaded, setTotalLoaded] = useState(0);
 
+  // Debounced filter values for server-side filtering
+  const [debouncedWorkOrder, setDebouncedWorkOrder] = useState('');
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedWorkOrder(workOrderFilter);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [workOrderFilter]);
+
+  // Fetch initial data with server-side pagination
   useEffect(() => {
     const fetchData = async () => {
+      if (!hasAccess && !accessLoading) return;
+      
       try {
         setLoading(true);
-        const bols = await bolService.getBOLs();
-        setData(bols);
-        setFilteredData(bols);
-        // Initially display only first 10 items
-        const initialData = bols.slice(0, itemsPerPage);
-        setDisplayedData(initialData);
-        setHasMoreData(bols.length > itemsPerPage);
+        setError("");
+        
+        // Fetch first page with server-side filtering
+        const bols = await bolService.getBOLs({
+          skip: 0,
+          limit: itemsPerPage,
+          from_date: fromDate || undefined,
+          to_date: toDate || undefined,
+          work_order_no: debouncedWorkOrder || undefined,
+          sort_by: 'date',
+          sort_order: 'asc'
+        });
+        
+        setDisplayedData(bols);
+        setAllData(bols);
+        setTotalLoaded(bols.length);
+        setHasMoreData(bols.length === itemsPerPage);
+        setCurrentPage(0);
       } catch (err: any) {
-        setError(err.message);
+        console.error('Error fetching BOLs:', err);
+        setError(err.message || 'Failed to load BOL reports');
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
-  }, [itemsPerPage]);
-
-  // Filter data based on date range, work order, and sort by date ascending
-  useEffect(() => {
-    let filtered = [...data]; // Create a copy to avoid mutating original data
-
-    if (fromDate) {
-      filtered = filtered.filter(bol => 
-        new Date(bol.date) >= new Date(fromDate)
-      );
-    }
-
-    if (toDate) {
-      filtered = filtered.filter(bol => 
-        new Date(bol.date) <= new Date(toDate)
-      );
-    }
-
-    if (workOrderFilter.trim()) {
-      filtered = filtered.filter(bol => 
-        bol.work_order_no && bol.work_order_no.toLowerCase().includes(workOrderFilter.toLowerCase())
-      );
-    }
-
-    // Sort by date in ascending order (oldest first)
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      return dateA.getTime() - dateB.getTime();
-    });
-
-    setFilteredData(filtered);
     
-    // Reset pagination when filters change
-    setCurrentPage(1);
-    const initialData = filtered.slice(0, itemsPerPage);
-    setDisplayedData(initialData);
-    setHasMoreData(filtered.length > itemsPerPage);
-  }, [data, fromDate, toDate, workOrderFilter, itemsPerPage]);
+    if (hasAccess || accessLoading) {
+    fetchData();
+    }
+  }, [itemsPerPage, fromDate, toDate, debouncedWorkOrder, hasAccess, accessLoading]);
+
+  // Load more data with server-side pagination
+  const loadMoreData = React.useCallback(async () => {
+    if (loadingMore || !hasMoreData) return;
+    
+    setLoadingMore(true);
+    
+    try {
+      const nextPage = currentPage + 1;
+      const skip = nextPage * itemsPerPage;
+      
+      const newBols = await bolService.getBOLs({
+        skip,
+        limit: itemsPerPage,
+        from_date: fromDate || undefined,
+        to_date: toDate || undefined,
+        work_order_no: debouncedWorkOrder || undefined,
+        sort_by: 'date',
+        sort_order: 'asc'
+      });
+      
+      if (newBols.length > 0) {
+        const updatedData = [...displayedData, ...newBols];
+        setDisplayedData(updatedData);
+        setAllData(updatedData);
+        setTotalLoaded(updatedData.length);
+        setCurrentPage(nextPage);
+        setHasMoreData(newBols.length === itemsPerPage);
+      } else {
+        setHasMoreData(false);
+      }
+    } catch (err: any) {
+      console.error('Error loading more BOLs:', err);
+      setError('Failed to load more data');
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [currentPage, displayedData, itemsPerPage, fromDate, toDate, debouncedWorkOrder, loadingMore, hasMoreData]);
 
   const clearFilters = () => {
     setFromDate('');
     setToDate('');
     setWorkOrderFilter('');
-  };
-
-  // Load more data function
-  const loadMoreData = () => {
-    if (loadingMore || !hasMoreData) return;
-    
-    setLoadingMore(true);
-    
-    // Simulate a small delay for better UX
-    setTimeout(() => {
-      const nextPage = currentPage + 1;
-      const startIndex = 0;
-      const endIndex = nextPage * itemsPerPage;
-      const newData = filteredData.slice(startIndex, endIndex);
-      
-      setDisplayedData(newData);
-      setCurrentPage(nextPage);
-      setHasMoreData(endIndex < filteredData.length);
-      setLoadingMore(false);
-    }, 300);
   };
 
   // Calculate payment statistics for each BOL
@@ -490,14 +575,14 @@ export default function ReportsPage() {
 
   // Calculate overall payment statistics
   const paymentStats = React.useMemo(() => {
-    const totalBOLs = filteredData.length;
-    const totalAmount = filteredData.reduce((sum, bol) => sum + (bol.total_amount || 0), 0);
-    const totalCollected = filteredData.reduce((sum, bol) => sum + (bol.total_collected || 0), 0);
-    const totalDue = filteredData.reduce((sum, bol) => sum + (bol.due_amount || 0), 0);
+    const totalBOLs = displayedData.length;
+    const totalAmount = displayedData.reduce((sum, bol) => sum + (bol.total_amount || 0), 0);
+    const totalCollected = displayedData.reduce((sum, bol) => sum + (bol.total_collected || 0), 0);
+    const totalDue = displayedData.reduce((sum, bol) => sum + (bol.due_amount || 0), 0);
     const completionPercentage = totalAmount > 0 ? ((totalCollected / totalAmount) * 100).toFixed(1) : '0.0';
-    const fullyPaidCount = filteredData.filter(bol => (bol.due_amount || 0) <= 0).length;
-    const partiallyPaidCount = filteredData.filter(bol => (bol.due_amount || 0) > 0 && (bol.total_collected || 0) > 0).length;
-    const pendingCount = filteredData.filter(bol => (bol.due_amount || 0) > 0 && (bol.total_collected || 0) <= 0).length;
+    const fullyPaidCount = displayedData.filter(bol => (bol.due_amount || 0) <= 0).length;
+    const partiallyPaidCount = displayedData.filter(bol => (bol.due_amount || 0) > 0 && (bol.total_collected || 0) > 0).length;
+    const pendingCount = displayedData.filter(bol => (bol.due_amount || 0) > 0 && (bol.total_collected || 0) <= 0).length;
 
     return {
       totalBOLs,
@@ -509,11 +594,24 @@ export default function ReportsPage() {
       partiallyPaidCount,
       pendingCount
     };
-  }, [filteredData]);
+  }, [displayedData]);
 
-  const exportToExcel = () => {
-    // Prepare data for Excel export
-    const excelData = filteredData.map(bol => {
+  const exportToExcel = async () => {
+    // For Excel export, fetch all data without pagination
+    try {
+      setLoadingMore(true);
+      const allBols = await bolService.getBOLs({
+        skip: 0,
+        limit: 1000, // Get all records for export
+        from_date: fromDate || undefined,
+        to_date: toDate || undefined,
+        work_order_no: debouncedWorkOrder || undefined,
+        sort_by: 'date',
+        sort_order: 'asc'
+      });
+      
+      // Prepare data for Excel export
+      const excelData = allBols.map(bol => {
       const paymentInfo = getPaymentInfo(bol);
       const isFullyPaid = paymentInfo.dueAmount <= 0;
       const hasPartialPayment = paymentInfo.collectedAmount > 0;
@@ -540,7 +638,7 @@ export default function ReportsPage() {
         'Due Amount': paymentInfo.dueAmount,
         'Status': isFullyPaid ? 'Paid' : hasPartialPayment ? 'Partial' : 'Pending',
         'Vehicle Count': bol.vehicles.length,
-        'Vehicles': bol.vehicles.map(v => `${v.year} ${v.make} ${v.model} (${v.vin})`).join('; '),
+        'Vehicles': bol.vehicles.map((v: Vehicle) => `${v.year} ${v.make} ${v.model} (${v.vin})`).join('; '),
         'Condition Codes': bol.condition_codes || '',
         'Remarks': bol.remarks || ''
       };
@@ -609,8 +707,14 @@ export default function ReportsPage() {
     }
     filename += '.xlsx';
 
-    // Save the file
-    XLSX.writeFile(wb, filename);
+      // Save the file
+      XLSX.writeFile(wb, filename);
+    } catch (err) {
+      console.error('Error exporting to Excel:', err);
+      alert('Failed to export data to Excel');
+    } finally {
+      setLoadingMore(false);
+    }
   };
 
   // Access control check
@@ -646,7 +750,7 @@ export default function ReportsPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight flex items-center gap-2">
           <DocumentTextIcon className="h-8 w-8 text-blue-500" /> Bill of Lading Reports
-        </h1>
+      </h1>
         <div className="flex items-center gap-4">
           {isSuperuser && (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -655,9 +759,9 @@ export default function ReportsPage() {
           )}
           <button
             onClick={exportToExcel}
-            disabled={filteredData.length === 0}
+            disabled={displayedData.length === 0}
             className={`px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 ${
-              filteredData.length === 0
+              displayedData.length === 0
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
             }`}
@@ -720,32 +824,30 @@ export default function ReportsPage() {
         </div>
         {(fromDate || toDate || workOrderFilter) && (
           <div className="mt-3 text-sm text-gray-600">
-            Showing {displayedData.length} of {filteredData.length} BOLs
+            Loaded {displayedData.length} BOLs
             {fromDate && toDate && ` from ${fromDate} to ${toDate}`}
             {fromDate && !toDate && ` from ${fromDate}`}
             {!fromDate && toDate && ` until ${toDate}`}
             {workOrderFilter && ` matching "${workOrderFilter}"`}
-            {hasMoreData && ` (${filteredData.length - displayedData.length} more available)`}
+            {hasMoreData && ` (more available)`}
           </div>
         )}
       </div>
 
       {/* Data Summary */}
-      {!loading && filteredData.length > 0 && (
+      {!loading && displayedData.length > 0 && (
         <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-gray-800">Report Summary</h3>
               <p className="text-sm text-gray-600">
-                {displayedData.length === filteredData.length 
-                  ? `Showing all ${filteredData.length} BOL reports`
-                  : `Showing ${displayedData.length} of ${filteredData.length} BOL reports`
-                }
+                Loaded {displayedData.length} BOL reports
+                {hasMoreData && ' (scroll down to load more)'}
               </p>
             </div>
             {hasMoreData && (
               <div className="text-right">
-                <div className="text-2xl font-bold text-blue-600">{filteredData.length - displayedData.length}</div>
+                <div className="text-2xl font-bold text-blue-600">+</div>
                 <div className="text-sm text-gray-600">More Available</div>
               </div>
             )}
@@ -754,7 +856,7 @@ export default function ReportsPage() {
       )}
 
       {/* Payment Statistics */}
-      {filteredData.length > 0 && (
+      {displayedData.length > 0 && (
         <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Payment Summary</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -841,12 +943,12 @@ export default function ReportsPage() {
           <DocumentTextIcon className="h-24 w-24 text-gray-300 mx-auto mb-6" />
           <div className="text-2xl font-semibold text-gray-700 mb-2">No BOL Reports Found</div>
           <div className="text-gray-500 mb-6">
-            {filteredData.length === 0 
+            {displayedData.length === 0 && !loading
               ? "No Bill of Lading reports have been created yet."
               : "No reports match your current filter criteria."
             }
           </div>
-          {filteredData.length === 0 && (
+          {displayedData.length === 0 && !loading && (
             <button
               onClick={() => window.location.href = '/dashboard/bol'}
               className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
@@ -860,7 +962,7 @@ export default function ReportsPage() {
           <div className="overflow-auto max-h-96 border border-gray-200 rounded-lg">
             <table className="min-w-full border-collapse text-sm">
               <thead className="sticky top-0 z-10">
-                <tr className="bg-blue-100 text-blue-800">
+              <tr className="bg-blue-100 text-blue-800">
                   <th className="border px-3 py-2 text-left min-w-[120px] whitespace-nowrap">Driver</th>
                   <th className="border px-3 py-2 text-left min-w-[120px] whitespace-nowrap">Date</th>
                   <th className="border px-3 py-2 text-left min-w-[140px] whitespace-nowrap">Work Order</th>
@@ -873,79 +975,19 @@ export default function ReportsPage() {
                   <th className="border px-3 py-2 text-left min-w-[80px] whitespace-nowrap">Status</th>
                   <th className="border px-3 py-2 text-left min-w-[250px] whitespace-nowrap">Vehicles</th>
                   <th className="border px-3 py-2 text-center min-w-[100px] whitespace-nowrap">Download</th>
-                </tr>
-              </thead>
+              </tr>
+            </thead>
               <tbody>
-                {displayedData.map((bol) => {
-                  const paymentInfo = getPaymentInfo(bol);
-                  const isFullyPaid = paymentInfo.dueAmount <= 0;
-                  const hasPartialPayment = paymentInfo.collectedAmount > 0;
-                  
-                  return (
-                    <tr key={bol.id} className={`hover:bg-blue-50 ${!isFullyPaid ? 'bg-red-50' : ''}`}>
-                      <td className="border px-3 py-2 font-medium whitespace-nowrap">{bol.driver_name}</td>
-                      <td className="border px-3 py-2 whitespace-nowrap">{formatDate(bol.date)}</td>
-                      <td className="border px-3 py-2 font-medium whitespace-nowrap">{bol.work_order_no || 'N/A'}</td>
-                      <td className="border px-3 py-2">
-                        <div className="font-semibold whitespace-nowrap">{bol.broker_name || 'N/A'}</div>
-                        <div className="text-xs text-gray-500 whitespace-nowrap">{bol.broker_address}</div>
-                        <div className="text-xs text-gray-400 whitespace-nowrap">{bol.broker_phone}</div>
-                      </td>
-                      <td className="border px-3 py-2">
-                        <div className="font-semibold whitespace-nowrap">{bol.pickup_name}</div>
-                        <div className="text-xs text-gray-500 whitespace-nowrap">{bol.pickup_address}</div>
-                        <div className="text-xs text-gray-400 whitespace-nowrap">{bol.pickup_city}, {bol.pickup_state} {bol.pickup_zip}</div>
-                      </td>
-                      <td className="border px-3 py-2">
-                        <div className="font-semibold whitespace-nowrap">{bol.delivery_name}</div>
-                        <div className="text-xs text-gray-500 whitespace-nowrap">{bol.delivery_address}</div>
-                        <div className="text-xs text-gray-400 whitespace-nowrap">{bol.delivery_city}, {bol.delivery_state} {bol.delivery_zip}</div>
-                      </td>
-                      <td className="border px-3 py-2 font-medium text-blue-600 whitespace-nowrap">
-                        {formatCurrency(paymentInfo.totalAmount)}
-                      </td>
-                      <td className="border px-3 py-2 font-medium text-green-600 whitespace-nowrap">
-                        {formatCurrency(paymentInfo.collectedAmount)}
-                      </td>
-                      <td className="border px-3 py-2 font-medium text-red-600 whitespace-nowrap">
-                        {formatCurrency(paymentInfo.dueAmount)}
-                      </td>
-                      <td className="border px-3 py-2">
-                        {isFullyPaid ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap">
-                            Paid
-                          </span>
-                        ) : hasPartialPayment ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 whitespace-nowrap">
-                            Partial
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 whitespace-nowrap">
-                            Pending
-                          </span>
-                        )}
-                      </td>
-                      <td className="border px-3 py-2">
-                        <ul className="list-disc pl-4">
-                          {bol.vehicles.map((v, i) => (
-                            <li key={i} className="whitespace-nowrap">{v.year} {v.make} {v.model} ({v.vin})</li>
-                          ))}
-                        </ul>
-                      </td>
-                      <td className="border px-3 py-2 text-center">
-                        <button
-                          className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto whitespace-nowrap"
-                          onClick={async () => await downloadBOLPdf(bol)}
-                        >
-                          <ArrowDownTrayIcon className="h-5 w-5" /> Download
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                {displayedData.map((bol) => (
+                  <MemoizedTableRow 
+                    key={bol.id} 
+                    bol={bol} 
+                    onDownload={downloadBOLPdf}
+                  />
+                ))}
+            </tbody>
+          </table>
+        </div>
           
           {/* Load More Button */}
           {hasMoreData && (
@@ -965,14 +1007,14 @@ export default function ReportsPage() {
                     Loading More BOLs...
                   </>
                 ) : (
-                  <>
-                    <ArrowDownTrayIcon className="h-5 w-5" />
-                    Load More BOLs ({filteredData.length - displayedData.length} remaining)
-                  </>
+                <>
+                  <ArrowDownTrayIcon className="h-5 w-5" />
+                  Load More BOLs
+                </>
                 )}
               </button>
               <p className="text-xs text-gray-500 mt-2">
-                Showing {displayedData.length} of {filteredData.length} BOLs
+                Loaded {displayedData.length} BOLs
               </p>
             </div>
           )}
@@ -980,4 +1022,4 @@ export default function ReportsPage() {
       )}
     </div>
   );
-}
+} 

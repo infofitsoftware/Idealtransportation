@@ -552,3 +552,7 @@ WHERE daily_expenses.user_id = %(user_id_1)s
 2025-08-30 18:11:13 - routers.transaction - INFO - Found 32 transactions with broker information
 2025-08-30 18:11:14 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
 2025-08-30 18:11:14 - routers.transaction - INFO - Found 32 transactions with broker information
+2025-09-07 23:22:15 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-09-07 23:22:15 - routers.transaction - INFO - Found 35 transactions with broker information
+2025-09-07 23:22:15 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-09-07 23:22:16 - routers.transaction - INFO - Found 35 transactions with broker information
