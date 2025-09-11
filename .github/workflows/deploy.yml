@@ -1,7 +1,7 @@
 name: Deploy to EC2
 
 # This workflow will deploy the application to the ec2 instance
-# Last updated: 2025-09-11
+# Last updated: 2025-09-12
 
 on:
   push:
