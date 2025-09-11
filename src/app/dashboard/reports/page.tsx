@@ -463,7 +463,7 @@ export default function ReportsPage() {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage] = useState(20); // Load 20 BOLs at a time for better performance
+  const [itemsPerPage] = useState(10); // Load 10 BOLs at a time for better performance
   const [hasMoreData, setHasMoreData] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [totalLoaded, setTotalLoaded] = useState(0);

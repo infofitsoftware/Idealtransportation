@@ -600,3 +600,11 @@ WHERE daily_expenses.user_id = %(user_id_1)s
 2025-09-08 00:03:05 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 27), 'diesel_amount': 130.0, 'diesel_location': 'M.E', 'def_amount': 20.0, 'def_location': 'Buc’ees katy', 'other_expense_description': 'N/A', 'other_expense_amount': None, 'other_expense_location': 'N/A', 'total': 150.0, 'id': 22, 'user_id': 1}
 2025-09-08 00:03:05 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 28), 'diesel_amount': 130.0, 'diesel_location': 'Chevron Manvel', 'def_amount': 0.0, 'def_location': 'N/A', 'other_expense_description': 'N/A', 'other_expense_amount': None, 'other_expense_location': 'N/A', 'total': 130.0, 'id': 23, 'user_id': 1}
 2025-09-08 00:03:05 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 29), 'diesel_amount': 120.0, 'diesel_location': 'Chevron Manvel', 'def_amount': 0.0, 'def_location': 'N/A', 'other_expense_description': 'N/A', 'other_expense_amount': None, 'other_expense_location': 'N/A', 'total': 120.0, 'id': 24, 'user_id': 1}
+2025-09-11 15:57:36 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-09-11 15:57:36 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-09-11 15:57:36 - routers.transaction - INFO - Found 35 transactions with broker information
+2025-09-11 15:57:36 - routers.transaction - INFO - Found 35 transactions with broker information
+2025-09-11 15:57:51 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-09-11 15:57:51 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-09-11 15:57:51 - routers.transaction - INFO - Found 35 transactions with broker information
+2025-09-11 15:57:51 - routers.transaction - INFO - Found 35 transactions with broker information

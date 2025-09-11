@@ -6,8 +6,44 @@ from models.bill_of_lading import BillOfLading, BOLVehicle
 from models.transaction import Transaction
 from database import get_db
 from typing import List, Dict, Any, Optional
+import time
+from functools import lru_cache
 
 router = APIRouter()
+
+# Simple in-memory cache for payment data (expires after 5 minutes)
+_payment_cache = {}
+_cache_expiry = {}
+
+def get_cached_payment_data(work_order_nos: List[str], db: Session) -> Dict[str, float]:
+    """Get payment data with simple caching"""
+    current_time = time.time()
+    cache_key = ",".join(sorted(work_order_nos))
+    
+    # Check if cache is valid
+    if (cache_key in _payment_cache and 
+        cache_key in _cache_expiry and 
+        current_time < _cache_expiry[cache_key]):
+        return _payment_cache[cache_key]
+    
+    # Fetch fresh data
+    if work_order_nos:
+        payment_results = db.query(
+            Transaction.work_order_no,
+            func.sum(Transaction.collected_amount).label('total_collected')
+        ).filter(
+            Transaction.work_order_no.in_(work_order_nos)
+        ).group_by(Transaction.work_order_no).all()
+        
+        payment_data = {row.work_order_no: float(row.total_collected) for row in payment_results}
+    else:
+        payment_data = {}
+    
+    # Cache for 5 minutes
+    _payment_cache[cache_key] = payment_data
+    _cache_expiry[cache_key] = current_time + 300  # 5 minutes
+    
+    return payment_data
 
 @router.post("/", status_code=201)
 def create_bill_of_lading(bol: BillOfLadingCreate, db: Session = Depends(get_db)):
@@ -90,29 +126,18 @@ def create_bill_of_lading(bol: BillOfLadingCreate, db: Session = Depends(get_db)
 def list_bill_of_lading(
     db: Session = Depends(get_db),
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=1000),  # Default 20, max 1000 for exports
     from_date: Optional[str] = Query(None),
     to_date: Optional[str] = Query(None),
     work_order_no: Optional[str] = Query(None),
     sort_by: str = Query("date", enum=["date", "work_order_no", "driver_name"]),
     sort_order: str = Query("asc", enum=["asc", "desc"])
 ):
-    # Create subquery to get payment information for all work orders at once
-    payment_subquery = db.query(
-        Transaction.work_order_no,
-        func.coalesce(func.sum(Transaction.collected_amount), 0).label('total_collected')
-    ).group_by(Transaction.work_order_no).subquery()
+    start_time = time.time()
+    # Optimized query: Get BOLs first, then batch fetch payment data
+    query = db.query(BillOfLading)
     
-    # Build the main query with joins to get all data in one go
-    query = db.query(
-        BillOfLading,
-        func.coalesce(payment_subquery.c.total_collected, 0).label('total_collected')
-    ).outerjoin(
-        payment_subquery,
-        BillOfLading.work_order_no == payment_subquery.c.work_order_no
-    )
-    
-    # Apply filters
+    # Apply filters first (more efficient)
     if from_date:
         query = query.filter(BillOfLading.date >= from_date)
     if to_date:
@@ -127,25 +152,32 @@ def list_bill_of_lading(
     else:
         query = query.order_by(sort_column.asc())
     
-    # Get total count before pagination
-    total_count = query.count()
+    # Apply pagination early
+    bols = query.offset(skip).limit(limit).all()
     
-    # Apply pagination
-    results = query.offset(skip).limit(limit).all()
+    if not bols:
+        return []
     
-    # Process results and add payment information
-    bol_list = []
-    for bol, total_collected in results:
-        # Calculate due amount
+    # Batch fetch payment data for all work orders at once (with caching)
+    work_order_nos = [bol.work_order_no for bol in bols if bol.work_order_no]
+    payment_data = get_cached_payment_data(work_order_nos, db)
+    
+    # Process results efficiently
+    for bol in bols:
+        total_collected = payment_data.get(bol.work_order_no, 0.0) if bol.work_order_no else 0.0
         total_amount = bol.total_amount or 0.0
-        due_amount = max(0.0, total_amount - float(total_collected))
+        due_amount = max(0.0, total_amount - total_collected)
         
         # Add payment info to the BOL object
-        bol.total_collected = float(total_collected)
+        bol.total_collected = total_collected
         bol.due_amount = due_amount
-        bol_list.append(bol)
     
-    return bol_list
+    # Log performance metrics
+    end_time = time.time()
+    query_time = end_time - start_time
+    print(f"BOL Query Performance: {query_time:.3f}s for {len(bols)} records (skip={skip}, limit={limit})")
+    
+    return bols
 
 @router.get("/pending-payments")
 def get_bols_with_pending_payments(db: Session = Depends(get_db)):
