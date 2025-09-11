@@ -21205,3 +21205,47 @@ WHERE daily_expenses.user_id = %(user_id_1)s
 2025-09-08 00:03:05,482 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 28), 'diesel_amount': 130.0, 'diesel_location': 'Chevron Manvel', 'def_amount': 0.0, 'def_location': 'N/A', 'other_expense_description': 'N/A', 'other_expense_amount': None, 'other_expense_location': 'N/A', 'total': 130.0, 'id': 23, 'user_id': 1}
 2025-09-08 00:03:05,485 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 8, 29), 'diesel_amount': 120.0, 'diesel_location': 'Chevron Manvel', 'def_amount': 0.0, 'def_location': 'N/A', 'other_expense_description': 'N/A', 'other_expense_amount': None, 'other_expense_location': 'N/A', 'total': 120.0, 'id': 24, 'user_id': 1}
 2025-09-08 00:03:05,487 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-08 00:03:44,924 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-08 00:03:44,932 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-08 00:03:45,115 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-08 00:03:45,121 - sqlalchemy.engine.Engine - INFO - SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.email = %(email_1)s 
+ LIMIT %(param_1)s
+2025-09-08 00:03:45,123 - sqlalchemy.engine.Engine - INFO - [cached since 164.5s ago] {'email_1': 'admin@idealtransport.com', 'param_1': 1}
+2025-09-08 00:03:45,467 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-08 00:03:45,474 - routers.auth - INFO - Validating token for /me endpoint
+2025-09-08 00:03:45,476 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-09-08 00:03:45,658 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-08 00:03:45,660 - sqlalchemy.engine.Engine - INFO - SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.email = %(email_1)s 
+ LIMIT %(param_1)s
+2025-09-08 00:03:45,660 - sqlalchemy.engine.Engine - INFO - [cached since 165s ago] {'email_1': 'admin@idealtransport.com', 'param_1': 1}
+2025-09-08 00:03:46,026 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-09-08 00:03:46,026 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-08 00:03:46,026 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-08 00:03:48,504 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-08 00:03:48,506 - sqlalchemy.engine.Engine - INFO - SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.email = %(email_1)s 
+ LIMIT %(param_1)s
+2025-09-08 00:03:48,507 - sqlalchemy.engine.Engine - INFO - [cached since 167.9s ago] {'email_1': 'admin@idealtransport.com', 'param_1': 1}
+2025-09-08 00:03:49,013 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-08 00:03:49,014 - sqlalchemy.engine.Engine - INFO - SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.email = %(email_1)s 
+ LIMIT %(param_1)s
+2025-09-08 00:03:49,016 - sqlalchemy.engine.Engine - INFO - [cached since 168.4s ago] {'email_1': 'admin@idealtransport.com', 'param_1': 1}
+2025-09-08 00:03:49,395 - sqlalchemy.engine.Engine - INFO - SELECT bill_of_lading.id AS bill_of_lading_id, bill_of_lading.work_order_no AS bill_of_lading_work_order_no, bill_of_lading.driver_name AS bill_of_lading_driver_name, bill_of_lading.date AS bill_of_lading_date, bill_of_lading.total_amount AS bill_of_lading_total_amount, coalesce(anon_1.total_collected, %(coalesce_1)s) AS total_collected, bill_of_lading.total_amount - coalesce(anon_1.total_collected, %(coalesce_2)s) AS due_amount 
+FROM bill_of_lading LEFT OUTER JOIN (SELECT transactions.work_order_no AS work_order_no, sum(transactions.collected_amount) AS total_collected 
+FROM transactions GROUP BY transactions.work_order_no) AS anon_1 ON bill_of_lading.work_order_no = anon_1.work_order_no 
+WHERE bill_of_lading.total_amount > coalesce(anon_1.total_collected, %(coalesce_3)s)
+2025-09-08 00:03:49,397 - sqlalchemy.engine.Engine - INFO - SELECT bill_of_lading.id AS bill_of_lading_id, bill_of_lading.work_order_no AS bill_of_lading_work_order_no, bill_of_lading.driver_name AS bill_of_lading_driver_name, bill_of_lading.date AS bill_of_lading_date, bill_of_lading.total_amount AS bill_of_lading_total_amount, coalesce(anon_1.total_collected, %(coalesce_1)s) AS total_collected, bill_of_lading.total_amount - coalesce(anon_1.total_collected, %(coalesce_2)s) AS due_amount 
+FROM bill_of_lading LEFT OUTER JOIN (SELECT transactions.work_order_no AS work_order_no, sum(transactions.collected_amount) AS total_collected 
+FROM transactions GROUP BY transactions.work_order_no) AS anon_1 ON bill_of_lading.work_order_no = anon_1.work_order_no 
+WHERE bill_of_lading.total_amount > coalesce(anon_1.total_collected, %(coalesce_3)s)
+2025-09-08 00:03:49,398 - sqlalchemy.engine.Engine - INFO - [generated in 0.00333s] {'coalesce_1': 0, 'coalesce_2': 0, 'coalesce_3': 0}
+2025-09-08 00:03:49,399 - sqlalchemy.engine.Engine - INFO - [generated in 0.00171s] {'coalesce_1': 0, 'coalesce_2': 0, 'coalesce_3': 0}
+2025-09-08 00:03:49,582 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-08 00:03:49,582 - sqlalchemy.engine.Engine - INFO - ROLLBACK
