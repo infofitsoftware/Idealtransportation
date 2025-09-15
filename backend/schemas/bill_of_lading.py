@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import List, Optional
 from datetime import date
 
@@ -17,7 +17,7 @@ class BOLVehicle(BOLVehicleBase):
 
 class BillOfLadingBase(BaseModel):
     driver_name: str
-    date: date
+    date: str  # Accept both string and date, convert to string for response
     work_order_no: Optional[str]
     # Broker information fields
     broker_name: Optional[str]
@@ -39,16 +39,32 @@ class BillOfLadingBase(BaseModel):
     remarks: Optional[str]
     pickup_agent_name: Optional[str]
     pickup_signature: Optional[str]
-    pickup_date: Optional[date]
+    pickup_date: Optional[str]  # Accept both string and date, convert to string for response
     delivery_agent_name: Optional[str]
     delivery_signature: Optional[str]
-    delivery_date: Optional[date]
+    delivery_date: Optional[str]  # Accept both string and date, convert to string for response
     # New receiver agent fields
     receiver_agent_name: Optional[str]
     receiver_signature: Optional[str]
-    receiver_date: Optional[date]
+    receiver_date: Optional[str]  # Accept both string and date, convert to string for response
     # Total amount field for payment tracking
     total_amount: Optional[float]
+
+    @validator('date', pre=True)
+    def parse_date(cls, v):
+        if isinstance(v, date):
+            return v.strftime('%Y-%m-%d')  # Convert date to string
+        elif isinstance(v, str) and v:
+            return v  # Return as string
+        return v
+
+    @validator('pickup_date', 'delivery_date', 'receiver_date', pre=True)
+    def parse_optional_dates(cls, v):
+        if isinstance(v, date):
+            return v.strftime('%Y-%m-%d')  # Convert date to string
+        elif isinstance(v, str) and v:
+            return v  # Return as string
+        return v
 
 class BillOfLadingCreate(BillOfLadingBase):
     vehicles: List[BOLVehicleBase]

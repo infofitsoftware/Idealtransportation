@@ -8,12 +8,22 @@ from database import get_db
 from typing import List, Dict, Any, Optional
 import time
 from functools import lru_cache
+from datetime import datetime
 
 router = APIRouter()
 
 # Simple in-memory cache for payment data (expires after 5 minutes)
 _payment_cache = {}
 _cache_expiry = {}
+
+def parse_date_string(date_str: Optional[str]) -> Optional[datetime]:
+    """Convert string date to datetime object"""
+    if not date_str:
+        return None
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        return None
 
 def get_cached_payment_data(work_order_nos: List[str], db: Session) -> Dict[str, float]:
     """Get payment data with simple caching"""
@@ -70,7 +80,7 @@ def create_bill_of_lading(bol: BillOfLadingCreate, db: Session = Depends(get_db)
     
     db_bol = BillOfLading(
         driver_name=bol.driver_name,
-        date=bol.date,
+        date=parse_date_string(bol.date),
         work_order_no=bol.work_order_no,
         # Broker information fields
         broker_name=bol.broker_name,
@@ -92,14 +102,14 @@ def create_bill_of_lading(bol: BillOfLadingCreate, db: Session = Depends(get_db)
         remarks=bol.remarks,
         pickup_agent_name=bol.pickup_agent_name,
         pickup_signature=bol.pickup_signature,
-        pickup_date=bol.pickup_date,
+        pickup_date=parse_date_string(bol.pickup_date),
         delivery_agent_name=bol.delivery_agent_name,
         delivery_signature=bol.delivery_signature,
-        delivery_date=bol.delivery_date,
+        delivery_date=parse_date_string(bol.delivery_date),
         # New receiver agent fields
         receiver_agent_name=bol.receiver_agent_name,
         receiver_signature=bol.receiver_signature,
-        receiver_date=bol.receiver_date,
+        receiver_date=parse_date_string(bol.receiver_date),
         # Total amount calculated from vehicles
         total_amount=total_amount,
     )
@@ -286,6 +296,8 @@ def update_bill_of_lading(
     """
     Update an existing BOL
     """
+    print(f"DEBUG: Received BOL update for ID {bol_id}")
+    print(f"DEBUG: BOL data: {bol_update.dict()}")
     # Check if BOL exists
     existing_bol = db.query(BillOfLading).filter(BillOfLading.id == bol_id).first()
     if not existing_bol:
@@ -316,10 +328,14 @@ def update_bill_of_lading(
         except (ValueError, TypeError):
             pass
     
-    # Update BOL fields
+    # Update BOL fields with proper date conversion
     for field, value in bol_update.dict().items():
         if field != 'vehicles' and hasattr(existing_bol, field):
-            setattr(existing_bol, field, value)
+            # Handle date fields specially
+            if field in ['date', 'pickup_date', 'delivery_date', 'receiver_date']:
+                setattr(existing_bol, field, parse_date_string(value))
+            else:
+                setattr(existing_bol, field, value)
     
     existing_bol.total_amount = total_amount
     

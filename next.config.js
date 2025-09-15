@@ -2,35 +2,13 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // Removed 'output: export' to enable dynamic routes and API functionality
+  output: 'export', // Re-enabled for static deployment
   images: {
     unoptimized: true,
   },
   // Add build timestamp to force cache invalidation
   env: {
     BUILD_TIME: Date.now().toString(),
-  },
-  // Add cache-busting headers
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate'
-          },
-          {
-            key: 'Pragma',
-            value: 'no-cache'
-          },
-          {
-            key: 'Expires',
-            value: '0'
-          }
-        ]
-      }
-    ]
   }
 }
 

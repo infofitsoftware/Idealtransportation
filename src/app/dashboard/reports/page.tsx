@@ -615,13 +615,13 @@ export default function ReportsPage() {
 
   // Handler functions for BOL operations
   const handleViewBOL = (bol: BillOfLading) => {
-    // Navigate to a detailed view page (we'll create this)
-    router.push(`/dashboard/bol/${bol.id}`);
+    // Navigate to a detailed view page using query parameters
+    router.push(`/dashboard/bol/detail?id=${bol.id}`);
   };
 
   const handleEditBOL = (bol: BillOfLading) => {
-    // Navigate to edit page with BOL data
-    router.push(`/dashboard/bol/edit/${bol.id}`);
+    // Navigate to edit page with BOL data using query parameters
+    router.push(`/dashboard/bol/edit?id=${bol.id}`);
   };
 
   const handleDeleteBOL = async (bol: BillOfLading) => {
