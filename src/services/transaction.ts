@@ -169,5 +169,22 @@ export const bolService = {
     console.log('[bolService] GET', api.defaults.baseURL + url);
     const response = await api.get(url);
     return response.data;
+  },
+
+  async getBOL(id: number): Promise<any> {
+    console.log('[bolService] GET', api.defaults.baseURL + `/bol/${id}`);
+    const response = await api.get(`/bol/${id}`);
+    return response.data;
+  },
+
+  async updateBOL(id: number, bolData: any): Promise<any> {
+    console.log('[bolService] PUT', api.defaults.baseURL + `/bol/${id}`, bolData);
+    const response = await api.put(`/bol/${id}`, bolData);
+    return response.data;
+  },
+
+  async deleteBOL(id: number): Promise<void> {
+    console.log('[bolService] DELETE', api.defaults.baseURL + `/bol/${id}`);
+    await api.delete(`/bol/${id}`);
   }
 }; 

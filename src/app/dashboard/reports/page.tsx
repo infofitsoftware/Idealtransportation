@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { DocumentTextIcon, ArrowDownTrayIcon, ShieldExclamationIcon } from "@heroicons/react/24/outline";
+import { DocumentTextIcon, ArrowDownTrayIcon, ShieldExclamationIcon, PencilIcon, TrashIcon, EyeIcon } from "@heroicons/react/24/outline";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { bolService } from "@/services/transaction";
 import { useAccessControl } from "@/hooks/useAccessControl";
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 
 interface Vehicle {
@@ -375,7 +377,23 @@ async function downloadBOLPdf(bol: BillOfLading) {
 }
 
 // Memoized components for better performance
-const MemoizedTableRow = React.memo(({ bol, onDownload }: { bol: BillOfLading; onDownload: (bol: BillOfLading) => void }) => {
+const MemoizedTableRow = React.memo(({ 
+  bol, 
+  onDownload, 
+  onEdit, 
+  onDelete, 
+  onView,
+  canEdit,
+  canDelete 
+}: { 
+  bol: BillOfLading; 
+  onDownload: (bol: BillOfLading) => void;
+  onEdit: (bol: BillOfLading) => void;
+  onDelete: (bol: BillOfLading) => void;
+  onView: (bol: BillOfLading) => void;
+  canEdit: boolean;
+  canDelete: boolean;
+}) => {
   const paymentInfo = React.useMemo(() => {
     const totalAmount = bol.total_amount || 0;
     const collectedAmount = bol.total_collected || 0;
@@ -385,6 +403,7 @@ const MemoizedTableRow = React.memo(({ bol, onDownload }: { bol: BillOfLading; o
   
   const isFullyPaid = paymentInfo.dueAmount <= 0;
   const hasPartialPayment = paymentInfo.collectedAmount > 0;
+  const hasTransactions = paymentInfo.collectedAmount > 0;
   
   return (
     <tr className={`hover:bg-blue-50 ${!isFullyPaid ? 'bg-red-50' : ''}`}>
@@ -438,12 +457,40 @@ const MemoizedTableRow = React.memo(({ bol, onDownload }: { bol: BillOfLading; o
         </ul>
       </td>
       <td className="border px-3 py-2 text-center">
-        <button
-          className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto whitespace-nowrap"
-          onClick={() => onDownload(bol)}
-        >
-          <ArrowDownTrayIcon className="h-5 w-5" /> Download
-        </button>
+        <div className="flex items-center justify-center gap-1">
+          <button
+            className="bg-gray-600 text-white px-2 py-1 rounded shadow hover:bg-gray-700 transition flex items-center gap-1"
+            onClick={() => onView(bol)}
+            title="View Details"
+          >
+            <EyeIcon className="h-4 w-4" />
+          </button>
+          <button
+            className="bg-blue-600 text-white px-2 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1"
+            onClick={() => onDownload(bol)}
+            title="Download PDF"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4" />
+          </button>
+          {canEdit && (
+            <button
+              className="bg-green-600 text-white px-2 py-1 rounded shadow hover:bg-green-700 transition flex items-center gap-1"
+              onClick={() => onEdit(bol)}
+              title="Edit BOL"
+            >
+              <PencilIcon className="h-4 w-4" />
+            </button>
+          )}
+          {canDelete && !hasTransactions && (
+            <button
+              className="bg-red-600 text-white px-2 py-1 rounded shadow hover:bg-red-700 transition flex items-center gap-1"
+              onClick={() => onDelete(bol)}
+              title="Delete BOL"
+            >
+              <TrashIcon className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </td>
     </tr>
   );
@@ -453,6 +500,7 @@ MemoizedTableRow.displayName = 'MemoizedTableRow';
 
 export default function ReportsPage() {
   const { currentUser, loading: accessLoading, hasAccess, isSuperuser } = useAccessControl();
+  const router = useRouter();
   const [displayedData, setDisplayedData] = useState<BillOfLading[]>([]);
   const [allData, setAllData] = useState<BillOfLading[]>([]);
   const [loading, setLoading] = useState(true);
@@ -558,6 +606,37 @@ export default function ReportsPage() {
     setFromDate('');
     setToDate('');
     setWorkOrderFilter('');
+  };
+
+  // Handler functions for BOL operations
+  const handleViewBOL = (bol: BillOfLading) => {
+    // Navigate to a detailed view page (we'll create this)
+    router.push(`/dashboard/bol/${bol.id}`);
+  };
+
+  const handleEditBOL = (bol: BillOfLading) => {
+    // Navigate to edit page with BOL data
+    router.push(`/dashboard/bol/edit/${bol.id}`);
+  };
+
+  const handleDeleteBOL = async (bol: BillOfLading) => {
+    if (!window.confirm(`Are you sure you want to delete BOL #${bol.id} (Work Order: ${bol.work_order_no})? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await bolService.deleteBOL(bol.id);
+      toast.success('BOL deleted successfully');
+      
+      // Refresh the data
+      const updatedData = displayedData.filter(b => b.id !== bol.id);
+      setDisplayedData(updatedData);
+      setAllData(updatedData);
+      setTotalLoaded(updatedData.length);
+    } catch (err: any) {
+      console.error('Error deleting BOL:', err);
+      toast.error(err.response?.data?.detail || 'Failed to delete BOL');
+    }
   };
 
   // Calculate payment statistics for each BOL
@@ -919,19 +998,19 @@ export default function ReportsPage() {
                   <th className="border px-3 py-2 text-left min-w-[80px] h-12 bg-gray-200 animate-pulse"></th>
                   <th className="border px-3 py-2 text-left min-w-[250px] h-12 bg-gray-200 animate-pulse"></th>
                   <th className="border px-3 py-2 text-center min-w-[100px] h-12 bg-gray-200 animate-pulse"></th>
-                </tr>
-              </thead>
-              <tbody>
+              </tr>
+            </thead>
+            <tbody>
                 {[...Array(8)].map((_, i) => (
                   <tr key={i} className="animate-pulse">
                     {[...Array(12)].map((_, j) => (
                       <td key={j} className="border px-3 py-2 h-16 bg-gray-50"></td>
                     ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         </div>
       ) : error ? (
         <div className="text-center py-12">
@@ -974,7 +1053,7 @@ export default function ReportsPage() {
                   <th className="border px-3 py-2 text-left min-w-[110px] whitespace-nowrap">Due Amount</th>
                   <th className="border px-3 py-2 text-left min-w-[80px] whitespace-nowrap">Status</th>
                   <th className="border px-3 py-2 text-left min-w-[250px] whitespace-nowrap">Vehicles</th>
-                  <th className="border px-3 py-2 text-center min-w-[100px] whitespace-nowrap">Download</th>
+                  <th className="border px-3 py-2 text-center min-w-[200px] whitespace-nowrap">Actions</th>
               </tr>
             </thead>
               <tbody>
@@ -983,6 +1062,11 @@ export default function ReportsPage() {
                     key={bol.id} 
                     bol={bol} 
                     onDownload={downloadBOLPdf}
+                    onEdit={handleEditBOL}
+                    onDelete={handleDeleteBOL}
+                    onView={handleViewBOL}
+                    canEdit={isSuperuser}
+                    canDelete={isSuperuser}
                   />
                 ))}
             </tbody>

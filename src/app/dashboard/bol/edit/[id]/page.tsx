@@ -1,0 +1,593 @@
+"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import SignatureCanvas from "react-signature-canvas";
+import {
+  UserIcon,
+  TruckIcon,
+  DocumentTextIcon,
+  PencilSquareIcon,
+  CalendarDaysIcon,
+  PhoneIcon,
+  BuildingOffice2Icon,
+  ExclamationCircleIcon,
+  ArrowLeftIcon,
+} from "@heroicons/react/24/outline";
+import { useRouter, useParams } from 'next/navigation'
+import toast from 'react-hot-toast';
+import FormHeader from '@/components/FormHeader';
+import { api } from '@/services/auth';
+import { bolService } from '@/services/transaction';
+
+interface Vehicle {
+  year: string;
+  make: string;
+  model: string;
+  vin: string;
+  mileage: string;
+  price: string;
+}
+
+const initialVehicle: Vehicle = {
+  year: "",
+  make: "",
+  model: "",
+  vin: "",
+  mileage: "",
+  price: "",
+};
+
+function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
+  return (
+    <div className="flex items-center gap-2 mb-2 mt-8">
+      <Icon className="h-6 w-6 text-blue-600" />
+      <h2 className="text-lg font-semibold text-gray-800 tracking-tight">{title}</h2>
+    </div>
+  );
+}
+
+function SignaturePad({ value, onChange, label }: { value: string; onChange: (data: string) => void; label: string }) {
+  const sigRef = useRef<SignatureCanvas>(null);
+  const clear = () => {
+    sigRef.current?.clear();
+    onChange("");
+  };
+  const handleEnd = () => {
+    if (sigRef.current && !sigRef.current.isEmpty()) {
+      const canvas = sigRef.current.getCanvas();
+      const dataUrl = canvas.toDataURL("image/png");
+      onChange(dataUrl);
+    }
+  };
+  return (
+    <div className="mb-2">
+      <label className="block font-medium mb-1 text-gray-700">{label}</label>
+      <div className="border-2 border-blue-200 rounded bg-gray-50" style={{ width: 300, height: 100 }}>
+        <SignatureCanvas
+          ref={sigRef}
+          penColor="#2563eb"
+          canvasProps={{ width: 300, height: 100, className: "sigCanvas" }}
+          onEnd={handleEnd}
+          backgroundColor="#f9fafb"
+        />
+      </div>
+      <div className="flex gap-2 mt-1">
+        <button type="button" onClick={clear} className="text-sm text-blue-600 underline">Clear</button>
+        {value && (
+          <span className="text-green-600 text-xs">Signature captured</span>
+        )}
+      </div>
+      {value && (
+        <img src={value} alt="Signature preview" className="mt-2 border rounded bg-white" style={{ width: 150, height: 50 }} />
+      )}
+    </div>
+  );
+}
+
+export default function EditBOLPage() {
+  const router = useRouter();
+  const params = useParams();
+  const bolId = params.id as string;
+  
+  const [form, setForm] = useState({
+    driver_name: "",
+    date: "",
+    work_order_no: "",
+    // Broker information fields
+    broker_name: "",
+    broker_address: "",
+    broker_phone: "",
+    pickup_name: "",
+    pickup_address: "",
+    pickup_city: "",
+    pickup_state: "",
+    pickup_zip: "",
+    pickup_phone: "",
+    delivery_name: "",
+    delivery_address: "",
+    delivery_city: "",
+    delivery_state: "",
+    delivery_zip: "",
+    delivery_phone: "",
+    condition_codes: [] as string[],
+    remarks: "",
+    pickup_agent_name: "",
+    pickup_signature: "",
+    pickup_date: "",
+    delivery_agent_name: "",
+    delivery_signature: "",
+    delivery_date: "",
+    // Receiver agent fields
+    receiver_agent_name: "",
+    receiver_signature: "",
+    receiver_date: "",
+  });
+  const [vehicles, setVehicles] = useState<Vehicle[]>([{ ...initialVehicle }]);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [workOrderError, setWorkOrderError] = useState<string | null>(null);
+  const [checkingWorkOrder, setCheckingWorkOrder] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Load BOL data
+  useEffect(() => {
+    const loadBOL = async () => {
+      try {
+        setLoading(true);
+        const bol = await bolService.getBOL(parseInt(bolId));
+        
+        // Populate form with BOL data
+        setForm({
+          driver_name: bol.driver_name || "",
+          date: bol.date || "",
+          work_order_no: bol.work_order_no || "",
+          broker_name: bol.broker_name || "",
+          broker_address: bol.broker_address || "",
+          broker_phone: bol.broker_phone || "",
+          pickup_name: bol.pickup_name || "",
+          pickup_address: bol.pickup_address || "",
+          pickup_city: bol.pickup_city || "",
+          pickup_state: bol.pickup_state || "",
+          pickup_zip: bol.pickup_zip || "",
+          pickup_phone: bol.pickup_phone || "",
+          delivery_name: bol.delivery_name || "",
+          delivery_address: bol.delivery_address || "",
+          delivery_city: bol.delivery_city || "",
+          delivery_state: bol.delivery_state || "",
+          delivery_zip: bol.delivery_zip || "",
+          delivery_phone: bol.delivery_phone || "",
+          condition_codes: bol.condition_codes ? bol.condition_codes.split(',') : [],
+          remarks: bol.remarks || "",
+          pickup_agent_name: bol.pickup_agent_name || "",
+          pickup_signature: bol.pickup_signature || "",
+          pickup_date: bol.pickup_date || "",
+          delivery_agent_name: bol.delivery_agent_name || "",
+          delivery_signature: bol.delivery_signature || "",
+          delivery_date: bol.delivery_date || "",
+          receiver_agent_name: bol.receiver_agent_name || "",
+          receiver_signature: bol.receiver_signature || "",
+          receiver_date: bol.receiver_date || "",
+        });
+        
+        // Set vehicles
+        if (bol.vehicles && bol.vehicles.length > 0) {
+          setVehicles(bol.vehicles);
+        }
+        
+        setTotalAmount(bol.total_amount || 0);
+      } catch (err: any) {
+        console.error('Error loading BOL:', err);
+        toast.error('Failed to load BOL data');
+        router.push('/dashboard/reports');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (bolId) {
+      loadBOL();
+    }
+  }, [bolId, router]);
+
+  // Calculate total amount as vehicles are added/edited
+  useEffect(() => {
+    let sum = 0;
+    vehicles.forEach(v => {
+      const price = parseFloat(v.price || '0');
+      if (!isNaN(price)) sum += price;
+    });
+    setTotalAmount(sum);
+  }, [vehicles]);
+
+  // Validate work order number uniqueness (excluding current BOL)
+  useEffect(() => {
+    const checkUnique = async () => {
+      if (!form.work_order_no) {
+        setWorkOrderError(null);
+        return;
+      }
+      setCheckingWorkOrder(true);
+      try {
+        const response = await api.get(`/bol/?work_order_no=${encodeURIComponent(form.work_order_no)}`);
+        const bols = response.data;
+        if (Array.isArray(bols) && bols.some((b: any) => b.work_order_no === form.work_order_no && b.id !== parseInt(bolId))) {
+          setWorkOrderError('Work order number already exists. Please use a unique number.');
+        } else {
+          setWorkOrderError(null);
+        }
+      } catch {
+        setWorkOrderError(null);
+      } finally {
+        setCheckingWorkOrder(false);
+      }
+    };
+    checkUnique();
+  }, [form.work_order_no, bolId]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleVehicleChange = (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setVehicles((prev) => {
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], [name]: value };
+      return updated;
+    });
+  };
+
+  const addVehicle = () => setVehicles((prev) => [...prev, { ...initialVehicle }]);
+  const removeVehicle = (idx: number) => setVehicles((prev) => prev.filter((_, i) => i !== idx));
+
+  const handleConditionCode = (code: string) => {
+    setForm((prev) => {
+      const codes = prev.condition_codes.includes(code)
+        ? prev.condition_codes.filter((c) => c !== code)
+        : [...prev.condition_codes, code];
+      return { ...prev, condition_codes: codes };
+    });
+  };
+
+  const handlePickupSignature = (data: string) => {
+    setForm((prev) => ({ ...prev, pickup_signature: data }));
+  };
+  const handleDeliverySignature = (data: string) => {
+    setForm((prev) => ({ ...prev, delivery_signature: data }));
+  };
+  const handleReceiverSignature = (data: string) => {
+    setForm((prev) => ({ ...prev, receiver_signature: data }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.work_order_no) {
+      setWorkOrderError('Work order number is required.');
+      return;
+    }
+    if (workOrderError) {
+      toast.error(workOrderError);
+      return;
+    }
+    
+    try {
+      setSaving(true);
+      const payload = {
+        ...form,
+        vehicles,
+        condition_codes: form.condition_codes.join(','),
+        total_amount: totalAmount,
+      };
+      await bolService.updateBOL(parseInt(bolId), payload);
+      toast.success('Bill of Lading updated successfully!');
+      setTimeout(() => router.push('/dashboard/reports'), 1200);
+    } catch (err: any) {
+      toast.error('Error: ' + (err.response?.data?.detail || err.message));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const conditionCodes = [
+    { code: "B", label: "Bent" },
+    { code: "C", label: "Choice" },
+    { code: "D", label: "Dented" },
+    { code: "E", label: "Defective" },
+    { code: "F", label: "Scuffed" },
+    { code: "G", label: "Gouged" },
+    { code: "J", label: "Cut" },
+    { code: "K", label: "Cracked" },
+    { code: "L", label: "Loose" },
+    { code: "M", label: "Mission" },
+    { code: "P", label: "Painted over" },
+    { code: "Q", label: "Paint defect" },
+    { code: "O", label: "Hall damage" },
+    { code: "R", label: "Punctured" },
+    { code: "S", label: "Scratched" },
+    { code: "T", label: "Torn" },
+    { code: "W", label: "Wavy" },
+    { code: "V", label: "Present" },
+    { code: "Z", label: "Other" },
+  ];
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-6"></div>
+          <div className="text-xl font-semibold text-gray-700 mb-2">Loading BOL Data</div>
+          <div className="text-sm text-gray-500">Please wait while we load the BOL information...</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
+      <FormHeader />
+      
+      <div className="flex items-center gap-4 mb-6">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+        >
+          <ArrowLeftIcon className="h-5 w-5" />
+          Back
+        </button>
+        <h1 className="text-3xl font-extrabold mb-2 text-blue-700 tracking-tight flex items-center gap-2">
+          <PencilSquareIcon className="h-8 w-8 text-blue-500" /> Edit Bill of Lading
+        </h1>
+      </div>
+      <p className="text-gray-500 mb-6">Update the information below to modify the Bill of Lading.</p>
+      
+      {/* Show total amount prominently */}
+      <div className="mb-6 flex items-center gap-4">
+        <span className="text-lg font-semibold text-gray-700">Total Amount:</span>
+        <span className="text-2xl font-bold text-green-700">${totalAmount.toFixed(2)}</span>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Header */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-blue-50 rounded-lg p-4 border border-blue-100">
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1 flex items-center gap-1"><UserIcon className="h-5 w-5 text-blue-400" />Driver</label>
+            <input name="driver_name" value={form.driver_name} onChange={handleChange} className="input" required />
+          </div>
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1 flex items-center gap-1"><CalendarDaysIcon className="h-5 w-5 text-blue-400" />Date</label>
+            <input type="date" name="date" value={form.date} onChange={handleChange} className="input" required />
+          </div>
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1 flex items-center gap-1"><PencilSquareIcon className="h-5 w-5 text-blue-400" />Work Order No. <span className="text-red-500">*</span></label>
+            <input name="work_order_no" value={form.work_order_no} onChange={handleChange} className="input" required />
+            {checkingWorkOrder && <span className="text-xs text-gray-500">Checking uniqueness...</span>}
+            {workOrderError && (
+              <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                <ExclamationCircleIcon className="h-4 w-4" />
+                {workOrderError}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Broker Information */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-green-50 rounded-lg p-4 border border-green-100">
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1 flex items-center gap-1"><BuildingOffice2Icon className="h-5 w-5 text-green-400" />Broker Name</label>
+            <input name="broker_name" value={form.broker_name} onChange={handleChange} className="input" />
+          </div>
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1 flex items-center gap-1"><BuildingOffice2Icon className="h-5 w-5 text-green-400" />Broker Address</label>
+            <input name="broker_address" value={form.broker_address} onChange={handleChange} className="input" />
+          </div>
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1 flex items-center gap-1"><PhoneIcon className="h-5 w-5 text-green-400" />Broker Phone</label>
+            <input name="broker_phone" value={form.broker_phone} onChange={handleChange} className="input" />
+          </div>
+        </div>
+
+        {/* Pickup & Delivery */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="border border-blue-100 rounded-lg p-4 bg-gray-50">
+            <SectionHeader icon={BuildingOffice2Icon} title="Pick Up" />
+            <input name="pickup_name" placeholder="Name" value={form.pickup_name} onChange={handleChange} className="input mb-1" />
+            <input name="pickup_address" placeholder="Address" value={form.pickup_address} onChange={handleChange} className="input mb-1" />
+            {/* City/State/Zip Row - Responsive */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-1">
+              <input name="pickup_city" placeholder="City" value={form.pickup_city} onChange={handleChange} className="input min-w-0" />
+              <input name="pickup_state" placeholder="State" value={form.pickup_state} onChange={handleChange} className="input min-w-0" />
+              <input name="pickup_zip" placeholder="Zip" value={form.pickup_zip} onChange={handleChange} className="input min-w-0" />
+            </div>
+            <div className="flex items-center gap-1">
+              <PhoneIcon className="h-4 w-4 text-blue-400" />
+              <input name="pickup_phone" placeholder="Phone" value={form.pickup_phone} onChange={handleChange} className="input flex-1" />
+            </div>
+          </div>
+          <div className="border border-blue-100 rounded-lg p-4 bg-gray-50">
+            <SectionHeader icon={BuildingOffice2Icon} title="Delivery" />
+            <input name="delivery_name" placeholder="Name" value={form.delivery_name} onChange={handleChange} className="input mb-1" />
+            <input name="delivery_address" placeholder="Address" value={form.delivery_address} onChange={handleChange} className="input mb-1" />
+            {/* City/State/Zip Row - Responsive */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-1">
+              <input name="delivery_city" placeholder="City" value={form.delivery_city} onChange={handleChange} className="input min-w-0" />
+              <input name="delivery_state" placeholder="State" value={form.delivery_state} onChange={handleChange} className="input min-w-0" />
+              <input name="delivery_zip" placeholder="Zip" value={form.delivery_zip} onChange={handleChange} className="input min-w-0" />
+            </div>
+            <div className="flex items-center gap-1">
+              <PhoneIcon className="h-4 w-4 text-blue-400" />
+              <input name="delivery_phone" placeholder="Phone" value={form.delivery_phone} onChange={handleChange} className="input flex-1" />
+            </div>
+          </div>
+        </div>
+
+        {/* Vehicles */}
+        <div className="border border-blue-100 rounded-lg p-4 bg-blue-50">
+          <SectionHeader icon={TruckIcon} title="Vehicles" />
+          {/* Desktop/tablet table view */}
+          <div className="overflow-x-auto -mx-4 hidden md:block">
+            <table className="min-w-[700px] border mb-2 text-sm mx-4">
+              <thead>
+                <tr className="bg-blue-100 text-blue-800">
+                  <th className="border px-2 py-1">Year</th>
+                  <th className="border px-2 py-1">Make</th>
+                  <th className="border px-2 py-1">Model</th>
+                  <th className="border px-2 py-1">VIN</th>
+                  <th className="border px-2 py-1">Mileage</th>
+                  <th className="border px-2 py-1">Price</th>
+                  <th className="border px-2 py-1">Remove</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vehicles.map((v, idx) => (
+                  <tr key={idx} className="hover:bg-blue-50">
+                    <td className="border px-2 py-1"><input name="year" value={v.year} onChange={e => handleVehicleChange(idx, e)} className="input w-full" /></td>
+                    <td className="border px-2 py-1"><input name="make" value={v.make} onChange={e => handleVehicleChange(idx, e)} className="input w-full" /></td>
+                    <td className="border px-2 py-1"><input name="model" value={v.model} onChange={e => handleVehicleChange(idx, e)} className="input w-full" /></td>
+                    <td className="border px-2 py-1"><input name="vin" value={v.vin} onChange={e => handleVehicleChange(idx, e)} className="input w-full" /></td>
+                    <td className="border px-2 py-1"><input name="mileage" value={v.mileage} onChange={e => handleVehicleChange(idx, e)} className="input w-full" /></td>
+                    <td className="border px-2 py-1"><input name="price" value={v.price} onChange={e => handleVehicleChange(idx, e)} className="input w-full" /></td>
+                    <td className="border px-2 py-1 text-center">
+                      {vehicles.length > 1 && (
+                        <button type="button" onClick={() => removeVehicle(idx)} className="text-red-500 font-bold">X</button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Mobile stacked card view */}
+          <div className="block md:hidden space-y-4">
+            {vehicles.map((v, idx) => (
+              <div key={idx} className="bg-white rounded-lg shadow p-3 border border-blue-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Year</label>
+                    <input name="year" value={v.year} onChange={e => handleVehicleChange(idx, e)} className="input w-full" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Make</label>
+                    <input name="make" value={v.make} onChange={e => handleVehicleChange(idx, e)} className="input w-full" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Model</label>
+                    <input name="model" value={v.model} onChange={e => handleVehicleChange(idx, e)} className="input w-full" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">VIN</label>
+                    <input name="vin" value={v.vin} onChange={e => handleVehicleChange(idx, e)} className="input w-full" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Mileage</label>
+                    <input name="mileage" value={v.mileage} onChange={e => handleVehicleChange(idx, e)} className="input w-full" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Price</label>
+                    <input name="price" value={v.price} onChange={e => handleVehicleChange(idx, e)} className="input w-full" />
+                  </div>
+                </div>
+                {vehicles.length > 1 && (
+                  <button type="button" onClick={() => removeVehicle(idx)} className="text-red-500 font-bold text-sm">Remove</button>
+                )}
+              </div>
+            ))}
+          </div>
+          <button type="button" onClick={addVehicle} className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition mt-2">Add Vehicle</button>
+        </div>
+
+        {/* Condition Codes */}
+        <div className="border border-blue-100 rounded-lg p-4 bg-gray-50">
+          <SectionHeader icon={DocumentTextIcon} title="Condition Codes" />
+          <div className="flex flex-wrap gap-3">
+            {conditionCodes.map(({ code, label }) => (
+              <label key={code} className="flex items-center gap-1 text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={form.condition_codes.includes(code)}
+                  onChange={() => handleConditionCode(code)}
+                  className="accent-blue-600"
+                />
+                <span className="font-medium">{code}</span>
+                <span className="text-xs text-gray-400">{label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Remarks */}
+        <div className="border border-blue-100 rounded-lg p-4 bg-gray-50">
+          <SectionHeader icon={PencilSquareIcon} title="Remarks" />
+          <textarea name="remarks" value={form.remarks} onChange={handleChange} className="input w-full min-h-[60px]" placeholder="Enter any remarks here..." />
+        </div>
+
+        {/* Signatures & Dates */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="border border-blue-100 rounded-lg p-4 bg-blue-50">
+            <SectionHeader icon={UserIcon} title="Pick Up Agent" />
+            <input name="pickup_agent_name" placeholder="Agent Name" value={form.pickup_agent_name} onChange={handleChange} className="input mb-1" />
+            <input type="date" name="pickup_date" value={form.pickup_date} onChange={handleChange} className="input mb-1" />
+            <div className="overflow-x-auto max-w-full">
+              <SignaturePad
+                value={form.pickup_signature}
+                onChange={handlePickupSignature}
+                label="Pickup Signature (sign below)"
+              />
+            </div>
+          </div>
+          <div className="border border-blue-100 rounded-lg p-4 bg-blue-50">
+            <SectionHeader icon={UserIcon} title="Delivery Agent" />
+            <input name="delivery_agent_name" placeholder="Agent Name" value={form.delivery_agent_name} onChange={handleChange} className="input mb-1" />
+            <input type="date" name="delivery_date" value={form.delivery_date} onChange={handleChange} className="input mb-1" />
+            <div className="overflow-x-auto max-w-full">
+              <SignaturePad
+                value={form.delivery_signature}
+                onChange={handleDeliverySignature}
+                label="Delivery Signature (sign below)"
+              />
+            </div>
+          </div>
+        </div>
+        {/* Receiver Agent Section */}
+        <div className="border border-blue-100 rounded-lg p-4 bg-blue-50 mt-6">
+          <SectionHeader icon={UserIcon} title="Receiver Agent" />
+          <input name="receiver_agent_name" placeholder="Agent Name" value={form.receiver_agent_name} onChange={handleChange} className="input mb-1" />
+          <input type="date" name="receiver_date" value={form.receiver_date} onChange={handleChange} className="input mb-1" />
+          <div className="overflow-x-auto max-w-full">
+            <SignaturePad
+              value={form.receiver_signature}
+              onChange={handleReceiverSignature}
+              label="Receiver Signature (sign below)"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-4">
+          <button 
+            type="button" 
+            onClick={() => router.back()}
+            className="bg-gray-500 text-white px-8 py-2 rounded-lg font-bold shadow hover:bg-gray-600 transition text-lg"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            disabled={saving}
+            className="bg-blue-700 text-white px-8 py-2 rounded-lg font-bold shadow hover:bg-blue-800 transition text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? 'Updating...' : 'Update Bill of Lading'}
+          </button>
+        </div>
+      </form>
+      <style jsx>{`
+        .input {
+          @apply border border-blue-200 rounded px-2 py-1 w-full mb-1 focus:outline-none focus:ring-2 focus:ring-blue-200 transition;
+        }
+        .sigCanvas {
+          background: #f9fafb;
+          border-radius: 0.25rem;
+        }
+      `}</style>
+    </div>
+  );
+}

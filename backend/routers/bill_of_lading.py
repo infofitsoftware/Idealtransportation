@@ -219,6 +219,148 @@ def get_bols_with_pending_payments(db: Session = Depends(get_db)):
         for bol in pending_bols
     ]
 
+@router.get("/{bol_id}", response_model=BillOfLadingSchema)
+def get_bill_of_lading(bol_id: int, db: Session = Depends(get_db)):
+    """
+    Get a specific BOL by ID with payment information
+    """
+    bol = db.query(BillOfLading).filter(BillOfLading.id == bol_id).first()
+    
+    if not bol:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"BOL with ID {bol_id} not found"
+        )
+    
+    # Get payment information
+    if bol.work_order_no:
+        total_collected = db.query(func.sum(Transaction.collected_amount)).filter(
+            Transaction.work_order_no == bol.work_order_no
+        ).scalar() or 0.0
+    else:
+        total_collected = 0.0
+    
+    total_amount = bol.total_amount or 0.0
+    due_amount = max(0.0, total_amount - total_collected)
+    
+    # Add payment info to the BOL object
+    bol.total_collected = total_collected
+    bol.due_amount = due_amount
+    
+    return bol
+
+@router.put("/{bol_id}", response_model=BillOfLadingSchema)
+def update_bill_of_lading(
+    bol_id: int, 
+    bol_update: BillOfLadingCreate, 
+    db: Session = Depends(get_db)
+):
+    """
+    Update an existing BOL
+    """
+    # Check if BOL exists
+    existing_bol = db.query(BillOfLading).filter(BillOfLading.id == bol_id).first()
+    if not existing_bol:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"BOL with ID {bol_id} not found"
+        )
+    
+    # Check if work order number is being changed and if new one already exists
+    if (bol_update.work_order_no and 
+        bol_update.work_order_no != existing_bol.work_order_no):
+        duplicate_bol = db.query(BillOfLading).filter(
+            BillOfLading.work_order_no == bol_update.work_order_no,
+            BillOfLading.id != bol_id
+        ).first()
+        if duplicate_bol:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Work order number '{bol_update.work_order_no}' already exists"
+            )
+    
+    # Calculate new total amount from vehicle prices
+    total_amount = 0.0
+    for vehicle in bol_update.vehicles:
+        try:
+            price = float(vehicle.price) if vehicle.price else 0.0
+            total_amount += price
+        except (ValueError, TypeError):
+            pass
+    
+    # Update BOL fields
+    for field, value in bol_update.dict().items():
+        if field != 'vehicles' and hasattr(existing_bol, field):
+            setattr(existing_bol, field, value)
+    
+    existing_bol.total_amount = total_amount
+    
+    # Delete existing vehicles and add new ones
+    db.query(BOLVehicle).filter(BOLVehicle.bill_of_lading_id == bol_id).delete()
+    
+    for v in bol_update.vehicles:
+        db_vehicle = BOLVehicle(
+            bill_of_lading_id=bol_id,
+            year=v.year,
+            make=v.make,
+            model=v.model,
+            vin=v.vin,
+            mileage=v.mileage,
+            price=v.price,
+        )
+        db.add(db_vehicle)
+    
+    db.commit()
+    db.refresh(existing_bol)
+    
+    # Add payment information
+    if existing_bol.work_order_no:
+        total_collected = db.query(func.sum(Transaction.collected_amount)).filter(
+            Transaction.work_order_no == existing_bol.work_order_no
+        ).scalar() or 0.0
+    else:
+        total_collected = 0.0
+    
+    due_amount = max(0.0, total_amount - total_collected)
+    existing_bol.total_collected = total_collected
+    existing_bol.due_amount = due_amount
+    
+    return existing_bol
+
+@router.delete("/{bol_id}")
+def delete_bill_of_lading(bol_id: int, db: Session = Depends(get_db)):
+    """
+    Delete a BOL and all associated vehicles
+    """
+    bol = db.query(BillOfLading).filter(BillOfLading.id == bol_id).first()
+    
+    if not bol:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"BOL with ID {bol_id} not found"
+        )
+    
+    # Check if there are any transactions associated with this BOL
+    if bol.work_order_no:
+        transaction_count = db.query(Transaction).filter(
+            Transaction.work_order_no == bol.work_order_no
+        ).count()
+        
+        if transaction_count > 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot delete BOL with work order '{bol.work_order_no}' because it has {transaction_count} associated transaction(s). Please delete transactions first."
+            )
+    
+    # Delete associated vehicles first
+    db.query(BOLVehicle).filter(BOLVehicle.bill_of_lading_id == bol_id).delete()
+    
+    # Delete the BOL
+    db.delete(bol)
+    db.commit()
+    
+    return {"message": f"BOL {bol_id} deleted successfully"}
+
 @router.get("/work-order/{work_order_no}/payment-status")
 def get_payment_status(work_order_no: str, db: Session = Depends(get_db)):
     """
