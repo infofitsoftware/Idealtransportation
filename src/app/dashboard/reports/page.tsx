@@ -508,6 +508,8 @@ export default function ReportsPage() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [workOrderFilter, setWorkOrderFilter] = useState('');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('all'); // 'all', 'paid', 'pending'
+  
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -526,7 +528,7 @@ export default function ReportsPage() {
     return () => clearTimeout(timer);
   }, [workOrderFilter]);
 
-  // Fetch initial data with server-side pagination
+  // Fetch initial data with server-side pagination and filtering
   useEffect(() => {
     const fetchData = async () => {
       if (!hasAccess && !accessLoading) return;
@@ -535,13 +537,14 @@ export default function ReportsPage() {
         setLoading(true);
         setError("");
         
-        // Fetch first page with server-side filtering
+        // Fetch first page with server-side filtering (including payment status)
         const bols = await bolService.getBOLs({
           skip: 0,
           limit: itemsPerPage,
           from_date: fromDate || undefined,
           to_date: toDate || undefined,
           work_order_no: debouncedWorkOrder || undefined,
+          payment_status: paymentStatusFilter !== 'all' ? paymentStatusFilter : undefined,
           sort_by: 'date',
           sort_order: 'asc'
         });
@@ -562,7 +565,7 @@ export default function ReportsPage() {
     if (hasAccess || accessLoading) {
     fetchData();
     }
-  }, [itemsPerPage, fromDate, toDate, debouncedWorkOrder, hasAccess, accessLoading]);
+  }, [itemsPerPage, fromDate, toDate, debouncedWorkOrder, paymentStatusFilter, hasAccess, accessLoading]);
 
   // Load more data with server-side pagination
   const loadMoreData = React.useCallback(async () => {
@@ -580,6 +583,7 @@ export default function ReportsPage() {
         from_date: fromDate || undefined,
         to_date: toDate || undefined,
         work_order_no: debouncedWorkOrder || undefined,
+        payment_status: paymentStatusFilter !== 'all' ? paymentStatusFilter : undefined,
         sort_by: 'date',
         sort_order: 'asc'
       });
@@ -606,6 +610,7 @@ export default function ReportsPage() {
     setFromDate('');
     setToDate('');
     setWorkOrderFilter('');
+    setPaymentStatusFilter('all');
   };
 
   // Handler functions for BOL operations
@@ -652,6 +657,9 @@ export default function ReportsPage() {
     };
   };
 
+  // Since we're now using server-side filtering, we don't need client-side filtering
+  // displayedData already contains the filtered results from the server
+
   // Calculate overall payment statistics
   const paymentStats = React.useMemo(() => {
     const totalBOLs = displayedData.length;
@@ -685,12 +693,16 @@ export default function ReportsPage() {
         from_date: fromDate || undefined,
         to_date: toDate || undefined,
         work_order_no: debouncedWorkOrder || undefined,
+        payment_status: paymentStatusFilter !== 'all' ? paymentStatusFilter : undefined,
         sort_by: 'date',
         sort_order: 'asc'
       });
       
+      // Server already applied the payment status filter, so use allBols directly
+      const exportData = allBols;
+      
       // Prepare data for Excel export
-      const excelData = allBols.map(bol => {
+      const excelData = exportData.map(bol => {
       const paymentInfo = getPaymentInfo(bol);
       const isFullyPaid = paymentInfo.dueAmount <= 0;
       const hasPartialPayment = paymentInfo.collectedAmount > 0;
@@ -854,7 +866,7 @@ export default function ReportsPage() {
       {/* Filters */}
       <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Filter Options</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <div>
             <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
               From Date
@@ -893,6 +905,26 @@ export default function ReportsPage() {
             />
           </div>
           <div>
+            <label htmlFor="paymentStatusFilter" className="block text-sm font-medium text-gray-700 mb-1">
+              Payment Status
+              {paymentStatusFilter !== 'all' && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                  Filter Active
+                </span>
+              )}
+            </label>
+            <select
+              id="paymentStatusFilter"
+              value={paymentStatusFilter}
+              onChange={(e) => setPaymentStatusFilter(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+              <option value="all">All BOLs</option>
+              <option value="paid">Fully Paid</option>
+              <option value="pending">Pending/Partial</option>
+            </select>
+          </div>
+          <div>
             <button
               onClick={clearFilters}
               className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -901,13 +933,15 @@ export default function ReportsPage() {
             </button>
           </div>
         </div>
-        {(fromDate || toDate || workOrderFilter) && (
+        {(fromDate || toDate || workOrderFilter || paymentStatusFilter !== 'all') && (
           <div className="mt-3 text-sm text-gray-600">
-            Loaded {displayedData.length} BOLs
+            Showing {displayedData.length} BOLs
             {fromDate && toDate && ` from ${fromDate} to ${toDate}`}
             {fromDate && !toDate && ` from ${fromDate}`}
             {!fromDate && toDate && ` until ${toDate}`}
             {workOrderFilter && ` matching "${workOrderFilter}"`}
+            {paymentStatusFilter === 'paid' && ` (fully paid only)`}
+            {paymentStatusFilter === 'pending' && ` (pending/partial payments only)`}
             {hasMoreData && ` (more available)`}
           </div>
         )}
@@ -920,8 +954,13 @@ export default function ReportsPage() {
             <div>
               <h3 className="text-lg font-semibold text-gray-800">Report Summary</h3>
               <p className="text-sm text-gray-600">
-                Loaded {displayedData.length} BOL reports
+                Showing {displayedData.length} BOL reports
                 {hasMoreData && ' (scroll down to load more)'}
+                {paymentStatusFilter !== 'all' && (
+                  <span className="ml-2 text-blue-600 font-medium">
+                    ({paymentStatusFilter === 'paid' ? 'Fully Paid' : 'Pending/Partial'} filter applied)
+                  </span>
+                )}
               </p>
             </div>
             {hasMoreData && (
@@ -1035,6 +1074,14 @@ export default function ReportsPage() {
               Create Your First BOL
             </button>
           )}
+          {displayedData.length === 0 && (fromDate || toDate || workOrderFilter || paymentStatusFilter !== 'all') && (
+            <button
+              onClick={clearFilters}
+              className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
       ) : (
         <>
@@ -1099,6 +1146,7 @@ export default function ReportsPage() {
               </button>
               <p className="text-xs text-gray-500 mt-2">
                 Loaded {displayedData.length} BOLs
+                {paymentStatusFilter !== 'all' && ` (${paymentStatusFilter === 'paid' ? 'Fully Paid' : 'Pending/Partial'} filter applied)`}
               </p>
             </div>
           )}

@@ -130,14 +130,42 @@ def list_bill_of_lading(
     from_date: Optional[str] = Query(None),
     to_date: Optional[str] = Query(None),
     work_order_no: Optional[str] = Query(None),
+    payment_status: Optional[str] = Query(None, enum=["all", "paid", "pending"]),
     sort_by: str = Query("date", enum=["date", "work_order_no", "driver_name"]),
     sort_order: str = Query("asc", enum=["asc", "desc"])
 ):
     start_time = time.time()
-    # Optimized query: Get BOLs first, then batch fetch payment data
-    query = db.query(BillOfLading)
     
-    # Apply filters first (more efficient)
+    # For payment status filtering, we need to use a subquery approach
+    if payment_status and payment_status != "all":
+        # Create a subquery to get work orders with their payment status
+        payment_subquery = db.query(
+            Transaction.work_order_no,
+            func.sum(Transaction.collected_amount).label('total_collected')
+        ).group_by(Transaction.work_order_no).subquery()
+        
+        # Join with BOLs to get payment information
+        query = db.query(BillOfLading).outerjoin(
+            payment_subquery, 
+            BillOfLading.work_order_no == payment_subquery.c.work_order_no
+        )
+        
+        # Apply payment status filter
+        if payment_status == "paid":
+            # Fully paid: total_collected >= total_amount
+            query = query.filter(
+                func.coalesce(payment_subquery.c.total_collected, 0) >= BillOfLading.total_amount
+            )
+        elif payment_status == "pending":
+            # Pending/partial: total_collected < total_amount
+            query = query.filter(
+                func.coalesce(payment_subquery.c.total_collected, 0) < BillOfLading.total_amount
+            )
+    else:
+        # No payment status filter, use simple query
+        query = db.query(BillOfLading)
+    
+    # Apply other filters
     if from_date:
         query = query.filter(BillOfLading.date >= from_date)
     if to_date:
@@ -152,7 +180,7 @@ def list_bill_of_lading(
     else:
         query = query.order_by(sort_column.asc())
     
-    # Apply pagination early
+    # Apply pagination
     bols = query.offset(skip).limit(limit).all()
     
     if not bols:
