@@ -65,16 +65,16 @@ def get_daily_expenses(
         logger.info(f"Fetching daily expenses for user: {current_user.email}")
         logger.info(f"User ID: {current_user.id}")
         
-        # Log the query before execution
-        query = db.query(DailyExpense).filter(DailyExpense.user_id == current_user.id)
-        logger.info(f"SQL Query: {query}")
+        # Join with User table to get user information
+        expenses_with_user = db.query(DailyExpense, User.full_name).join(
+            User, DailyExpense.user_id == User.id
+        ).filter(DailyExpense.user_id == current_user.id).all()
         
-        expenses = query.all()
-        logger.info(f"Found {len(expenses)} daily expenses")
+        logger.info(f"Found {len(expenses_with_user)} daily expenses with user info")
         
         # Convert each expense to a dictionary and validate
         result = []
-        for expense in expenses:
+        for expense, user_full_name in expenses_with_user:
             try:
                 # Convert to dict first
                 expense_dict = {
@@ -88,7 +88,8 @@ def get_daily_expenses(
                     "other_expense_amount": float(expense.other_expense_amount) if expense.other_expense_amount is not None else None,
                     "other_expense_location": expense.other_expense_location,
                     "total": float(expense.total),
-                    "user_id": expense.user_id
+                    "user_id": expense.user_id,
+                    "driver_name": user_full_name
                 }
                 
                 # Validate using schema

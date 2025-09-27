@@ -182,8 +182,12 @@ async function downloadDailyExpensePdf(expense: DailyExpenseData) {
 export default function DailyExpenseReportsPage() {
   const { currentUser, loading: accessLoading, hasAccess, isSuperuser } = useAccessControl();
   const [data, setData] = useState<DailyExpenseData[]>([])
+  const [filteredData, setFilteredData] = useState<DailyExpenseData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
+  const [driverFilter, setDriverFilter] = useState('')
 
   useEffect(() => {
     console.log('DailyExpenseReportsPage mounted')
@@ -201,6 +205,7 @@ export default function DailyExpenseReportsPage() {
         const expenses = await dailyExpenseService.getExpenses()
         console.log('Successfully fetched expenses:', expenses)
         setData(expenses)
+        setFilteredData(expenses)
       } catch (err: any) {
         console.error('Error in page component:', {
           error: err,
@@ -216,6 +221,63 @@ export default function DailyExpenseReportsPage() {
     }
     fetchData()
   }, [])
+
+  // Filter data based on date range, driver, and sort by date ascending
+  useEffect(() => {
+    let filtered = [...data] // Create a copy to avoid mutating original data
+
+    if (fromDate) {
+      filtered = filtered.filter(expense => 
+        new Date(expense.date) >= new Date(fromDate)
+      )
+    }
+
+    if (toDate) {
+      filtered = filtered.filter(expense => 
+        new Date(expense.date) <= new Date(toDate)
+      )
+    }
+
+    if (driverFilter.trim()) {
+      filtered = filtered.filter(expense => 
+        expense.driver_name?.toLowerCase().includes(driverFilter.toLowerCase())
+      )
+    }
+
+    // Sort by date in ascending order (oldest first)
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.date)
+      const dateB = new Date(b.date)
+      return dateA.getTime() - dateB.getTime()
+    })
+
+    setFilteredData(filtered)
+  }, [data, fromDate, toDate, driverFilter])
+
+  const clearFilters = () => {
+    setFromDate('')
+    setToDate('')
+    setDriverFilter('')
+  }
+
+  // Calculate expense statistics
+  const expenseStats = React.useMemo(() => {
+    const totalExpenses = filteredData.length
+    const totalDiesel = filteredData.reduce((sum, e) => sum + e.diesel_amount, 0)
+    const totalDef = filteredData.reduce((sum, e) => sum + e.def_amount, 0)
+    const totalOther = filteredData.reduce((sum, e) => sum + (e.other_expense_amount || 0), 0)
+    const totalAmount = filteredData.reduce((sum, e) => sum + e.total, 0)
+    const avgExpense = totalExpenses > 0 ? totalAmount / totalExpenses : 0
+
+    return {
+      totalExpenses,
+      totalDiesel,
+      totalDef,
+      totalOther,
+      totalAmount,
+      avgExpense
+    }
+  }, [filteredData])
 
   console.log('Rendering DailyExpenseReportsPage with:', { data, loading, error })
 
@@ -248,17 +310,115 @@ export default function DailyExpenseReportsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
+    <div className="max-w-7xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight flex items-center gap-2">
           <DocumentTextIcon className="h-8 w-8 text-blue-500" /> Daily Expense Reports
         </h1>
-        {isSuperuser && (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            Superuser Access
-          </span>
+        <div className="flex items-center gap-4">
+          {isSuperuser && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              Superuser Access
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Filter Options</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div>
+            <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
+              From Date
+            </label>
+            <input
+              type="date"
+              id="fromDate"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+          <div>
+            <label htmlFor="toDate" className="block text-sm font-medium text-gray-700 mb-1">
+              To Date
+            </label>
+            <input
+              type="date"
+              id="toDate"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+          <div>
+            <label htmlFor="driverFilter" className="block text-sm font-medium text-gray-700 mb-1">
+              Driver Name
+            </label>
+            <input
+              type="text"
+              id="driverFilter"
+              value={driverFilter}
+              onChange={(e) => setDriverFilter(e.target.value)}
+              placeholder="Enter driver name..."
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+          <div>
+            <button
+              onClick={clearFilters}
+              className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+        {(fromDate || toDate || driverFilter) && (
+          <div className="mt-3 text-sm text-gray-600">
+            Showing {filteredData.length} of {data.length} expenses
+            {fromDate && toDate && ` from ${fromDate} to ${toDate}`}
+            {fromDate && !toDate && ` from ${fromDate}`}
+            {!fromDate && toDate && ` until ${toDate}`}
+            {driverFilter && ` matching "${driverFilter}"`}
+          </div>
         )}
       </div>
+
+      {/* Expense Statistics */}
+      {filteredData.length > 0 && (
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Expense Summary</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white p-3 rounded-lg border border-blue-200">
+              <div className="text-sm text-gray-600">Total Expenses</div>
+              <div className="text-2xl font-bold text-blue-600">{expenseStats.totalExpenses}</div>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-green-200">
+              <div className="text-sm text-gray-600">Total Diesel</div>
+              <div className="text-2xl font-bold text-green-600">{formatCurrency(expenseStats.totalDiesel)}</div>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-yellow-200">
+              <div className="text-sm text-gray-600">Total DEF</div>
+              <div className="text-2xl font-bold text-yellow-600">{formatCurrency(expenseStats.totalDef)}</div>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-purple-200">
+              <div className="text-sm text-gray-600">Total Amount</div>
+              <div className="text-2xl font-bold text-purple-600">{formatCurrency(expenseStats.totalAmount)}</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div className="bg-green-100 p-3 rounded-lg border border-green-300">
+              <div className="text-sm text-green-700">Other Expenses</div>
+              <div className="text-lg font-bold text-green-800">{formatCurrency(expenseStats.totalOther)}</div>
+            </div>
+            <div className="bg-blue-100 p-3 rounded-lg border border-blue-300">
+              <div className="text-sm text-blue-700">Average per Expense</div>
+              <div className="text-lg font-bold text-blue-800">{formatCurrency(expenseStats.avgExpense)}</div>
+            </div>
+          </div>
+        </div>
+      )}
       {loading ? (
         <div className="text-gray-500">Loading...</div>
       ) : error ? (
@@ -267,36 +427,40 @@ export default function DailyExpenseReportsPage() {
           <p>{error}</p>
           <p className="text-sm mt-2">Please check the browser console for more details.</p>
         </div>
-      ) : data.length === 0 ? (
+      ) : filteredData.length === 0 ? (
         <div className="text-gray-500 p-4 bg-gray-50 rounded-md">
           No daily expenses found.
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full border text-sm">
-            <thead>
+        <div className="overflow-auto max-h-96 border border-gray-200 rounded-lg">
+          <table className="min-w-full border-collapse text-sm">
+            <thead className="sticky top-0 z-10">
               <tr className="bg-blue-100 text-blue-800">
-                <th className="border px-2 py-1">Date</th>
-                <th className="border px-2 py-1">Diesel</th>
-                <th className="border px-2 py-1">DEF</th>
-                <th className="border px-2 py-1">Other Expenses</th>
-                <th className="border px-2 py-1">Total</th>
-                <th className="border px-2 py-1">Download</th>
+                <th className="border px-3 py-2 text-left min-w-[120px] whitespace-nowrap">Date</th>
+                <th className="border px-3 py-2 text-left min-w-[150px] whitespace-nowrap">Driver</th>
+                <th className="border px-3 py-2 text-left min-w-[140px] whitespace-nowrap">Diesel</th>
+                <th className="border px-3 py-2 text-left min-w-[140px] whitespace-nowrap">DEF</th>
+                <th className="border px-3 py-2 text-left min-w-[180px] whitespace-nowrap">Other Expenses</th>
+                <th className="border px-3 py-2 text-left min-w-[120px] whitespace-nowrap">Total</th>
+                <th className="border px-3 py-2 text-center min-w-[100px] whitespace-nowrap">Download</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((expense) => (
+              {filteredData.map((expense) => (
                 <tr key={expense.id} className="hover:bg-blue-50">
-                  <td className="border px-2 py-1">{formatDate(expense.date)}</td>
-                  <td className="border px-2 py-1">
+                  <td className="border px-3 py-2 whitespace-nowrap">{formatDate(expense.date)}</td>
+                  <td className="border px-3 py-2">
+                    <div className="font-semibold whitespace-nowrap">{expense.driver_name || 'N/A'}</div>
+                  </td>
+                  <td className="border px-3 py-2">
                     <div className="font-medium">{formatCurrency(expense.diesel_amount)}</div>
                     <div className="text-xs text-gray-500">{expense.diesel_location}</div>
                   </td>
-                  <td className="border px-2 py-1">
+                  <td className="border px-3 py-2">
                     <div className="font-medium">{formatCurrency(expense.def_amount)}</div>
                     <div className="text-xs text-gray-500">{expense.def_location}</div>
                   </td>
-                  <td className="border px-2 py-1">
+                  <td className="border px-3 py-2">
                     {expense.other_expense_description && (
                       <>
                         <div className="font-medium">{formatCurrency(expense.other_expense_amount || 0)}</div>
@@ -307,10 +471,10 @@ export default function DailyExpenseReportsPage() {
                       </>
                     )}
                   </td>
-                  <td className="border px-2 py-1 font-bold">{formatCurrency(expense.total)}</td>
-                  <td className="border px-2 py-1 text-center">
+                  <td className="border px-3 py-2 font-bold text-green-600 whitespace-nowrap">{formatCurrency(expense.total)}</td>
+                  <td className="border px-3 py-2 text-center">
                     <button
-                      className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto"
+                      className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto whitespace-nowrap"
                       onClick={async () => await downloadDailyExpensePdf(expense)}
                     >
                       <ArrowDownTrayIcon className="h-5 w-5" /> Download

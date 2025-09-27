@@ -25,6 +25,7 @@ class DailyExpenseCreate(DailyExpenseBase):
 class DailyExpense(DailyExpenseBase):
     id: int = Field(..., description="Daily expense ID")
     user_id: int = Field(..., description="User ID")
+    driver_name: Optional[str] = Field(None, description="Driver name from user")
 
     class Config:
         from_attributes = True

@@ -12,6 +12,7 @@ export interface DailyExpenseData {
   other_expense_location?: string
   total: number
   user_id: number
+  driver_name?: string // Will be populated from user relationship
   created_at: string
   updated_at: string
 }

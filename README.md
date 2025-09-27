@@ -87,4 +87,4 @@ This project is private and confidential. All rights reserved.
 To run the application:-
 Frontend npm run dev
 
-backend:- uvocorn main:app --reload
+backend:- uvicorn main:app --reload

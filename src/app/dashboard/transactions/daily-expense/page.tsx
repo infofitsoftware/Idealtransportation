@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import { dailyExpenseService } from '@/services/dailyExpense'
@@ -21,8 +21,28 @@ export default function DailyExpenseForm() {
     other_expense_location: '',
     total: ''
   })
+  const [currentUser, setCurrentUser] = useState<any>(null)
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    // Get current user info
+    const fetchUser = async () => {
+      try {
+        const user = await authService.getCurrentUser()
+        if (user) {
+          console.log('Current user data:', user)
+          setCurrentUser(user)
+        } else {
+          console.log('No user data found')
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error)
+      }
+    }
+    
+    fetchUser()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,14 +84,14 @@ export default function DailyExpenseForm() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-white shadow-xl rounded-2xl mt-4 sm:mt-8 mb-4 sm:mb-8 border border-blue-100">
       <FormHeader />
       
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight">Daily Expense Form</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-blue-700 tracking-tight">Daily Expense Form</h1>
         <button
           onClick={() => router.push('/dashboard/transactions')}
-          className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+          className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
         >
           Back to Transactions
         </button>
@@ -87,10 +107,27 @@ export default function DailyExpenseForm() {
         {/* Basic Information */}
         <div className="border border-blue-100 rounded-lg p-4 bg-blue-50">
           <h2 className="text-lg font-semibold text-gray-800 tracking-tight mb-4">Basic Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="driver_name" className="block text-sm font-medium text-gray-700 mb-1">
+                Driver Name
+              </label>
+              <input
+                type="text"
+                name="driver_name"
+                id="driver_name"
+                value={currentUser?.full_name || 'Loading...'}
+                disabled
+                className="input bg-gray-100 cursor-not-allowed"
+                placeholder="Loading user name..."
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {currentUser ? `Auto-populated from your account (${currentUser.email})` : 'Loading user data...'}
+              </p>
+            </div>
             <div>
               <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-                Date
+                Date *
               </label>
               <input
                 type="date"
@@ -108,7 +145,7 @@ export default function DailyExpenseForm() {
         {/* Diesel Expenses */}
         <div className="border border-blue-100 rounded-lg p-4 bg-gray-50">
           <h2 className="text-lg font-semibold text-gray-800 tracking-tight mb-4">Diesel Expenses</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="diesel_amount" className="block text-sm font-medium text-gray-700 mb-1">
                 Diesel Amount
@@ -145,7 +182,7 @@ export default function DailyExpenseForm() {
         {/* DEF Expenses */}
         <div className="border border-blue-100 rounded-lg p-4 bg-blue-50">
           <h2 className="text-lg font-semibold text-gray-800 tracking-tight mb-4">DEF Expenses</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="def_amount" className="block text-sm font-medium text-gray-700 mb-1">
                 DEF Amount
@@ -182,7 +219,7 @@ export default function DailyExpenseForm() {
         {/* Other Expenses */}
         <div className="border border-blue-100 rounded-lg p-4 bg-gray-50">
           <h2 className="text-lg font-semibold text-gray-800 tracking-tight mb-4">Other Expenses</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label htmlFor="other_expense_description" className="block text-sm font-medium text-gray-700 mb-1">
                 Description
@@ -228,11 +265,18 @@ export default function DailyExpenseForm() {
           </div>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex flex-col sm:flex-row justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => router.push('/dashboard/transactions')}
+            className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Cancel
+          </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white ${
+            className={`inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white ${
               isSubmitting ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
             } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
           >
@@ -244,7 +288,13 @@ export default function DailyExpenseForm() {
 
       <style jsx>{`
         .input {
-          @apply border border-blue-200 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-200 transition;
+          @apply border border-blue-200 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-200 transition text-base;
+        }
+        
+        @media (max-width: 640px) {
+          .input {
+            @apply text-base;
+          }
         }
       `}</style>
     </div>
