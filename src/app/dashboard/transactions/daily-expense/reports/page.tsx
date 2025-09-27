@@ -240,7 +240,7 @@ export default function DailyExpenseReportsPage() {
 
     if (driverFilter.trim()) {
       filtered = filtered.filter(expense => 
-        expense.driver_name?.toLowerCase().includes(driverFilter.toLowerCase())
+        expense.driver_name?.toLowerCase().includes(driverFilter.toLowerCase()) || false
       )
     }
 
@@ -450,7 +450,7 @@ export default function DailyExpenseReportsPage() {
                 <tr key={expense.id} className="hover:bg-blue-50">
                   <td className="border px-3 py-2 whitespace-nowrap">{formatDate(expense.date)}</td>
                   <td className="border px-3 py-2">
-                    <div className="font-semibold whitespace-nowrap">{expense.driver_name || 'N/A'}</div>
+                    <div className="font-semibold whitespace-nowrap">{expense.driver_name || 'Loading...'}</div>
                   </td>
                   <td className="border px-3 py-2">
                     <div className="font-medium">{formatCurrency(expense.diesel_amount)}</div>
