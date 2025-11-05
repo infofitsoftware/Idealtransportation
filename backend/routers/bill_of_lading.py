@@ -12,7 +12,7 @@ from datetime import datetime
 
 router = APIRouter()
 
-# Simple in-memory cache for payment data (expires after 5 minutes)
+# Simple in-memory cache for payment data (expires after 6 minutes)
 _payment_cache = {}
 _cache_expiry = {}
 
