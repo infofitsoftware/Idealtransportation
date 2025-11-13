@@ -141,5 +141,42 @@ export const authService = {
 
   isAuthenticated() {
     return !!this.getToken();
+  },
+
+  // Admin user management functions
+  async createUser(userData: {
+    email: string;
+    password: string;
+    full_name?: string;
+    is_superuser?: boolean;
+    is_active?: boolean;
+  }) {
+    const response = await api.post('/auth/users', userData);
+    return response.data;
+  },
+
+  async getUsers() {
+    const response = await api.get('/auth/users');
+    return response.data;
+  },
+
+  async getUserById(userId: number) {
+    const response = await api.get(`/auth/users/${userId}`);
+    return response.data;
+  },
+
+  async updateUser(userId: number, userData: {
+    email: string;
+    password?: string;
+    full_name?: string;
+    is_superuser?: boolean;
+    is_active?: boolean;
+  }) {
+    const response = await api.put(`/auth/users/${userId}`, userData);
+    return response.data;
+  },
+
+  async deleteUser(userId: number) {
+    await api.delete(`/auth/users/${userId}`);
   }
 }; 

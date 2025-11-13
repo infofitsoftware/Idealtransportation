@@ -30,7 +30,7 @@ export const useAccessControl = () => {
           
           if (!isExpired && cached.user) {
             setCurrentUser(cached.user);
-            setHasAccess(cached.user.email === 'admin@idealtransport.com');
+            setHasAccess(cached.user.is_superuser === true);
             setLoading(false);
             return;
           }
@@ -51,8 +51,8 @@ export const useAccessControl = () => {
         
         setCurrentUser(user);
         
-        // Temporary access control: only idealtransport@gmail.com can access reports
-        if (user && user.email === 'admin@idealtransport.com') {
+        // Access control based on is_superuser flag
+        if (user && user.is_superuser === true) {
           setHasAccess(true);
         } else {
           setHasAccess(false);
@@ -73,6 +73,6 @@ export const useAccessControl = () => {
     currentUser,
     loading,
     hasAccess,
-    isSuperuser: currentUser?.email === 'admin@idealtransport.com'
+    isSuperuser: currentUser?.is_superuser === true
   };
 }; 

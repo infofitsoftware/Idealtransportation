@@ -2273,3 +2273,21 @@
 2025-10-10 17:07:43 - routers.auth - INFO - Validating token for /me endpoint
 2025-10-10 17:07:43 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
 2025-10-10 17:07:43 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-11-10 18:13:54 - routers.auth - INFO - Login attempt for user: admin@idealtransport.com
+2025-11-10 18:13:54 - routers.auth - INFO - Authenticating user: admin@idealtransport.com
+2025-11-10 18:13:54 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-11-10 18:13:54 - routers.auth - INFO - User found: admin@idealtransport.com
+2025-11-10 18:13:55 - routers.auth - INFO - Authentication successful: admin@idealtransport.com
+2025-11-10 18:13:55 - routers.auth - INFO - Login successful: admin@idealtransport.com
+2025-11-10 18:13:57 - routers.auth - INFO - Validating token for /me endpoint
+2025-11-10 18:13:57 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-11-10 18:13:57 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-11-10 18:13:57 - routers.auth - INFO - Validating token for /me endpoint
+2025-11-10 18:13:57 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-11-10 18:13:59 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-11-10 18:13:59 - routers.auth - INFO - Validating token for /me endpoint
+2025-11-10 18:13:59 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-11-10 18:14:01 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2025-11-10 18:14:01 - routers.auth - INFO - Validating token for /me endpoint
+2025-11-10 18:14:01 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2025-11-10 18:14:01 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com

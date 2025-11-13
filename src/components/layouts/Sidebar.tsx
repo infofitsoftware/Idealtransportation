@@ -13,7 +13,9 @@ import {
   XMarkIcon,
   ChevronDownIcon,
   ChevronRightIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline'
+import { useAccessControl } from '@/hooks/useAccessControl'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
@@ -29,6 +31,7 @@ const navigation = [
     ],
   },
   { name: 'Support', href: '/dashboard/support', icon: QuestionMarkCircleIcon },
+  { name: 'User Management', href: '/dashboard/users', icon: UserGroupIcon },
 ]
 
 interface SidebarProps {
@@ -39,6 +42,7 @@ interface SidebarProps {
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
+  const { isSuperuser } = useAccessControl()
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -93,6 +97,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         <div className="flex flex-1 flex-col overflow-y-auto">
           <nav className="flex-1 space-y-1 px-2 py-4">
             {navigation.map((item) => {
+              // Skip User Management if user is not admin
+              if (item.name === 'User Management' && !isSuperuser) {
+                return null
+              }
               const isActive = isItemActive(item)
               const isExpanded = expandedItems.includes(item.name)
 

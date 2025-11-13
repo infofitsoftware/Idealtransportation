@@ -16,8 +16,10 @@ from utils.auth import (
     verify_token,
 )
 from database import get_db
-from dependencies import get_current_user
+from dependencies import get_current_user, get_current_admin_user
 from utils.logger import setup_logger
+from schemas.user import AdminUserCreate
+from typing import List
 
 # Setup logger
 logger = setup_logger(__name__, "auth.log")
@@ -126,4 +128,140 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
-        ) 
+        )
+
+# Admin-only endpoints for user management
+@router.post("/users", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def create_user(
+    user_data: AdminUserCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user)
+) -> Any:
+    """Create a new user (Admin only)"""
+    logger.info(f"Admin {current_user.email} creating new user: {user_data.email}")
+    
+    # Check if user already exists
+    existing_user = get_user(db, user_data.email)
+    if existing_user:
+        logger.warning(f"User creation failed: Email already exists - {user_data.email}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered",
+        )
+    
+    # Hash password
+    hashed_password = get_password_hash(user_data.password)
+    
+    # Create new user
+    db_user = User(
+        email=user_data.email,
+        hashed_password=hashed_password,
+        full_name=user_data.full_name,
+        is_superuser=user_data.is_superuser,
+        is_active=user_data.is_active,
+    )
+    
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    
+    logger.info(f"User created successfully by admin {current_user.email}: {user_data.email}")
+    return db_user
+
+@router.get("/users", response_model=List[UserResponse])
+def list_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user)
+) -> Any:
+    """Get all users (Admin only)"""
+    logger.info(f"Admin {current_user.email} fetching all users")
+    users = db.query(User).all()
+    return users
+
+@router.get("/users/{user_id}", response_model=UserResponse)
+def get_user_by_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user)
+) -> Any:
+    """Get a specific user by ID (Admin only)"""
+    logger.info(f"Admin {current_user.email} fetching user ID: {user_id}")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    return user
+
+@router.put("/users/{user_id}", response_model=UserResponse)
+def update_user(
+    user_id: int,
+    user_data: AdminUserCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user)
+) -> Any:
+    """Update a user (Admin only)"""
+    logger.info(f"Admin {current_user.email} updating user ID: {user_id}")
+    
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    
+    # Check if email is being changed and if it's already taken
+    if user_data.email != db_user.email:
+        existing_user = get_user(db, user_data.email)
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered",
+            )
+    
+    # Update user fields
+    db_user.email = user_data.email
+    if user_data.password:
+        db_user.hashed_password = get_password_hash(user_data.password)
+    db_user.full_name = user_data.full_name
+    db_user.is_superuser = user_data.is_superuser
+    db_user.is_active = user_data.is_active
+    
+    db.commit()
+    db.refresh(db_user)
+    
+    logger.info(f"User updated successfully by admin {current_user.email}: {user_id}")
+    return db_user
+
+@router.delete(
+    "/users/{user_id}",
+    status_code=status.HTTP_200_OK,
+)
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user)
+) -> Any:
+    """Delete a user (Admin only)"""
+    logger.info(f"Admin {current_user.email} deleting user ID: {user_id}")
+    
+    # Prevent admin from deleting themselves
+    if user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete your own account",
+        )
+    
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    
+    db.delete(db_user)
+    db.commit()
+    
+    logger.info(f"User deleted successfully by admin {current_user.email}: {user_id}")
+    return {"detail": "User deleted successfully"}
