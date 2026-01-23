@@ -3,6 +3,7 @@
 import { ReactNode, useState } from 'react'
 import Sidebar from './Sidebar'
 import Header from './Header'
+import { Bars3Icon } from '@heroicons/react/24/outline'
 
 interface MainLayoutProps {
   children: ReactNode
@@ -12,20 +13,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:ml-0">
         <button
-          className="p-2 lg:hidden fixed top-4 left-4 z-50 bg-white rounded-md shadow"
+          className="lg:hidden fixed top-4 left-4 z-50 bg-white rounded-lg shadow-lg p-2.5 border border-gray-200 hover:bg-gray-50 transition-all"
           onClick={() => setSidebarOpen(true)}
           aria-label="Open sidebar"
         >
-          <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <Bars3Icon className="h-6 w-6 text-gray-700" />
         </button>
         <Header />
-        <main className="flex-1 py-10">
+        <main className="flex-1 py-8 bg-gradient-to-br from-gray-50 via-white to-gray-50">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {children}
           </div>
@@ -33,4 +32,4 @@ export default function MainLayout({ children }: MainLayoutProps) {
       </div>
     </div>
   )
-} 
+}

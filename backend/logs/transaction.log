@@ -980,3 +980,27 @@ WHERE daily_expenses.user_id = %(user_id_1)s
 2025-10-10 17:08:59 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 9, 30), 'diesel_amount': 130.0, 'diesel_location': 'Buzzy Bee, Pearland ', 'def_amount': 20.0, 'def_location': 'Buc’ees Waller', 'other_expense_description': 'N/A', 'other_expense_amount': None, 'other_expense_location': 'N/A', 'total': 150.0, 'id': 28, 'user_id': 1, 'driver_name': 'Admin User'}
 2025-10-10 17:08:59 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 10, 2), 'diesel_amount': 150.0, 'diesel_location': 'Buc’ees Waller', 'def_amount': 0.0, 'def_location': 'N/A', 'other_expense_description': 'N/A', 'other_expense_amount': None, 'other_expense_location': 'N/A', 'total': 150.0, 'id': 29, 'user_id': 1, 'driver_name': 'Admin User'}
 2025-10-10 17:08:59 - routers.transaction - INFO - Validated expense data: {'date': datetime.date(2025, 10, 2), 'diesel_amount': 150.0, 'diesel_location': 'Buc’ees Waller', 'def_amount': 0.0, 'def_location': 'N/A', 'other_expense_description': 'N/A', 'other_expense_amount': None, 'other_expense_location': 'N/A', 'total': 150.0, 'id': 29, 'user_id': 1, 'driver_name': 'Admin User'}
+2025-11-13 16:33:09 - routers.transaction - INFO - Fetching transactions for user: allobrotjer@idealtransport.com
+2025-11-13 16:33:09 - routers.transaction - INFO - Found 0 transactions with broker information
+2025-11-13 16:33:10 - routers.transaction - INFO - Fetching transactions for user: allobrotjer@idealtransport.com
+2025-11-13 16:33:10 - routers.transaction - INFO - Found 0 transactions with broker information
+2025-11-13 16:33:12 - routers.transaction - INFO - Fetching transactions for user: allobrotjer@idealtransport.com
+2025-11-13 16:33:12 - routers.transaction - INFO - Fetching transactions for user: allobrotjer@idealtransport.com
+2025-11-13 16:33:12 - routers.transaction - INFO - Found 0 transactions with broker information
+2025-11-13 16:33:12 - routers.transaction - INFO - Found 0 transactions with broker information
+2025-11-13 16:33:13 - routers.transaction - INFO - Fetching daily expenses for user: allobrotjer@idealtransport.com
+2025-11-13 16:33:13 - routers.transaction - INFO - User ID: 5
+2025-11-13 16:33:13 - routers.transaction - INFO - SQL Query: SELECT daily_expenses.id AS daily_expenses_id, daily_expenses.date AS daily_expenses_date, daily_expenses.diesel_amount AS daily_expenses_diesel_amount, daily_expenses.diesel_location AS daily_expenses_diesel_location, daily_expenses.def_amount AS daily_expenses_def_amount, daily_expenses.def_location AS daily_expenses_def_location, daily_expenses.other_expense_description AS daily_expenses_other_expense_description, daily_expenses.other_expense_amount AS daily_expenses_other_expense_amount, daily_expenses.other_expense_location AS daily_expenses_other_expense_location, daily_expenses.total AS daily_expenses_total, daily_expenses.user_id AS daily_expenses_user_id 
+FROM daily_expenses JOIN users ON users.id = daily_expenses.user_id 
+WHERE daily_expenses.user_id = %(user_id_1)s
+2025-11-13 16:33:13 - routers.transaction - INFO - Found 0 daily expenses
+2025-11-13 16:33:13 - routers.transaction - INFO - Fetching daily expenses for user: allobrotjer@idealtransport.com
+2025-11-13 16:33:13 - routers.transaction - INFO - User ID: 5
+2025-11-13 16:33:13 - routers.transaction - INFO - SQL Query: SELECT daily_expenses.id AS daily_expenses_id, daily_expenses.date AS daily_expenses_date, daily_expenses.diesel_amount AS daily_expenses_diesel_amount, daily_expenses.diesel_location AS daily_expenses_diesel_location, daily_expenses.def_amount AS daily_expenses_def_amount, daily_expenses.def_location AS daily_expenses_def_location, daily_expenses.other_expense_description AS daily_expenses_other_expense_description, daily_expenses.other_expense_amount AS daily_expenses_other_expense_amount, daily_expenses.other_expense_location AS daily_expenses_other_expense_location, daily_expenses.total AS daily_expenses_total, daily_expenses.user_id AS daily_expenses_user_id 
+FROM daily_expenses JOIN users ON users.id = daily_expenses.user_id 
+WHERE daily_expenses.user_id = %(user_id_1)s
+2025-11-13 16:33:13 - routers.transaction - INFO - Found 0 daily expenses
+2025-11-13 16:34:58 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-11-13 16:34:58 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2025-11-13 16:35:00 - routers.transaction - INFO - Found 193 transactions with broker information
+2025-11-13 16:35:01 - routers.transaction - INFO - Found 193 transactions with broker information

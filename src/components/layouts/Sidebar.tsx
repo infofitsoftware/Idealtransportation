@@ -16,6 +16,7 @@ import {
   UserGroupIcon,
 } from '@heroicons/react/24/outline'
 import { useAccessControl } from '@/hooks/useAccessControl'
+import { useAuth } from '@/hooks/useAuth'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
@@ -42,7 +43,8 @@ interface SidebarProps {
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
-  const { isSuperuser } = useAccessControl()
+  const { isSuperuser, currentUser } = useAccessControl()
+  const { logout } = useAuth()
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -68,34 +70,73 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     return false
   }
 
+  const handleLogout = async () => {
+    try {
+      await logout()
+      localStorage.removeItem('token')
+      sessionStorage.removeItem('token')
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
+
   return (
     <>
       {/* Overlay for mobile */}
       <div
-        className={`fixed inset-0 z-40 bg-black bg-opacity-30 transition-opacity lg:hidden ${open ? 'block' : 'hidden'}`}
+        className={`fixed inset-0 z-40 bg-black bg-opacity-50 transition-opacity lg:hidden ${open ? 'block' : 'hidden'}`}
         onClick={onClose}
         aria-hidden="true"
       />
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white transition-transform duration-300 transform
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl transition-transform duration-300 transform
           ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:inset-0`}
       >
-        {/* Close button for mobile */}
-        <button
-          className="absolute top-4 right-4 lg:hidden"
-          onClick={onClose}
-          aria-label="Close sidebar"
-        >
-          <XMarkIcon className="h-6 w-6 text-gray-500" />
-        </button>
-        <div className="flex h-16 flex-shrink-0 items-center px-4">
-          <Link href="/dashboard" className="flex items-center">
-            <span className="text-2xl font-bold text-gray-900">ITS</span>
+        {/* Sidebar Header */}
+        <div className="flex h-20 flex-shrink-0 items-center px-6 border-b border-gray-700">
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
+              <span className="text-xl font-bold text-white">ITS</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold text-white">Ideal Transport</span>
+              <span className="text-xs text-gray-400">Solutions</span>
+            </div>
           </Link>
+          {/* Close button for mobile */}
+          <button
+            className="ml-auto lg:hidden"
+            onClick={onClose}
+            aria-label="Close sidebar"
+          >
+            <XMarkIcon className="h-6 w-6 text-gray-400 hover:text-white transition-colors" />
+          </button>
         </div>
+
+        {/* User Info */}
+        <div className="px-6 py-4 border-b border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-md">
+              <span className="text-sm font-semibold text-white">
+                {currentUser?.full_name?.charAt(0).toUpperCase() || currentUser?.email?.charAt(0).toUpperCase() || 'U'}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">
+                {currentUser?.full_name || currentUser?.email || 'User'}
+              </p>
+              <p className="text-xs text-gray-400 truncate">
+                {isSuperuser ? 'Administrator' : 'Driver'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
         <div className="flex flex-1 flex-col overflow-y-auto">
-          <nav className="flex-1 space-y-1 px-2 py-4">
+          <nav className="flex-1 space-y-1 px-3 py-4">
             {navigation.map((item) => {
               // Skip User Management if user is not admin
               if (item.name === 'User Management' && !isSuperuser) {
@@ -110,23 +151,23 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     <>
                       <button
                         onClick={() => toggleSubItems(item.name)}
-                        className={`w-full group flex items-center rounded-md px-2 py-2 text-sm font-medium ${
+                        className={`w-full group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                           isActive
-                            ? 'bg-gray-100 text-gray-900'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
+                            : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                         }`}
                       >
                         <item.icon
-                          className={`mr-3 h-6 w-6 flex-shrink-0 ${
-                            isActive ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500'
+                          className={`mr-3 h-5 w-5 flex-shrink-0 transition-colors ${
+                            isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'
                           }`}
                           aria-hidden="true"
                         />
                         {item.name}
                         {isExpanded ? (
-                          <ChevronDownIcon className="ml-auto h-5 w-5 text-gray-400" />
+                          <ChevronDownIcon className="ml-auto h-4 w-4 text-gray-400" />
                         ) : (
-                          <ChevronRightIcon className="ml-auto h-5 w-5 text-gray-400" />
+                          <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-400" />
                         )}
                       </button>
                       {isExpanded && (
@@ -137,15 +178,15 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                               <Link
                                 key={subItem.name}
                                 href={subItem.href}
-                                className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${
+                                className={`group flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-all ${
                                   isSubItemActive
-                                    ? 'bg-gray-100 text-gray-900'
-                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                    ? 'bg-gray-700 text-white'
+                                    : 'text-gray-400 hover:bg-gray-700 hover:text-white'
                                 }`}
                               >
                                 <subItem.icon
-                                  className={`mr-3 h-5 w-5 flex-shrink-0 ${
-                                    isSubItemActive ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500'
+                                  className={`mr-3 h-4 w-4 flex-shrink-0 ${
+                                    isSubItemActive ? 'text-white' : 'text-gray-500 group-hover:text-white'
                                   }`}
                                   aria-hidden="true"
                                 />
@@ -159,15 +200,15 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   ) : (
                     <Link
                       href={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${
+                      className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                         isActive
-                          ? 'bg-gray-100 text-gray-900'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
+                          : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                       }`}
                     >
                       <item.icon
-                        className={`mr-3 h-6 w-6 flex-shrink-0 ${
-                          isActive ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500'
+                        className={`mr-3 h-5 w-5 flex-shrink-0 transition-colors ${
+                          isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'
                         }`}
                         aria-hidden="true"
                       />
@@ -178,8 +219,19 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               )
             })}
           </nav>
+
+          {/* Logout Button */}
+          <div className="px-3 py-4 border-t border-gray-700">
+            <button
+              onClick={handleLogout}
+              className="w-full group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-red-600 hover:text-white transition-all"
+            >
+              <ArrowLeftOnRectangleIcon className="mr-3 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-white" />
+              Sign Out
+            </button>
+          </div>
         </div>
       </div>
     </>
   )
-} 
+}

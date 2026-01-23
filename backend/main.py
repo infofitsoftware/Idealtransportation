@@ -5,7 +5,7 @@ from contextlib import contextmanager
 import logging
 import os
 from dotenv import load_dotenv
-from routers import auth_router, transaction, bill_of_lading
+from routers import auth_router, transaction, bill_of_lading, dashboard
 from dependencies import get_current_active_user
 from database import get_db, engine, SessionLocal
 from utils.logger import setup_logger
@@ -59,6 +59,7 @@ app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(transaction.router, prefix="/api/transactions", tags=["transactions"])
 app.include_router(bill_of_lading.router, prefix="/api/bol", tags=["bill_of_lading"])
+app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
 
 @app.on_event("startup")
 async def startup_event():
