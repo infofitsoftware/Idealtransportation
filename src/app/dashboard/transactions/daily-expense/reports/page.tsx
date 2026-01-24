@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { DocumentTextIcon, ArrowDownTrayIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import { dailyExpenseService, DailyExpenseData } from '@/services/dailyExpense'
+import { dailyExpenseService, DailyExpenseData, DailyExpenseEntryData } from '@/services/dailyExpense'
 import { useAccessControl } from '@/hooks/useAccessControl'
 import { api } from '@/services/auth'
 
@@ -17,6 +17,53 @@ function formatCurrency(amount: number) {
     style: 'currency',
     currency: 'USD'
   }).format(amount)
+}
+
+// Helper function to transform new structure to old format for backward compatibility
+function transformExpenseForDisplay(expense: DailyExpenseData) {
+  // Calculate diesel, def, and other expenses from entries
+  let diesel_amount = 0
+  let diesel_location = ''
+  let def_amount = 0
+  let def_location = ''
+  let other_expense_amount = 0
+  let other_expense_description = ''
+  let other_expense_location = ''
+
+  expense.entries.forEach((entry) => {
+    if (entry.expense_type === 'Fuel') {
+      if (entry.sub_type === 'Diesel') {
+        diesel_amount += entry.amount
+        if (!diesel_location) diesel_location = entry.location
+      } else if (entry.sub_type === 'DEF') {
+        def_amount += entry.amount
+        if (!def_location) def_location = entry.location
+      }
+    } else {
+      // Other expenses
+      other_expense_amount += entry.amount
+      if (!other_expense_description) {
+        other_expense_description = entry.expense_type
+        if (entry.sub_type) {
+          other_expense_description += ` - ${entry.sub_type}`
+        }
+      }
+      if (!other_expense_location && entry.location) {
+        other_expense_location = entry.location
+      }
+    }
+  })
+
+  return {
+    ...expense,
+    diesel_amount,
+    diesel_location: diesel_location || 'N/A',
+    def_amount,
+    def_location: def_location || 'N/A',
+    other_expense_amount: other_expense_amount > 0 ? other_expense_amount : undefined,
+    other_expense_description: other_expense_description || undefined,
+    other_expense_location: other_expense_location || undefined,
+  }
 }
 
 // Function to load logo as base64
@@ -38,6 +85,9 @@ async function loadLogoAsBase64(): Promise<string | null> {
 async function downloadDailyExpensePdf(expense: DailyExpenseData) {
   const doc = new jsPDF()
   let y = -2 // Pulled logo up to match BOL and transaction layout
+
+  // Transform expense to old format for PDF
+  const transformedExpense = transformExpenseForDisplay(expense)
 
   // Company Header with Logo and Address on same line
   try {
@@ -104,58 +154,77 @@ async function downloadDailyExpensePdf(expense: DailyExpenseData) {
   // Expense Details
   doc.setFontSize(12)
   doc.setFont('helvetica', 'bold')
-  doc.text(`Date: ${formatDate(expense.date)}`, 20, y)
-  doc.text(`Report ID: ${expense.id}`, 120, y)
+  doc.text(`Date: ${formatDate(transformedExpense.date)}`, 20, y)
+  doc.text(`Report ID: ${transformedExpense.id}`, 120, y)
   y += 8
   doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, y)
+  if (transformedExpense.vehicle_number) {
+    y += 8
+    doc.text(`Vehicle: ${transformedExpense.vehicle_number}`, 20, y)
+  }
   y += 15
 
   // Diesel Section
-  doc.setDrawColor(59, 130, 246)
-  doc.setFillColor(239, 246, 255)
-  doc.roundedRect(14, y, 182, 35, 3, 3, 'FD')
-  y += 8
-  doc.setFont('helvetica', 'bold')
-  doc.text('Diesel Expenses:', 20, y)
-  y += 8
-  doc.setFont('helvetica', 'normal')
-  doc.text(`Amount: ${formatCurrency(expense.diesel_amount)}`, 25, y)
-  y += 6
-  doc.text(`Location: ${expense.diesel_location}`, 25, y)
-  y += 15
-
-  // DEF Section
-  doc.setDrawColor(59, 130, 246)
-  doc.setFillColor(248, 250, 252) // Light gray background
-  doc.roundedRect(14, y, 182, 35, 3, 3, 'FD')
-  y += 8
-  doc.setFont('helvetica', 'bold')
-  doc.text('DEF Expenses:', 20, y)
-  y += 8
-  doc.setFont('helvetica', 'normal')
-  doc.text(`Amount: ${formatCurrency(expense.def_amount)}`, 25, y)
-  y += 6
-  doc.text(`Location: ${expense.def_location}`, 25, y)
-  y += 15
-
-  // Other Expenses Section
-  if (expense.other_expense_description && expense.other_expense_amount) {
+  if (transformedExpense.diesel_amount > 0) {
     doc.setDrawColor(59, 130, 246)
     doc.setFillColor(239, 246, 255)
-    doc.roundedRect(14, y, 182, 45, 3, 3, 'FD')
+    doc.roundedRect(14, y, 182, 35, 3, 3, 'FD')
+    y += 8
+    doc.setFont('helvetica', 'bold')
+    doc.text('Diesel Expenses:', 20, y)
+    y += 8
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Amount: ${formatCurrency(transformedExpense.diesel_amount)}`, 25, y)
+    y += 6
+    doc.text(`Location: ${transformedExpense.diesel_location}`, 25, y)
+    y += 15
+  }
+
+  // DEF Section
+  if (transformedExpense.def_amount > 0) {
+    doc.setDrawColor(59, 130, 246)
+    doc.setFillColor(248, 250, 252) // Light gray background
+    doc.roundedRect(14, y, 182, 35, 3, 3, 'FD')
+    y += 8
+    doc.setFont('helvetica', 'bold')
+    doc.text('DEF Expenses:', 20, y)
+    y += 8
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Amount: ${formatCurrency(transformedExpense.def_amount)}`, 25, y)
+    y += 6
+    doc.text(`Location: ${transformedExpense.def_location}`, 25, y)
+    y += 15
+  }
+
+  // Other Expenses Section - Show all entries
+  const otherEntries = expense.entries.filter(e => e.expense_type !== 'Fuel' || (e.sub_type !== 'Diesel' && e.sub_type !== 'DEF'))
+  if (otherEntries.length > 0) {
+    doc.setDrawColor(59, 130, 246)
+    doc.setFillColor(239, 246, 255)
+    const boxHeight = 25 + (otherEntries.length * 20)
+    doc.roundedRect(14, y, 182, boxHeight, 3, 3, 'FD')
     y += 8
     doc.setFont('helvetica', 'bold')
     doc.text('Other Expenses:', 20, y)
     y += 8
     doc.setFont('helvetica', 'normal')
-    doc.text(`Description: ${expense.other_expense_description}`, 25, y)
-    y += 6
-    doc.text(`Amount: ${formatCurrency(expense.other_expense_amount)}`, 25, y)
-    if (expense.other_expense_location) {
+    otherEntries.forEach((entry) => {
+      const desc = entry.sub_type ? `${entry.expense_type} - ${entry.sub_type}` : entry.expense_type
+      doc.text(`${desc}: ${formatCurrency(entry.amount)}`, 25, y)
       y += 6
-      doc.text(`Location: ${expense.other_expense_location}`, 25, y)
-    }
-    y += 15
+      if (entry.location) {
+        doc.text(`Location: ${entry.location}`, 25, y)
+        y += 6
+      }
+      if (entry.remarks) {
+        doc.setFontSize(9)
+        doc.text(`Remarks: ${entry.remarks}`, 25, y)
+        doc.setFontSize(10)
+        y += 6
+      }
+      y += 2
+    })
+    y += 10
   }
 
   // Total Section
@@ -165,7 +234,7 @@ async function downloadDailyExpensePdf(expense: DailyExpenseData) {
   y += 8
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(14)
-  doc.text(`Total Expenses: ${formatCurrency(expense.total)}`, 20, y)
+  doc.text(`Total Expenses: ${formatCurrency(transformedExpense.total)}`, 20, y)
   y += 20
 
   // Footer
@@ -194,11 +263,6 @@ export default function DailyExpenseReportsPage() {
     const fetchData = async () => {
       console.log('Starting to fetch daily expenses')
       try {
-        // Test API connection first
-        console.log('Testing API connection...')
-        const testResponse = await api.get('/transactions')
-        console.log('API test response:', testResponse)
-        
         setLoading(true)
         setError('')
         console.log('Calling dailyExpenseService.getExpenses()')
@@ -214,7 +278,7 @@ export default function DailyExpenseReportsPage() {
           message: err.message,
           request: err.request
         })
-        setError(err.message)
+        setError(err.message || 'Failed to load daily expenses')
       } finally {
         setLoading(false)
       }
@@ -239,7 +303,7 @@ export default function DailyExpenseReportsPage() {
     }
 
     if (driverFilter.trim()) {
-      filtered = filtered.filter(expense => 
+      filtered = filtered.filter(expense =>
         expense.driver_name?.toLowerCase().includes(driverFilter.toLowerCase()) || false
       )
     }
@@ -260,13 +324,29 @@ export default function DailyExpenseReportsPage() {
     setDriverFilter('')
   }
 
-  // Calculate expense statistics
+  // Calculate expense statistics from entries
   const expenseStats = React.useMemo(() => {
     const totalExpenses = filteredData.length
-    const totalDiesel = filteredData.reduce((sum, e) => sum + e.diesel_amount, 0)
-    const totalDef = filteredData.reduce((sum, e) => sum + e.def_amount, 0)
-    const totalOther = filteredData.reduce((sum, e) => sum + (e.other_expense_amount || 0), 0)
-    const totalAmount = filteredData.reduce((sum, e) => sum + e.total, 0)
+    let totalDiesel = 0
+    let totalDef = 0
+    let totalOther = 0
+    let totalAmount = 0
+
+    filteredData.forEach(expense => {
+      totalAmount += expense.total
+      expense.entries.forEach(entry => {
+        if (entry.expense_type === 'Fuel') {
+          if (entry.sub_type === 'Diesel') {
+            totalDiesel += entry.amount
+          } else if (entry.sub_type === 'DEF') {
+            totalDef += entry.amount
+          }
+        } else {
+          totalOther += entry.amount
+        }
+      })
+    })
+
     const avgExpense = totalExpenses > 0 ? totalAmount / totalExpenses : 0
 
     return {
@@ -446,46 +526,60 @@ export default function DailyExpenseReportsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((expense) => (
-                <tr key={expense.id} className="hover:bg-blue-50">
-                  <td className="border px-3 py-2 whitespace-nowrap">{formatDate(expense.date)}</td>
-                  <td className="border px-3 py-2">
-                    <div className="font-semibold whitespace-nowrap">{expense.driver_name || 'Loading...'}</div>
-                  </td>
-                  <td className="border px-3 py-2">
-                    <div className="font-medium">{formatCurrency(expense.diesel_amount)}</div>
-                    <div className="text-xs text-gray-500">{expense.diesel_location}</div>
-                  </td>
-                  <td className="border px-3 py-2">
-                    <div className="font-medium">{formatCurrency(expense.def_amount)}</div>
-                    <div className="text-xs text-gray-500">{expense.def_location}</div>
-                  </td>
-                  <td className="border px-3 py-2">
-                    {expense.other_expense_description && (
-                      <>
-                        <div className="font-medium">{formatCurrency(expense.other_expense_amount || 0)}</div>
-                        <div className="text-xs text-gray-500">{expense.other_expense_description}</div>
-                        {expense.other_expense_location && (
-                          <div className="text-xs text-gray-500">{expense.other_expense_location}</div>
-                        )}
-                      </>
-                    )}
-                  </td>
-                  <td className="border px-3 py-2 font-bold text-green-600 whitespace-nowrap">{formatCurrency(expense.total)}</td>
-                  <td className="border px-3 py-2 text-center">
-                    <button
-                      className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto whitespace-nowrap"
-                      onClick={async () => await downloadDailyExpensePdf(expense)}
-                    >
-                      <ArrowDownTrayIcon className="h-5 w-5" /> Download
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {filteredData.map((expense) => {
+                const transformed = transformExpenseForDisplay(expense)
+                return (
+                  <tr key={expense.id} className="hover:bg-blue-50">
+                    <td className="border px-3 py-2 whitespace-nowrap">{formatDate(expense.date)}</td>
+                    <td className="border px-3 py-2">
+                      <div className="font-semibold whitespace-nowrap">{expense.driver_name || 'Loading...'}</div>
+                      {expense.vehicle_number && (
+                        <div className="text-xs text-gray-500">Vehicle: {expense.vehicle_number}</div>
+                      )}
+                    </td>
+                    <td className="border px-3 py-2">
+                      <div className="font-medium">{formatCurrency(transformed.diesel_amount)}</div>
+                      {transformed.diesel_location && transformed.diesel_location !== 'N/A' && (
+                        <div className="text-xs text-gray-500">{transformed.diesel_location}</div>
+                      )}
+                    </td>
+                    <td className="border px-3 py-2">
+                      <div className="font-medium">{formatCurrency(transformed.def_amount)}</div>
+                      {transformed.def_location && transformed.def_location !== 'N/A' && (
+                        <div className="text-xs text-gray-500">{transformed.def_location}</div>
+                      )}
+                    </td>
+                    <td className="border px-3 py-2">
+                      {transformed.other_expense_amount && transformed.other_expense_amount > 0 ? (
+                        <>
+                          <div className="font-medium">{formatCurrency(transformed.other_expense_amount)}</div>
+                          {transformed.other_expense_description && (
+                            <div className="text-xs text-gray-500">{transformed.other_expense_description}</div>
+                          )}
+                          {transformed.other_expense_location && (
+                            <div className="text-xs text-gray-500">{transformed.other_expense_location}</div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-xs text-gray-400">No other expenses</div>
+                      )}
+                    </td>
+                    <td className="border px-3 py-2 font-bold text-green-600 whitespace-nowrap">{formatCurrency(expense.total)}</td>
+                    <td className="border px-3 py-2 text-center">
+                      <button
+                        className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto whitespace-nowrap"
+                        onClick={async () => await downloadDailyExpensePdf(expense)}
+                      >
+                        <ArrowDownTrayIcon className="h-5 w-5" /> Download
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
       )}
     </div>
   )
-} 
+}

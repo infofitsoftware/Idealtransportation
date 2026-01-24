@@ -1,40 +1,42 @@
 import { api } from './auth'
 
+export interface DailyExpenseEntryData {
+  id?: number
+  expense_type: string
+  sub_type?: string | null
+  amount: number
+  location: string
+  payment_mode: string
+  receipt_url?: string | null
+  remarks?: string | null
+}
+
 export interface DailyExpenseData {
   id: number
   date: string
-  diesel_amount: number
-  diesel_location: string
-  def_amount: number
-  def_location: string
-  other_expense_description?: string
-  other_expense_amount?: number
-  other_expense_location?: string
+  vehicle_number?: string | null
   total: number
   user_id: number
-  driver_name?: string // Will be populated from user relationship
-  created_at: string
-  updated_at: string
+  driver_name?: string
+  entries: DailyExpenseEntryData[]
+  created_at?: string
+  updated_at?: string
 }
 
 export interface DailyExpenseCreate {
   date: string
-  diesel_amount: number
-  diesel_location: string
-  def_amount: number
-  def_location: string
-  other_expense_description?: string
-  other_expense_amount?: number
-  other_expense_location?: string
-  total: number
+  vehicle_number?: string | null
+  entries: DailyExpenseEntryData[]
 }
 
 function formatError(error: any): string {
   if (error.response?.data?.detail) {
-    if (Array.isArray(error.response.data.detail)) {
-      return error.response.data.detail.map((err: any) => err.msg).join(', ')
+    if (typeof error.response.data.detail === 'string') {
+      return error.response.data.detail
     }
-    return error.response.data.detail
+    if (Array.isArray(error.response.data.detail)) {
+      return error.response.data.detail.map((e: any) => e.msg || e.message).join(', ')
+    }
   }
   return error.message || 'An error occurred'
 }
@@ -42,16 +44,7 @@ function formatError(error: any): string {
 export const dailyExpenseService = {
   async createExpense(data: DailyExpenseCreate): Promise<DailyExpenseData> {
     try {
-      // Convert all numeric fields to numbers
-      const processedData = {
-        ...data,
-        diesel_amount: Number(data.diesel_amount),
-        def_amount: Number(data.def_amount),
-        other_expense_amount: data.other_expense_amount ? Number(data.other_expense_amount) : undefined,
-        total: Number(data.total)
-      }
-      
-      const response = await api.post('/transactions/daily-expenses/', processedData)
+      const response = await api.post('/transactions/daily-expenses/', data)
       return response.data
     } catch (error: any) {
       console.error('Error creating daily expense:', {
@@ -66,19 +59,16 @@ export const dailyExpenseService = {
   async getExpenses(): Promise<DailyExpenseData[]> {
     console.log('Making API call to /transactions/daily-expenses/')
     try {
-      // Get the token
       const token = localStorage.getItem('token') || sessionStorage.getItem('token')
       if (!token) {
         throw new Error('No authentication token found')
       }
 
-      // Only pass headers in config
       const config = {
         headers: {
           Authorization: `Bearer ${token}`
         }
       }
-      console.log('Request config:', config)
       
       const response = await api.get('/transactions/daily-expenses/', config)
       console.log('API Response:', response)
@@ -88,16 +78,7 @@ export const dailyExpenseService = {
         status: error.response?.status,
         data: error.response?.data,
         message: error.message,
-        headers: error.response?.headers,
-        config: error.config,
-        request: error.request
       })
-      if (error.response?.status === 422) {
-        console.error('Validation Error Details:', {
-          detail: error.response.data.detail,
-          fullError: error.response.data
-        })
-      }
       throw error
     }
   },
@@ -118,16 +99,7 @@ export const dailyExpenseService = {
 
   async updateExpense(id: number, data: Partial<DailyExpenseCreate>): Promise<DailyExpenseData> {
     try {
-      // Convert all numeric fields to numbers if they exist
-      const processedData = {
-        ...data,
-        diesel_amount: data.diesel_amount ? Number(data.diesel_amount) : undefined,
-        def_amount: data.def_amount ? Number(data.def_amount) : undefined,
-        other_expense_amount: data.other_expense_amount ? Number(data.other_expense_amount) : undefined,
-        total: data.total ? Number(data.total) : undefined
-      }
-      
-      const response = await api.put(`/transactions/daily-expenses/${id}/`, processedData)
+      const response = await api.put(`/transactions/daily-expenses/${id}/`, data)
       return response.data
     } catch (error: any) {
       console.error('Error updating daily expense:', {
@@ -151,4 +123,4 @@ export const dailyExpenseService = {
       throw new Error(formatError(error))
     }
   }
-} 
+}

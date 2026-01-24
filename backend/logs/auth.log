@@ -3361,3 +3361,6 @@
 2026-01-24 18:06:47 - routers.auth - INFO - Validating token for /me endpoint
 2026-01-24 18:06:47 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
 2026-01-24 18:06:48 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
+2026-01-24 18:07:26 - routers.auth - INFO - Validating token for /me endpoint
+2026-01-24 18:07:26 - routers.auth - INFO - Looking up user with email: admin@idealtransport.com
+2026-01-24 18:07:26 - routers.auth - INFO - User authenticated successfully: admin@idealtransport.com
