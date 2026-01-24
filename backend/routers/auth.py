@@ -178,6 +178,19 @@ def list_users(
     users = db.query(User).all()
     return users
 
+@router.get("/drivers", response_model=List[UserResponse])
+def list_drivers(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    """Get list of active drivers (non-admin users). Available to all authenticated users."""
+    logger.info(f"User {current_user.email} fetching drivers list")
+    drivers = db.query(User).filter(
+        User.is_active == True,
+        User.is_superuser == False
+    ).order_by(User.full_name.asc()).all()
+    return drivers
+
 @router.get("/users/{user_id}", response_model=UserResponse)
 def get_user_by_id(
     user_id: int,

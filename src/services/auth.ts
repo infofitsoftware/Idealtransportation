@@ -130,6 +130,8 @@ export const authService = {
     // Clear all auth-related data
     localStorage.removeItem('token');
     sessionStorage.removeItem('token');
+    // Clear user cache
+    sessionStorage.removeItem('access_control_user');
     document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     
     // Clear axios default headers
@@ -157,6 +159,11 @@ export const authService = {
 
   async getUsers() {
     const response = await api.get('/auth/users');
+    return response.data;
+  },
+
+  async getDrivers() {
+    const response = await api.get('/auth/drivers');
     return response.data;
   },
 

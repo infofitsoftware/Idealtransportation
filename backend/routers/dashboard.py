@@ -45,8 +45,12 @@ async def get_admin_stats(db: Session):
     # Total pending (total_revenue - total_collected)
     total_pending = max(0.0, total_revenue - total_collected)
     
-    # Active drivers (users who have created BOLs)
-    active_drivers = db.query(func.count(func.distinct(BillOfLading.driver_name))).scalar() or 0
+    # Active drivers - count actual active users (non-admin) from users table
+    # This gives the real number of driver accounts in the system, matching User Management page
+    active_drivers = db.query(func.count(User.id)).filter(
+        User.is_active.is_(True),
+        User.is_superuser.is_(False)
+    ).scalar() or 0
     
     # Recent BOLs (last 5)
     recent_bols = db.query(BillOfLading).order_by(BillOfLading.date.desc(), BillOfLading.id.desc()).limit(5).all()

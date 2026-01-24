@@ -43,8 +43,39 @@ interface SidebarProps {
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
-  const { isSuperuser, currentUser } = useAccessControl()
-  const { logout } = useAuth()
+  const { isSuperuser, currentUser, loading: accessLoading } = useAccessControl()
+  const { logout, user: authUser } = useAuth()
+  
+  // Use currentUser from useAccessControl, fallback to authUser if needed
+  const displayUser = currentUser || authUser
+  
+  // Determine if user is admin - check both sources and ensure boolean
+  // Handle different types: boolean true, string 'true', number 1
+  const userIsAdmin = Boolean(
+    displayUser && (
+      displayUser.is_superuser === true || 
+      displayUser.is_superuser === 'true' ||
+      displayUser.is_superuser === 1 ||
+      displayUser.is_superuser === '1' ||
+      isSuperuser === true
+    )
+  )
+  
+  // Debug logging (remove in production)
+  useEffect(() => {
+    if (displayUser) {
+      console.log('Sidebar - User Info:', {
+        email: displayUser.email,
+        full_name: displayUser.full_name,
+        is_superuser: displayUser.is_superuser,
+        is_superuser_type: typeof displayUser.is_superuser,
+        isSuperuser_from_hook: isSuperuser,
+        userIsAdmin: userIsAdmin,
+        shouldShowReports: userIsAdmin,
+        shouldShowUserManagement: userIsAdmin
+      })
+    }
+  }, [displayUser, isSuperuser, userIsAdmin])
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -117,21 +148,35 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
         {/* User Info */}
         <div className="px-6 py-4 border-b border-gray-700">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-md">
-              <span className="text-sm font-semibold text-white">
-                {currentUser?.full_name?.charAt(0).toUpperCase() || currentUser?.email?.charAt(0).toUpperCase() || 'U'}
-              </span>
+          {accessLoading ? (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-700 animate-pulse">
+                <span className="text-sm font-semibold text-gray-400">...</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="h-4 bg-gray-700 rounded w-24 mb-2 animate-pulse"></div>
+                <div className="h-3 bg-gray-700 rounded w-16 animate-pulse"></div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
-                {currentUser?.full_name || currentUser?.email || 'User'}
-              </p>
-              <p className="text-xs text-gray-400 truncate">
-                {isSuperuser ? 'Administrator' : 'Driver'}
-              </p>
+          ) : (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-md">
+                <span className="text-sm font-semibold text-white">
+                  {displayUser?.full_name?.charAt(0).toUpperCase() || 
+                   displayUser?.email?.charAt(0).toUpperCase() || 
+                   'U'}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white truncate">
+                  {displayUser?.full_name || displayUser?.email || 'User'}
+                </p>
+                <p className="text-xs text-gray-400 truncate">
+                  {userIsAdmin ? 'Administrator' : 'Driver'}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Navigation */}
@@ -139,7 +184,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           <nav className="flex-1 space-y-1 px-3 py-4">
             {navigation.map((item) => {
               // Skip User Management if user is not admin
-              if (item.name === 'User Management' && !isSuperuser) {
+              if (item.name === 'User Management' && !userIsAdmin) {
+                return null
+              }
+              // Skip Reports section if user is not admin
+              if (item.name === 'Reports' && !userIsAdmin) {
                 return null
               }
               const isActive = isItemActive(item)
