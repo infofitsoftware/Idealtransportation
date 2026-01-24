@@ -46,7 +46,7 @@ export default function CategorySuggestions({
         !recentCategories.includes(c) && !popularCategories.includes(c)
       )
     ];
-    setSuggestions([...new Set(allCategories)]);
+    setSuggestions(Array.from(new Set(allCategories)));
   }, [recentCategories, popularCategories]);
 
   const handleSuggestionClick = (category: string) => {
