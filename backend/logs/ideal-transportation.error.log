@@ -14,3 +14,105 @@ Traceback (most recent call last):
   File "C:\Users\hp\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
     self._sock.shutdown(socket.SHUT_RDWR)
 ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+2026-01-24 17:48:57,626 - routers.transaction - ERROR - Error in get_daily_expenses: Column expression, FROM clause, or other columns clause element expected, got <class 'schemas.daily_expense.DailyExpense'>.
+2026-01-24 17:48:58,132 - routers.transaction - ERROR - Error in get_daily_expenses: Column expression, FROM clause, or other columns clause element expected, got <class 'schemas.daily_expense.DailyExpense'>.
+2026-01-24 18:01:35,258 - routers.transaction - ERROR - Error in get_daily_expenses: Column expression, FROM clause, or other columns clause element expected, got <class 'schemas.daily_expense.DailyExpense'>.
+Traceback (most recent call last):
+  File "H:\Project\Idealtransportation\backend\routers\transaction.py", line 118, in get_daily_expenses
+    expenses = db.query(DailyExpense).options(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2896, in query
+    return self._query_cls(entities, self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 275, in __init__
+    self._set_entities(entities)
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 288, in _set_entities
+    coercions.expect(
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 396, in expect
+    resolved = impl._literal_coercion(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 634, in _literal_coercion
+    self._raise_for_expected(element, argname)
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 1122, in _raise_for_expected
+    return super()._raise_for_expected(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 693, in _raise_for_expected
+    super()._raise_for_expected(
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 518, in _raise_for_expected
+    raise exc.ArgumentError(msg, code=code) from err
+sqlalchemy.exc.ArgumentError: Column expression, FROM clause, or other columns clause element expected, got <class 'schemas.daily_expense.DailyExpense'>.
+2026-01-24 18:01:35,259 - routers.transaction - ERROR - Error in get_daily_expenses: Column expression, FROM clause, or other columns clause element expected, got <class 'schemas.daily_expense.DailyExpense'>.
+Traceback (most recent call last):
+  File "H:\Project\Idealtransportation\backend\routers\transaction.py", line 118, in get_daily_expenses
+    expenses = db.query(DailyExpense).options(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2896, in query
+    return self._query_cls(entities, self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 275, in __init__
+    self._set_entities(entities)
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 288, in _set_entities
+    coercions.expect(
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 396, in expect
+    resolved = impl._literal_coercion(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 634, in _literal_coercion
+    self._raise_for_expected(element, argname)
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 1122, in _raise_for_expected
+    return super()._raise_for_expected(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 693, in _raise_for_expected
+    super()._raise_for_expected(
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 518, in _raise_for_expected
+    raise exc.ArgumentError(msg, code=code) from err
+sqlalchemy.exc.ArgumentError: Column expression, FROM clause, or other columns clause element expected, got <class 'schemas.daily_expense.DailyExpense'>.
+2026-01-24 18:03:14,535 - routers.transaction - ERROR - Error in get_daily_expenses: Column expression, FROM clause, or other columns clause element expected, got <class 'schemas.daily_expense.DailyExpense'>.
+Traceback (most recent call last):
+  File "H:\Project\Idealtransportation\backend\routers\transaction.py", line 118, in get_daily_expenses
+    expenses = db.query(DailyExpense).options(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2896, in query
+    return self._query_cls(entities, self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 275, in __init__
+    self._set_entities(entities)
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 288, in _set_entities
+    coercions.expect(
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 396, in expect
+    resolved = impl._literal_coercion(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 634, in _literal_coercion
+    self._raise_for_expected(element, argname)
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 1122, in _raise_for_expected
+    return super()._raise_for_expected(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 693, in _raise_for_expected
+    super()._raise_for_expected(
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 518, in _raise_for_expected
+    raise exc.ArgumentError(msg, code=code) from err
+sqlalchemy.exc.ArgumentError: Column expression, FROM clause, or other columns clause element expected, got <class 'schemas.daily_expense.DailyExpense'>.
+2026-01-24 18:03:15,053 - routers.transaction - ERROR - Error in get_daily_expenses: Column expression, FROM clause, or other columns clause element expected, got <class 'schemas.daily_expense.DailyExpense'>.
+Traceback (most recent call last):
+  File "H:\Project\Idealtransportation\backend\routers\transaction.py", line 118, in get_daily_expenses
+    expenses = db.query(DailyExpense).options(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2896, in query
+    return self._query_cls(entities, self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 275, in __init__
+    self._set_entities(entities)
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 288, in _set_entities
+    coercions.expect(
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 396, in expect
+    resolved = impl._literal_coercion(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 634, in _literal_coercion
+    self._raise_for_expected(element, argname)
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 1122, in _raise_for_expected
+    return super()._raise_for_expected(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 693, in _raise_for_expected
+    super()._raise_for_expected(
+  File "H:\Project\Idealtransportation\backend\venv\Lib\site-packages\sqlalchemy\sql\coercions.py", line 518, in _raise_for_expected
+    raise exc.ArgumentError(msg, code=code) from err
+sqlalchemy.exc.ArgumentError: Column expression, FROM clause, or other columns clause element expected, got <class 'schemas.daily_expense.DailyExpense'>.
