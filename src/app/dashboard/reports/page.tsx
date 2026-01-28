@@ -5,6 +5,7 @@ import { DocumentTextIcon, ArrowDownTrayIcon, ShieldExclamationIcon, PencilIcon,
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { bolService } from "@/services/transaction";
+import { authService } from "@/services/auth";
 import { useAccessControl } from "@/hooks/useAccessControl";
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -75,305 +76,26 @@ function formatCurrency(amount?: number) {
   }).format(amount);
 }
 
-// Function to load logo as base64
-async function loadLogoAsBase64(): Promise<string | null> {
-  try {
-    const response = await fetch('/logo_ideal.png');
-    const blob = await response.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.readAsDataURL(blob);
-    });
-  } catch (error) {
-    console.error('Error loading logo:', error);
-    return null;
-  }
-}
 
 async function downloadBOLPdf(bol: BillOfLading) {
-  const doc = new jsPDF();
-  let y = -2; // Pulled logo up further by starting at y=-2 instead of y=2
-
-  // Company Header with Logo and Address on same line
   try {
-    const logoBase64 = await loadLogoAsBase64();
-    if (logoBase64) {
-      // Larger logo on the left (shifted left from 10 to 5, increased size from 72x36 to 80x40)
-      doc.addImage(logoBase64, 'JPEG', 5, y, 80, 40);
-      // Company name and address on the right, shifted further left (from 90 to 85)
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Ideal Transportation Solutions LLC', 85, y + 12, { align: 'left' });
-      y += 12;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('16 Palmero Way, Manvel, Texas 77578', 85, y + 8, { align: 'left' });
-      y += 8;
-      doc.text('USDOT NO: 4193929', 85, y + 8, { align: 'left' });
-      y += 25; // Increased space after header to avoid divider touching logo
-    } else {
-      // Fallback without logo
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Ideal Transportation Solutions LLC', 105, y, { align: 'center' });
-      y += 6;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('16 Palmero Way, Manvel, Texas 77578', 105, y, { align: 'center' });
-      y += 6;
-      doc.text('USDOT NO: 4193929', 105, y, { align: 'center' });
-      y += 8;
-    }
-  } catch (err) {
-    console.error('Error loading logo:', err);
-    // Fallback without logo
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Ideal Transportation Solutions LLC', 105, y, { align: 'center' });
-    y += 6;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('16 Palmero Way, Manvel, Texas 77578', 105, y, { align: 'center' });
-    y += 6;
-    doc.text('USDOT NO: 4193929', 105, y, { align: 'center' });
-    y += 8;
+    // Use backend API for PDF generation (consistent across all pages)
+    const blob = await bolService.downloadBOLPdf(bol.id);
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `BillOfLading_${bol.work_order_no || bol.id}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error('Error downloading PDF from API, falling back to client-side generation:', error);
+    // Fallback to client-side generation if API fails
+    const fullBol = await bolService.getBOL(bol.id);
+    const { generateBOLPdf } = await import('@/utils/bolPdfGenerator');
+    await generateBOLPdf(fullBol);
   }
-
-  // Divider line - moved down to avoid touching logo
-  doc.setDrawColor(200, 200, 200);
-  doc.line(14, y, 196, y);
-  y += 10;
-
-  // Title
-  doc.setFontSize(18);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Bill of Lading', 105, y, { align: 'center' });
-  y += 15;
-
-  // Report Details Box
-  doc.setDrawColor(59, 130, 246); // Blue border
-  doc.setFillColor(239, 246, 255); // Light blue background
-  doc.roundedRect(14, y, 182, 25, 3, 3, 'FD');
-  y += 8;
-
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Driver: ' + String(bol.driver_name ?? ''), 20, y);
-  doc.text('Date: ' + String(formatDate(bol.date) ?? ''), 120, y);
-  y += 8;
-  doc.text('Work Order No: ' + String(bol.work_order_no ?? ''), 20, y);
-  doc.text('Generated: ' + new Date().toLocaleDateString(), 120, y);
-  y += 8;
-  // Add broker information if available
-  if (bol.broker_name || bol.broker_address || bol.broker_phone) {
-    doc.text('Broker: ' + String(bol.broker_name ?? ''), 20, y);
-    doc.text('Phone: ' + String(bol.broker_phone ?? ''), 120, y);
-    y += 6;
-    if (bol.broker_address) {
-      doc.text('Address: ' + String(bol.broker_address), 20, y);
-  y += 6;
-    }
-  }
-  y += 15;
-
-  // Check page overflow before Pickup Section
-  if (y > 250) {
-    doc.addPage();
-    y = 20;
-  }
-
-  // Pickup Section
-  doc.setDrawColor(59, 130, 246);
-  doc.setFillColor(239, 246, 255);
-  doc.roundedRect(14, y, 182, 45, 3, 3, 'FD');
-  y += 8;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Pick Up', 20, y);
-  y += 8;
-  doc.setFont('helvetica', 'normal');
-  doc.text('Name: ' + String(bol.pickup_name ?? ''), 25, y);
-  doc.text('Phone: ' + String(bol.pickup_phone ?? ''), 100, y);
-  y += 6;
-  doc.text('Address: ' + String(bol.pickup_address ?? ''), 25, y);
-  y += 6;
-  doc.text('City: ' + String(bol.pickup_city ?? '') + '  State: ' + String(bol.pickup_state ?? '') + '  Zip: ' + String(bol.pickup_zip ?? ''), 25, y);
-  y += 20; // Gap between pickup and delivery
-
-  // Check page overflow before Delivery Section
-  if (y > 250) {
-    doc.addPage();
-    y = 20;
-  }
-
-  // Delivery Section
-  doc.setDrawColor(59, 130, 246);
-  doc.setFillColor(248, 250, 252); // Light gray background
-  doc.roundedRect(14, y, 182, 45, 3, 3, 'FD');
-  y += 8;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Delivery', 20, y);
-  y += 8;
-  doc.setFont('helvetica', 'normal');
-  doc.text('Name: ' + String(bol.delivery_name ?? ''), 25, y);
-  doc.text('Phone: ' + String(bol.delivery_phone ?? ''), 100, y);
-  y += 6;
-  doc.text('Address: ' + String(bol.delivery_address ?? ''), 25, y);
-  y += 6;
-  doc.text('City: ' + String(bol.delivery_city ?? '') + '  State: ' + String(bol.delivery_state ?? '') + '  Zip: ' + String(bol.delivery_zip ?? ''), 25, y);
-  y += 20; // Increased gap between delivery and vehicles to prevent overlap
-
-  // Check page overflow before Vehicles Section
-  if (y > 250) {
-    doc.addPage();
-    y = 20;
-  }
-
-  // Vehicles Section - Dynamic height based on number of vehicles
-  const vehicleTableHeight = Math.max(30, (bol.vehicles.length + 1) * 8); // +1 for header, minimum 30
-  doc.setDrawColor(59, 130, 246);
-  doc.setFillColor(239, 246, 255);
-  doc.roundedRect(14, y, 182, vehicleTableHeight + 10, 3, 3, 'FD'); // +10 for padding
-  y += 8;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Vehicles', 20, y);
-  y += 2;
-  
-  // Check if we need a new page for the vehicle table
-  const estimatedTableHeight = (bol.vehicles.length + 1) * 8;
-  if (y + estimatedTableHeight > 270) {
-    doc.addPage();
-    y = 20;
-    // Redraw the vehicle section header on new page
-    doc.setDrawColor(59, 130, 246);
-    doc.setFillColor(239, 246, 255);
-    doc.roundedRect(14, y, 182, vehicleTableHeight + 10, 3, 3, 'FD');
-  y += 8;
-    doc.setFont('helvetica', 'bold');
-    doc.text('Vehicles', 20, y);
-  y += 2;
-  }
-
-  autoTable(doc, {
-    startY: y,
-    head: [['Year', 'Make', 'Model', 'VIN', 'Mileage', 'Price']],
-    body: bol.vehicles.map((v) => [v.year, v.make, v.model, v.vin, v.mileage, v.price]),
-    theme: 'grid',
-    headStyles: { fillColor: [59, 130, 246] },
-    styles: { fontSize: 9 },
-    margin: { left: 20, right: 20 },
-    didDrawPage: function (data) {
-      // Add page number
-      doc.setFontSize(8);
-      doc.text('Page ' + doc.getCurrentPageInfo().pageNumber, 105, 280, { align: 'center' });
-    }
-  });
-  y = (doc as any).lastAutoTable.finalY + 15;
-
-  // Check page overflow before Condition Codes Section
-  if (y > 250) {
-    doc.addPage();
-    y = 20;
-  }
-
-  // Condition Codes Section
-  if (bol.condition_codes) {
-    doc.setDrawColor(59, 130, 246);
-    doc.setFillColor(248, 250, 252);
-    doc.roundedRect(14, y, 182, 25, 3, 3, 'FD');
-    y += 8;
-    doc.setFont('helvetica', 'bold');
-    doc.text('Condition Codes', 20, y);
-    y += 8;
-    doc.setFont('helvetica', 'normal');
-    doc.text(String(bol.condition_codes ?? ''), 25, y);
-    y += 15;
-  }
-
-  // Check page overflow before Remarks Section
-  if (y > 250) {
-    doc.addPage();
-    y = 20;
-  }
-
-  // Remarks Section
-  if (bol.remarks) {
-    doc.setDrawColor(59, 130, 246);
-    doc.setFillColor(239, 246, 255);
-    doc.roundedRect(14, y, 182, 30, 3, 3, 'FD');
-    y += 8;
-    doc.setFont('helvetica', 'bold');
-    doc.text('Remarks', 20, y);
-    y += 8;
-    doc.setFont('helvetica', 'normal');
-    doc.text(String(bol.remarks ?? ''), 25, y, { maxWidth: 160 });
-    y += 15;
-  }
-
-  // Check page overflow before Signatures Section
-  if (y > 250) {
-    doc.addPage();
-    y = 20;
-  }
-
-  // Signatures Section - Increased height to prevent overflow
-  const signatureBoxHeight = 70 + (bol.receiver_agent_name || bol.receiver_signature || bol.receiver_date ? 40 : 0);
-  doc.setDrawColor(59, 130, 246);
-  doc.setFillColor(248, 250, 252);
-  doc.roundedRect(14, y, 182, signatureBoxHeight, 3, 3, 'FD');
-  y += 8;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Signatures', 20, y);
-  y += 8;
-  doc.setFont('helvetica', 'normal');
-  doc.text('Pickup Agent: ' + String(bol.pickup_agent_name ?? ''), 25, y);
-  doc.text('Date: ' + String(formatDate(bol.pickup_date) ?? ''), 100, y);
-  y += 2;
-  if (bol.pickup_signature && typeof bol.pickup_signature === 'string') {
-    try {
-      const base64Data = bol.pickup_signature.split(',')[1] || bol.pickup_signature;
-      doc.addImage(base64Data, 'PNG', 25, y + 2, 40, 16);
-    } catch (err) {
-      console.error('Error adding pickup signature:', err);
-    }
-  }
-  y += 25; // Spacing between pickup and delivery signatures
-  doc.text('Delivery Agent: ' + String(bol.delivery_agent_name ?? ''), 25, y);
-  doc.text('Date: ' + String(formatDate(bol.delivery_date) ?? ''), 100, y);
-  y += 2;
-  if (bol.delivery_signature && typeof bol.delivery_signature === 'string') {
-    try {
-      const base64Data = bol.delivery_signature.split(',')[1] || bol.delivery_signature;
-      doc.addImage(base64Data, 'PNG', 25, y + 2, 40, 16);
-    } catch (err) {
-      console.error('Error adding delivery signature:', err);
-    }
-  }
-  y += 25;
-  if (bol.receiver_agent_name || bol.receiver_signature || bol.receiver_date) {
-    doc.text('Receiver Agent: ' + String(bol.receiver_agent_name ?? ''), 25, y);
-    doc.text('Date: ' + String(formatDate(bol.receiver_date) ?? ''), 100, y);
-    y += 2;
-    if (bol.receiver_signature && typeof bol.receiver_signature === 'string') {
-      try {
-        const base64Data = bol.receiver_signature.split(',')[1] || bol.receiver_signature;
-        doc.addImage(base64Data, 'PNG', 25, y + 2, 40, 16);
-      } catch (err) {
-        console.error('Error adding receiver signature:', err);
-      }
-    }
-    y += 25;
-  }
-
-  // Footer
-  doc.setDrawColor(200, 200, 200);
-  doc.line(14, y, 196, y);
-  y += 8;
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.text('This report was generated by Ideal Transportation Solutions LLC', 105, y, { align: 'center' });
-
-  doc.save(`BillOfLading_${bol.id}.pdf`);
 }
 
 // Memoized components for better performance
@@ -508,18 +230,22 @@ export default function ReportsPage() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [workOrderFilter, setWorkOrderFilter] = useState('');
+  const [driverFilter, setDriverFilter] = useState('');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('all'); // 'all', 'paid', 'pending'
+  const [drivers, setDrivers] = useState<Array<{id: number, full_name: string}>>([]);
+  const [loadingDrivers, setLoadingDrivers] = useState(false);
   
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage] = useState(10); // Load 10 BOLs at a time for better performance
+  const [itemsPerPage] = useState(50); // Load 50 BOLs at a time for better performance
   const [hasMoreData, setHasMoreData] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [totalLoaded, setTotalLoaded] = useState(0);
 
   // Debounced filter values for server-side filtering
   const [debouncedWorkOrder, setDebouncedWorkOrder] = useState('');
+  const [debouncedDriver, setDebouncedDriver] = useState('');
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -527,6 +253,31 @@ export default function ReportsPage() {
     }, 500);
     return () => clearTimeout(timer);
   }, [workOrderFilter]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedDriver(driverFilter);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [driverFilter]);
+
+  // Fetch drivers list for admin users
+  useEffect(() => {
+    const fetchDrivers = async () => {
+      if (isSuperuser) {
+        try {
+          setLoadingDrivers(true);
+          const driverList = await authService.getDrivers();
+          setDrivers(driverList || []);
+        } catch (err) {
+          console.error('Error fetching drivers:', err);
+        } finally {
+          setLoadingDrivers(false);
+        }
+      }
+    };
+    fetchDrivers();
+  }, [isSuperuser]);
 
   // Fetch initial data with server-side pagination and filtering
   useEffect(() => {
@@ -544,6 +295,7 @@ export default function ReportsPage() {
           from_date: fromDate || undefined,
           to_date: toDate || undefined,
           work_order_no: debouncedWorkOrder || undefined,
+          driver_name: debouncedDriver || undefined,
           payment_status: paymentStatusFilter !== 'all' ? paymentStatusFilter : undefined,
           sort_by: 'date',
           sort_order: 'asc'
@@ -565,7 +317,7 @@ export default function ReportsPage() {
     if (hasAccess || accessLoading) {
     fetchData();
     }
-  }, [itemsPerPage, fromDate, toDate, debouncedWorkOrder, paymentStatusFilter, hasAccess, accessLoading]);
+  }, [itemsPerPage, fromDate, toDate, debouncedWorkOrder, debouncedDriver, paymentStatusFilter, hasAccess, accessLoading]);
 
   // Load more data with server-side pagination
   const loadMoreData = React.useCallback(async () => {
@@ -583,6 +335,7 @@ export default function ReportsPage() {
         from_date: fromDate || undefined,
         to_date: toDate || undefined,
         work_order_no: debouncedWorkOrder || undefined,
+        driver_name: debouncedDriver || undefined,
         payment_status: paymentStatusFilter !== 'all' ? paymentStatusFilter : undefined,
         sort_by: 'date',
         sort_order: 'asc'
@@ -604,12 +357,13 @@ export default function ReportsPage() {
     } finally {
       setLoadingMore(false);
     }
-  }, [currentPage, displayedData, itemsPerPage, fromDate, toDate, debouncedWorkOrder, loadingMore, hasMoreData]);
+  }, [currentPage, displayedData, itemsPerPage, fromDate, toDate, debouncedWorkOrder, debouncedDriver, paymentStatusFilter, loadingMore, hasMoreData]);
 
   const clearFilters = () => {
     setFromDate('');
     setToDate('');
     setWorkOrderFilter('');
+    setDriverFilter('');
     setPaymentStatusFilter('all');
   };
 
@@ -693,6 +447,7 @@ export default function ReportsPage() {
         from_date: fromDate || undefined,
         to_date: toDate || undefined,
         work_order_no: debouncedWorkOrder || undefined,
+        driver_name: debouncedDriver || undefined,
         payment_status: paymentStatusFilter !== 'all' ? paymentStatusFilter : undefined,
         sort_by: 'date',
         sort_order: 'asc'
@@ -849,6 +604,13 @@ export default function ReportsPage() {
             </span>
           )}
           <button
+            onClick={() => router.push('/dashboard/reports/download')}
+            className="px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 bg-purple-600 text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+          >
+            <ArrowDownTrayIcon className="h-5 w-5" />
+            Bulk Download
+          </button>
+          <button
             onClick={exportToExcel}
             disabled={displayedData.length === 0}
             className={`px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 ${
@@ -866,7 +628,7 @@ export default function ReportsPage() {
       {/* Filters */}
       <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Filter Options</h2>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
           <div>
             <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
               From Date
@@ -904,6 +666,32 @@ export default function ReportsPage() {
               className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
+          {isSuperuser && (
+            <div>
+              <label htmlFor="driverFilter" className="block text-sm font-medium text-gray-700 mb-1">
+                Driver
+                {driverFilter && (
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                    Filter Active
+                  </span>
+                )}
+              </label>
+              <select
+                id="driverFilter"
+                value={driverFilter}
+                onChange={(e) => setDriverFilter(e.target.value)}
+                disabled={loadingDrivers}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                <option value="">All Drivers</option>
+                {drivers.map((driver) => (
+                  <option key={driver.id} value={driver.full_name}>
+                    {driver.full_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <label htmlFor="paymentStatusFilter" className="block text-sm font-medium text-gray-700 mb-1">
               Payment Status
@@ -933,13 +721,14 @@ export default function ReportsPage() {
             </button>
           </div>
         </div>
-        {(fromDate || toDate || workOrderFilter || paymentStatusFilter !== 'all') && (
+        {(fromDate || toDate || workOrderFilter || driverFilter || paymentStatusFilter !== 'all') && (
           <div className="mt-3 text-sm text-gray-600">
             Showing {displayedData.length} BOLs
             {fromDate && toDate && ` from ${fromDate} to ${toDate}`}
             {fromDate && !toDate && ` from ${fromDate}`}
             {!fromDate && toDate && ` until ${toDate}`}
-            {workOrderFilter && ` matching "${workOrderFilter}"`}
+            {workOrderFilter && ` matching work order "${workOrderFilter}"`}
+            {driverFilter && ` for driver "${driverFilter}"`}
             {paymentStatusFilter === 'paid' && ` (fully paid only)`}
             {paymentStatusFilter === 'pending' && ` (pending/partial payments only)`}
             {hasMoreData && ` (more available)`}
@@ -1074,7 +863,7 @@ export default function ReportsPage() {
               Create Your First BOL
             </button>
           )}
-          {displayedData.length === 0 && (fromDate || toDate || workOrderFilter || paymentStatusFilter !== 'all') && (
+          {displayedData.length === 0 && (fromDate || toDate || workOrderFilter || driverFilter || paymentStatusFilter !== 'all') && (
             <button
               onClick={clearFilters}
               className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"

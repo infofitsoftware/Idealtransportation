@@ -1262,3 +1262,31 @@ sqlalchemy.exc.ArgumentError: Column expression, FROM clause, or other columns c
 2026-01-24 18:06:49 - routers.transaction - INFO - Successfully processed 17 expenses
 2026-01-24 18:06:49 - routers.transaction - INFO - Found 17 daily expenses
 2026-01-24 18:06:49 - routers.transaction - INFO - Successfully processed 17 expenses
+2026-01-24 18:29:20 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-24 18:29:20 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-24 18:29:21 - routers.transaction - INFO - Found 287 transactions with broker information
+2026-01-24 18:29:21 - routers.transaction - INFO - Found 287 transactions with broker information
+2026-01-24 18:30:10 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2026-01-24 18:30:10 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2026-01-24 18:30:10 - routers.transaction - INFO - Found 17 daily expenses
+2026-01-24 18:30:10 - routers.transaction - INFO - Found 17 daily expenses
+2026-01-24 18:30:10 - routers.transaction - INFO - Successfully processed 17 expenses
+2026-01-24 18:30:10 - routers.transaction - INFO - Successfully processed 17 expenses
+2026-01-28 09:30:51 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-28 09:30:51 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-28 09:30:52 - routers.transaction - INFO - Found 306 transactions with broker information
+2026-01-28 09:30:52 - routers.transaction - INFO - Found 306 transactions with broker information
+2026-01-28 09:31:05 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2026-01-28 09:31:05 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2026-01-28 09:31:06 - routers.transaction - INFO - Found 17 daily expenses
+2026-01-28 09:31:06 - routers.transaction - INFO - Found 17 daily expenses
+2026-01-28 09:31:06 - routers.transaction - INFO - Successfully processed 17 expenses
+2026-01-28 09:31:06 - routers.transaction - INFO - Successfully processed 17 expenses
+2026-01-28 09:34:36 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-28 09:34:36 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-28 09:34:37 - routers.transaction - INFO - Found 306 transactions with broker information
+2026-01-28 09:34:37 - routers.transaction - INFO - Found 306 transactions with broker information
+2026-01-28 09:36:16 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-28 09:36:16 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-28 09:36:17 - routers.transaction - INFO - Found 306 transactions with broker information
+2026-01-28 09:36:17 - routers.transaction - INFO - Found 306 transactions with broker information

@@ -151,6 +151,7 @@ export const bolService = {
     from_date?: string;
     to_date?: string;
     work_order_no?: string;
+    driver_name?: string;
     payment_status?: string;
     sort_by?: string;
     sort_order?: string;
@@ -162,6 +163,7 @@ export const bolService = {
       if (params.from_date) queryParams.append('from_date', params.from_date);
       if (params.to_date) queryParams.append('to_date', params.to_date);
       if (params.work_order_no) queryParams.append('work_order_no', params.work_order_no);
+      if (params.driver_name) queryParams.append('driver_name', params.driver_name);
       if (params.payment_status) queryParams.append('payment_status', params.payment_status);
       if (params.sort_by) queryParams.append('sort_by', params.sort_by);
       if (params.sort_order) queryParams.append('sort_order', params.sort_order);
@@ -188,5 +190,13 @@ export const bolService = {
   async deleteBOL(id: number): Promise<void> {
     console.log('[bolService] DELETE', api.defaults.baseURL + `/bol/${id}`);
     await api.delete(`/bol/${id}`);
+  },
+
+  async downloadBOLPdf(id: number): Promise<Blob> {
+    console.log('[bolService] GET PDF', api.defaults.baseURL + `/bol/${id}/pdf`);
+    const response = await api.get(`/bol/${id}/pdf`, {
+      responseType: 'blob'
+    });
+    return response.data;
   }
 }; 

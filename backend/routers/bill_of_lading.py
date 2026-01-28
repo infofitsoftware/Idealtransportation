@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from schemas.bill_of_lading import BillOfLadingCreate, BillOfLading as BillOfLadingSchema
+from schemas.bill_of_lading import BillOfLadingCreate, BillOfLading as BillOfLadingSchema, BillOfLadingSummary, BOLVehicle
 from models.bill_of_lading import BillOfLading, BOLVehicle
 from models.transaction import Transaction
 from database import get_db
@@ -9,6 +10,8 @@ from typing import List, Dict, Any, Optional
 import time
 from functools import lru_cache
 from datetime import datetime
+from cache import generate_cache_key, get_cached_data, set_cached_data, invalidate_bol_cache
+from utils.pdf_generator import generate_bol_pdf
 
 router = APIRouter()
 
@@ -130,6 +133,10 @@ def create_bill_of_lading(bol: BillOfLadingCreate, db: Session = Depends(get_db)
         )
         db.add(db_vehicle)
     db.commit()
+    
+    # Invalidate BOL list cache when new BOL is created
+    invalidate_bol_cache()
+    
     return {"id": db_bol.id, "total_amount": total_amount}
 
 @router.get("/", response_model=List[BillOfLadingSchema])
@@ -140,11 +147,15 @@ def list_bill_of_lading(
     from_date: Optional[str] = Query(None),
     to_date: Optional[str] = Query(None),
     work_order_no: Optional[str] = Query(None),
+    driver_name: Optional[str] = Query(None),
     payment_status: Optional[str] = Query(None, enum=["all", "paid", "pending"]),
     sort_by: str = Query("date", enum=["date", "work_order_no", "driver_name"]),
     sort_order: str = Query("asc", enum=["asc", "desc"])
 ):
     start_time = time.time()
+    
+    # Import for eager loading
+    from sqlalchemy.orm import joinedload, selectinload
     
     # For payment status filtering, we need to use a subquery approach
     if payment_status and payment_status != "all":
@@ -154,8 +165,10 @@ def list_bill_of_lading(
             func.sum(Transaction.collected_amount).label('total_collected')
         ).group_by(Transaction.work_order_no).subquery()
         
-        # Join with BOLs to get payment information
-        query = db.query(BillOfLading).outerjoin(
+        # Join with BOLs to get payment information - EAGER LOAD VEHICLES
+        query = db.query(BillOfLading).options(
+            selectinload(BillOfLading.vehicles)  # Eager load vehicles to prevent N+1 queries
+        ).outerjoin(
             payment_subquery, 
             BillOfLading.work_order_no == payment_subquery.c.work_order_no
         )
@@ -172,8 +185,10 @@ def list_bill_of_lading(
                 func.coalesce(payment_subquery.c.total_collected, 0) < BillOfLading.total_amount
             )
     else:
-        # No payment status filter, use simple query
-        query = db.query(BillOfLading)
+        # No payment status filter, use simple query - EAGER LOAD VEHICLES
+        query = db.query(BillOfLading).options(
+            selectinload(BillOfLading.vehicles)  # Eager load vehicles to prevent N+1 queries
+        )
     
     # Apply other filters
     if from_date:
@@ -182,6 +197,8 @@ def list_bill_of_lading(
         query = query.filter(BillOfLading.date <= to_date)
     if work_order_no:
         query = query.filter(BillOfLading.work_order_no.ilike(f"%{work_order_no}%"))
+    if driver_name:
+        query = query.filter(BillOfLading.driver_name.ilike(f"%{driver_name}%"))
     
     # Apply sorting
     sort_column = getattr(BillOfLading, sort_by, BillOfLading.date)
@@ -200,22 +217,32 @@ def list_bill_of_lading(
     work_order_nos = [bol.work_order_no for bol in bols if bol.work_order_no]
     payment_data = get_cached_payment_data(work_order_nos, db)
     
-    # Process results efficiently
+    # Process results efficiently - exclude signatures for performance
+    # Signatures are large base64 strings (can be 100KB+ each) and slow down list queries
+    # They're only needed when viewing/downloading individual BOLs
+    result = []
     for bol in bols:
         total_collected = payment_data.get(bol.work_order_no, 0.0) if bol.work_order_no else 0.0
         total_amount = bol.total_amount or 0.0
         due_amount = max(0.0, total_amount - total_collected)
         
-        # Add payment info to the BOL object
+        # Add payment info
         bol.total_collected = total_collected
         bol.due_amount = due_amount
+        
+        # Remove signatures to reduce payload size (they're only needed for individual BOL view/download)
+        bol.pickup_signature = None
+        bol.delivery_signature = None
+        bol.receiver_signature = None
+        
+        result.append(bol)
     
     # Log performance metrics
     end_time = time.time()
     query_time = end_time - start_time
     print(f"BOL Query Performance: {query_time:.3f}s for {len(bols)} records (skip={skip}, limit={limit})")
     
-    return bols
+    return result
 
 @router.get("/pending-payments")
 def get_bols_with_pending_payments(db: Session = Depends(get_db)):
@@ -262,7 +289,12 @@ def get_bill_of_lading(bol_id: int, db: Session = Depends(get_db)):
     """
     Get a specific BOL by ID with payment information
     """
-    bol = db.query(BillOfLading).filter(BillOfLading.id == bol_id).first()
+    from sqlalchemy.orm import selectinload
+    
+    # Eager load vehicles to prevent N+1 query
+    bol = db.query(BillOfLading).options(
+        selectinload(BillOfLading.vehicles)
+    ).filter(BillOfLading.id == bol_id).first()
     
     if not bol:
         raise HTTPException(
@@ -357,6 +389,9 @@ def update_bill_of_lading(
     db.commit()
     db.refresh(existing_bol)
     
+    # Invalidate BOL list cache when BOL is updated
+    invalidate_bol_cache()
+    
     # Add payment information
     if existing_bol.work_order_no:
         total_collected = db.query(func.sum(Transaction.collected_amount)).filter(
@@ -403,6 +438,9 @@ def delete_bill_of_lading(bol_id: int, db: Session = Depends(get_db)):
     db.delete(bol)
     db.commit()
     
+    # Invalidate BOL list cache when BOL is deleted
+    invalidate_bol_cache()
+    
     return {"message": f"BOL {bol_id} deleted successfully"}
 
 @router.get("/work-order/{work_order_no}/payment-status")
@@ -435,4 +473,89 @@ def get_payment_status(work_order_no: str, db: Session = Depends(get_db)):
         "due_amount": float(due_amount),
         "is_fully_paid": due_amount <= 0,
         "payment_percentage": (total_collected / bol.total_amount * 100) if bol.total_amount else 0
-    } 
+    }
+
+@router.get("/{bol_id}/pdf")
+def download_bol_pdf(bol_id: int, db: Session = Depends(get_db)):
+    """
+    Generate and download BOL PDF
+    This endpoint generates a PDF server-side and returns it as a download
+    """
+    from sqlalchemy.orm import selectinload
+    
+    # Get BOL with all relationships
+    bol = db.query(BillOfLading).options(
+        selectinload(BillOfLading.vehicles)
+    ).filter(BillOfLading.id == bol_id).first()
+    
+    if not bol:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"BOL with ID {bol_id} not found"
+        )
+    
+    # Convert SQLAlchemy object to dictionary for PDF generation
+    bol_dict = {
+        'id': bol.id,
+        'driver_name': bol.driver_name,
+        'date': bol.date.isoformat() if bol.date else None,
+        'work_order_no': bol.work_order_no,
+        'broker_name': bol.broker_name,
+        'broker_address': bol.broker_address,
+        'broker_phone': bol.broker_phone,
+        'pickup_name': bol.pickup_name,
+        'pickup_address': bol.pickup_address,
+        'pickup_city': bol.pickup_city,
+        'pickup_state': bol.pickup_state,
+        'pickup_zip': bol.pickup_zip,
+        'pickup_phone': bol.pickup_phone,
+        'delivery_name': bol.delivery_name,
+        'delivery_address': bol.delivery_address,
+        'delivery_city': bol.delivery_city,
+        'delivery_state': bol.delivery_state,
+        'delivery_zip': bol.delivery_zip,
+        'delivery_phone': bol.delivery_phone,
+        'condition_codes': bol.condition_codes,
+        'remarks': bol.remarks,
+        'pickup_agent_name': bol.pickup_agent_name,
+        'pickup_signature': bol.pickup_signature,
+        'pickup_date': bol.pickup_date.isoformat() if bol.pickup_date else None,
+        'delivery_agent_name': bol.delivery_agent_name,
+        'delivery_signature': bol.delivery_signature,
+        'delivery_date': bol.delivery_date.isoformat() if bol.delivery_date else None,
+        'receiver_agent_name': bol.receiver_agent_name,
+        'receiver_signature': bol.receiver_signature,
+        'receiver_date': bol.receiver_date.isoformat() if bol.receiver_date else None,
+        'vehicles': [
+            {
+                'year': v.year,
+                'make': v.make,
+                'model': v.model,
+                'vin': v.vin,
+                'mileage': v.mileage,
+                'price': v.price
+            }
+            for v in bol.vehicles
+        ]
+    }
+    
+    try:
+        # Generate PDF
+        pdf_buffer = generate_bol_pdf(bol_dict)
+        pdf_content = pdf_buffer.getvalue()
+        pdf_buffer.close()
+        
+        # Return PDF as response
+        filename = f"BillOfLading_{bol.work_order_no or bol.id}.pdf"
+        return Response(
+            content=pdf_content,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating PDF: {str(e)}"
+        ) 

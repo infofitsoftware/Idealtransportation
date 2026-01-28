@@ -3,26 +3,25 @@
 import React, { useEffect, useState } from 'react';
 import { 
   DocumentTextIcon, 
-  CurrencyDollarIcon, 
-  ClockIcon,
-  PlusIcon
+  PlusIcon,
+  UserCircleIcon,
+  EnvelopeIcon,
+  IdentificationIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { dashboardService, DashboardData } from '@/services/dashboard';
-import StatsCard from './StatsCard';
-import RecentBOLsWidget from './RecentBOLsWidget';
+import { dashboardService } from '@/services/dashboard';
 import ProgressBar from './ProgressBar';
+import { useAccessControl } from '@/hooks/useAccessControl';
 
 export default function DriverDashboard() {
-  const [data, setData] = useState<DashboardData | null>(null);
+  const { currentUser } = useAccessControl();
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [loadedSections, setLoadedSections] = useState({
     header: false,
-    stats: false,
-    paymentStatus: false,
-    widgets: false,
+    profile: false,
     quickActions: false,
   });
 
@@ -44,17 +43,16 @@ export default function DriverDashboard() {
           });
         }, 50);
 
-        const dashboardData = await dashboardService.getStats();
-        setData(dashboardData);
+        // Fetch dashboard data (not displayed but kept for potential future use)
+        await dashboardService.getStats();
+        setData({});
         clearInterval(progressInterval);
         setProgress(100);
 
         // Sequential loading of sections
         setTimeout(() => setLoadedSections(prev => ({ ...prev, header: true })), 100);
-        setTimeout(() => setLoadedSections(prev => ({ ...prev, stats: true })), 300);
-        setTimeout(() => setLoadedSections(prev => ({ ...prev, paymentStatus: true })), 500);
-        setTimeout(() => setLoadedSections(prev => ({ ...prev, widgets: true })), 700);
-        setTimeout(() => setLoadedSections(prev => ({ ...prev, quickActions: true })), 900);
+        setTimeout(() => setLoadedSections(prev => ({ ...prev, profile: true })), 300);
+        setTimeout(() => setLoadedSections(prev => ({ ...prev, quickActions: true })), 500);
         
         setTimeout(() => setLoading(false), 1000);
       } catch (err: any) {
@@ -91,10 +89,7 @@ export default function DriverDashboard() {
     );
   }
 
-  const { stats, recent_bols } = data;
-  const completionRate = stats.total_revenue > 0 
-    ? ((stats.total_collected / stats.total_revenue) * 100).toFixed(1)
-    : '0.0';
+  // Data is fetched but only profile details are displayed
 
   return (
     <div className="space-y-6">
@@ -116,7 +111,7 @@ export default function DriverDashboard() {
             My Dashboard
           </h2>
           <p className="mt-2 text-sm text-gray-500">
-            Overview of your BOLs and payments
+            Overview of your BOLs and activities
           </p>
         </div>
         <div className="mt-4 flex gap-3 md:mt-0 md:ml-4">
@@ -130,91 +125,50 @@ export default function DriverDashboard() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div 
-        className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 transition-all duration-500 ${
-          loadedSections.stats ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}
-      >
-        <StatsCard
-          title="My BOLs"
-          value={stats.total_bols}
-          icon={DocumentTextIcon}
-          color="blue"
-          loading={!loadedSections.stats}
-        />
-        <StatsCard
-          title="My Revenue"
-          value={stats.total_revenue}
-          icon={CurrencyDollarIcon}
-          color="green"
-          loading={!loadedSections.stats}
-        />
-        <StatsCard
-          title="Collected"
-          value={stats.total_collected}
-          icon={CurrencyDollarIcon}
-          color="purple"
-          loading={!loadedSections.stats}
-        />
-        <StatsCard
-          title="Pending"
-          value={stats.total_pending}
-          icon={ClockIcon}
-          color="red"
-          loading={!loadedSections.stats}
-        />
-      </div>
-
-      {/* Payment Status Summary */}
-      <div 
-        className={`bg-white rounded-lg shadow-lg p-6 border border-gray-200 transition-all duration-500 ${
-          loadedSections.paymentStatus ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}
-      >
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Status</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
-            <div className="text-2xl font-bold text-green-600 mb-1">
-              {stats.payment_breakdown.fully_paid}
+      {/* Profile Details */}
+      {currentUser && (
+        <div 
+          className={`bg-white rounded-lg shadow-lg p-6 border border-gray-200 transition-all duration-500 ${
+            loadedSections.profile ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+        >
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <UserCircleIcon className="h-5 w-5 text-blue-600" />
+            Profile Details
+          </h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <IdentificationIcon className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-gray-500">Full Name</div>
+                <div className="text-base font-semibold text-gray-900 mt-1">
+                  {currentUser.full_name || 'Not set'}
+                </div>
+              </div>
             </div>
-            <div className="text-sm text-green-700">Fully Paid</div>
-          </div>
-          <div className="text-center p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
-            <div className="text-2xl font-bold text-yellow-600 mb-1">
-              {stats.payment_breakdown.partially_paid}
+            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <EnvelopeIcon className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-gray-500">Email</div>
+                <div className="text-base font-semibold text-gray-900 mt-1 break-words">
+                  {currentUser.email || 'Not set'}
+                </div>
+              </div>
             </div>
-            <div className="text-sm text-yellow-700">Partially Paid</div>
-          </div>
-          <div className="text-center p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-lg border border-red-200">
-            <div className="text-2xl font-bold text-red-600 mb-1">
-              {stats.payment_breakdown.pending_payment}
+            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <UserCircleIcon className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-gray-500">Role</div>
+                <div className="text-base font-semibold text-gray-900 mt-1">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    Driver
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="text-sm text-red-700">Pending</div>
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-600">Payment Completion Rate</span>
-            <span className="text-lg font-bold text-gray-900">{completionRate}%</span>
-          </div>
-          <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
-            <div
-              className="bg-gradient-to-r from-green-500 to-green-600 h-2.5 rounded-full transition-all duration-1000"
-              style={{ width: `${completionRate}%` }}
-            ></div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent BOLs */}
-      <div 
-        className={`transition-all duration-500 ${
-          loadedSections.widgets ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}
-      >
-        <RecentBOLsWidget bols={recent_bols} isAdmin={false} loading={!loadedSections.widgets} />
-      </div>
+      )}
 
       {/* Quick Actions */}
       <div 
@@ -232,16 +186,6 @@ export default function DriverDashboard() {
             <div>
               <div className="font-medium text-gray-900">Create New BOL</div>
               <div className="text-sm text-gray-500">Add a new bill of lading</div>
-            </div>
-          </Link>
-          <Link
-            href="/dashboard/reports"
-            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all hover:shadow-md"
-          >
-            <DocumentTextIcon className="h-6 w-6 text-blue-600" />
-            <div>
-              <div className="font-medium text-gray-900">My Reports</div>
-              <div className="text-sm text-gray-500">View my BOL reports</div>
             </div>
           </Link>
           <Link

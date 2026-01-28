@@ -12,6 +12,7 @@ class BOLVehicleBase(BaseModel):
 
 class BOLVehicle(BOLVehicleBase):
     id: int
+    bill_of_lading_id: int
     class Config:
         from_attributes = True
 
@@ -38,14 +39,11 @@ class BillOfLadingBase(BaseModel):
     condition_codes: Optional[str]
     remarks: Optional[str]
     pickup_agent_name: Optional[str]
-    pickup_signature: Optional[str]
     pickup_date: Optional[str]  # Accept both string and date, convert to string for response
     delivery_agent_name: Optional[str]
-    delivery_signature: Optional[str]
     delivery_date: Optional[str]  # Accept both string and date, convert to string for response
     # New receiver agent fields
     receiver_agent_name: Optional[str]
-    receiver_signature: Optional[str]
     receiver_date: Optional[str]  # Accept both string and date, convert to string for response
     # Total amount field for payment tracking
     total_amount: Optional[float]
@@ -66,8 +64,25 @@ class BillOfLadingBase(BaseModel):
             return v  # Return as string
         return v
 
+# Lightweight schema for list view (excludes signatures to improve performance)
+class BillOfLadingSummary(BillOfLadingBase):
+    """Lightweight BOL schema for list views - excludes signatures for performance"""
+    id: int
+    vehicles: List[BOLVehicle]
+    # Payment tracking fields
+    total_collected: Optional[float] = None
+    due_amount: Optional[float] = None
+    # Signatures EXCLUDED for performance - only load when viewing single BOL
+    
+    class Config:
+        from_attributes = True
+
 class BillOfLadingCreate(BillOfLadingBase):
     vehicles: List[BOLVehicleBase]
+    # Signatures are included in create
+    pickup_signature: Optional[str] = None
+    delivery_signature: Optional[str] = None
+    receiver_signature: Optional[str] = None
 
 class BillOfLading(BillOfLadingBase):
     id: int
@@ -75,6 +90,10 @@ class BillOfLading(BillOfLadingBase):
     # Payment tracking fields (calculated from transactions)
     total_collected: Optional[float] = None
     due_amount: Optional[float] = None
+    # Signatures are optional (excluded in list view for performance)
+    pickup_signature: Optional[str] = None
+    delivery_signature: Optional[str] = None
+    receiver_signature: Optional[str] = None
     
     class Config:
-        from_attributes = True 
+        from_attributes = True

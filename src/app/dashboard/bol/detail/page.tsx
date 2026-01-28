@@ -6,8 +6,6 @@ import { ArrowLeftIcon, PencilIcon, TrashIcon, ArrowDownTrayIcon } from "@heroic
 import { bolService } from "@/services/transaction";
 import { useAccessControl } from "@/hooks/useAccessControl";
 import toast from 'react-hot-toast';
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
 interface Vehicle {
   year: string;
@@ -72,303 +70,27 @@ function formatCurrency(amount?: number) {
   }).format(amount);
 }
 
-// Function to load logo as base64
-async function loadLogoAsBase64(): Promise<string | null> {
-  try {
-    const response = await fetch('/logo_ideal.png');
-    const blob = await response.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.readAsDataURL(blob);
-    });
-  } catch (error) {
-    console.error('Error loading logo:', error);
-    return null;
-  }
-}
-
 async function downloadBOLPdf(bol: BillOfLading) {
-  const doc = new jsPDF();
-  let y = -2;
-
-  // Company Header with Logo and Address on same line
   try {
-    const logoBase64 = await loadLogoAsBase64();
-    if (logoBase64) {
-      doc.addImage(logoBase64, 'JPEG', 5, y, 80, 40);
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Ideal Transportation Solutions LLC', 85, y + 12, { align: 'left' });
-      y += 12;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('16 Palmero Way, Manvel, Texas 77578', 85, y + 8, { align: 'left' });
-      y += 8;
-      doc.text('USDOT NO: 4193929', 85, y + 8, { align: 'left' });
-      y += 25;
-    } else {
-      // Fallback without logo
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Ideal Transportation Solutions LLC', 105, y, { align: 'center' });
-      y += 6;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('16 Palmero Way, Manvel, Texas 77578', 105, y, { align: 'center' });
-      y += 6;
-      doc.text('USDOT NO: 4193929', 105, y, { align: 'center' });
-      y += 8;
-    }
-  } catch (err) {
-    console.error('Error loading logo:', err);
-    // Fallback without logo
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Ideal Transportation Solutions LLC', 105, y, { align: 'center' });
-    y += 6;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('16 Palmero Way, Manvel, Texas 77578', 105, y, { align: 'center' });
-    y += 6;
-    doc.text('USDOT NO: 4193929', 105, y, { align: 'center' });
-    y += 8;
+    // Use backend API for PDF generation (consistent across all pages)
+    const blob = await bolService.downloadBOLPdf(bol.id);
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `BillOfLading_${bol.work_order_no || bol.id}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error('Error downloading PDF from API, falling back to client-side generation:', error);
+    // Fallback to client-side generation if API fails
+    const fullBol = await bolService.getBOL(bol.id);
+    const { generateBOLPdf } = await import('@/utils/bolPdfGenerator');
+    await generateBOLPdf(fullBol);
   }
-
-  // Divider line
-  doc.setDrawColor(200, 200, 200);
-  doc.line(14, y, 196, y);
-  y += 10;
-
-  // Title
-  doc.setFontSize(18);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Bill of Lading', 105, y, { align: 'center' });
-  y += 15;
-
-  // Report Details Box
-  doc.setDrawColor(59, 130, 246);
-  doc.setFillColor(239, 246, 255);
-  doc.roundedRect(14, y, 182, 25, 3, 3, 'FD');
-  y += 8;
-
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Driver: ' + String(bol.driver_name ?? ''), 20, y);
-  doc.text('Date: ' + String(formatDate(bol.date) ?? ''), 120, y);
-  y += 8;
-  doc.text('Work Order No: ' + String(bol.work_order_no ?? ''), 20, y);
-  doc.text('Generated: ' + new Date().toLocaleDateString(), 120, y);
-  y += 8;
-
-  // Add broker information if available
-  if (bol.broker_name || bol.broker_address || bol.broker_phone) {
-    doc.text('Broker: ' + String(bol.broker_name ?? ''), 20, y);
-    doc.text('Phone: ' + String(bol.broker_phone ?? ''), 120, y);
-    y += 6;
-    if (bol.broker_address) {
-      doc.text('Address: ' + String(bol.broker_address), 20, y);
-      y += 6;
-    }
-  }
-  y += 15;
-
-  // Check page overflow before Pickup Section
-  if (y > 250) {
-    doc.addPage();
-    y = 20;
-  }
-
-  // Pickup Section
-  doc.setDrawColor(59, 130, 246);
-  doc.setFillColor(239, 246, 255);
-  doc.roundedRect(14, y, 182, 45, 3, 3, 'FD');
-  y += 8;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Pick Up', 20, y);
-  y += 8;
-  doc.setFont('helvetica', 'normal');
-  doc.text('Name: ' + String(bol.pickup_name ?? ''), 25, y);
-  doc.text('Phone: ' + String(bol.pickup_phone ?? ''), 100, y);
-  y += 6;
-  doc.text('Address: ' + String(bol.pickup_address ?? ''), 25, y);
-  y += 6;
-  doc.text('City: ' + String(bol.pickup_city ?? '') + '  State: ' + String(bol.pickup_state ?? '') + '  Zip: ' + String(bol.pickup_zip ?? ''), 25, y);
-  y += 20;
-
-  // Check page overflow before Delivery Section
-  if (y > 250) {
-    doc.addPage();
-    y = 20;
-  }
-
-  // Delivery Section
-  doc.setDrawColor(59, 130, 246);
-  doc.setFillColor(248, 250, 252);
-  doc.roundedRect(14, y, 182, 45, 3, 3, 'FD');
-  y += 8;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Delivery', 20, y);
-  y += 8;
-  doc.setFont('helvetica', 'normal');
-  doc.text('Name: ' + String(bol.delivery_name ?? ''), 25, y);
-  doc.text('Phone: ' + String(bol.delivery_phone ?? ''), 100, y);
-  y += 6;
-  doc.text('Address: ' + String(bol.delivery_address ?? ''), 25, y);
-  y += 6;
-  doc.text('City: ' + String(bol.delivery_city ?? '') + '  State: ' + String(bol.delivery_state ?? '') + '  Zip: ' + String(bol.delivery_zip ?? ''), 25, y);
-  y += 20;
-
-  // Check page overflow before Vehicles Section
-  if (y > 250) {
-    doc.addPage();
-    y = 20;
-  }
-
-  // Vehicles Section
-  const vehicleTableHeight = Math.max(30, (bol.vehicles.length + 1) * 8);
-  doc.setDrawColor(59, 130, 246);
-  doc.setFillColor(239, 246, 255);
-  doc.roundedRect(14, y, 182, vehicleTableHeight + 10, 3, 3, 'FD');
-  y += 8;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Vehicles', 20, y);
-  y += 2;
-
-  // Check if we need a new page for the vehicle table
-  const estimatedTableHeight = (bol.vehicles.length + 1) * 8;
-  if (y + estimatedTableHeight > 270) {
-    doc.addPage();
-    y = 20;
-    doc.setDrawColor(59, 130, 246);
-    doc.setFillColor(239, 246, 255);
-    doc.roundedRect(14, y, 182, vehicleTableHeight + 10, 3, 3, 'FD');
-    y += 8;
-    doc.setFont('helvetica', 'bold');
-    doc.text('Vehicles', 20, y);
-    y += 2;
-  }
-
-  autoTable(doc, {
-    startY: y,
-    head: [['Year', 'Make', 'Model', 'VIN', 'Mileage', 'Price']],
-    body: bol.vehicles.map((v) => [v.year, v.make, v.model, v.vin, v.mileage, v.price]),
-    theme: 'grid',
-    headStyles: { fillColor: [59, 130, 246] },
-    styles: { fontSize: 9 },
-    margin: { left: 20, right: 20 },
-    didDrawPage: function (data) {
-      doc.setFontSize(8);
-      doc.text('Page ' + doc.getCurrentPageInfo().pageNumber, 105, 280, { align: 'center' });
-    }
-  });
-  y = (doc as any).lastAutoTable.finalY + 15;
-
-  // Check page overflow before Condition Codes Section
-  if (y > 250) {
-    doc.addPage();
-    y = 20;
-  }
-
-  // Condition Codes Section
-  if (bol.condition_codes) {
-    doc.setDrawColor(59, 130, 246);
-    doc.setFillColor(248, 250, 252);
-    doc.roundedRect(14, y, 182, 25, 3, 3, 'FD');
-    y += 8;
-    doc.setFont('helvetica', 'bold');
-    doc.text('Condition Codes', 20, y);
-    y += 8;
-    doc.setFont('helvetica', 'normal');
-    doc.text(String(bol.condition_codes ?? ''), 25, y);
-    y += 15;
-  }
-
-  // Check page overflow before Remarks Section
-  if (y > 250) {
-    doc.addPage();
-    y = 20;
-  }
-
-  // Remarks Section
-  if (bol.remarks) {
-    doc.setDrawColor(59, 130, 246);
-    doc.setFillColor(239, 246, 255);
-    doc.roundedRect(14, y, 182, 30, 3, 3, 'FD');
-    y += 8;
-    doc.setFont('helvetica', 'bold');
-    doc.text('Remarks', 20, y);
-    y += 8;
-    doc.setFont('helvetica', 'normal');
-    doc.text(String(bol.remarks ?? ''), 25, y, { maxWidth: 160 });
-    y += 15;
-  }
-
-  // Check page overflow before Signatures Section
-  if (y > 250) {
-    doc.addPage();
-    y = 20;
-  }
-
-  // Signatures Section
-  const signatureBoxHeight = 70 + (bol.receiver_agent_name || bol.receiver_signature || bol.receiver_date ? 40 : 0);
-  doc.setDrawColor(59, 130, 246);
-  doc.setFillColor(248, 250, 252);
-  doc.roundedRect(14, y, 182, signatureBoxHeight, 3, 3, 'FD');
-  y += 8;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Signatures', 20, y);
-  y += 8;
-  doc.setFont('helvetica', 'normal');
-  doc.text('Pickup Agent: ' + String(bol.pickup_agent_name ?? ''), 25, y);
-  doc.text('Date: ' + String(formatDate(bol.pickup_date) ?? ''), 100, y);
-  y += 2;
-  if (bol.pickup_signature && typeof bol.pickup_signature === 'string') {
-    try {
-      const base64Data = bol.pickup_signature.split(',')[1] || bol.pickup_signature;
-      doc.addImage(base64Data, 'PNG', 25, y + 2, 40, 16);
-    } catch (err) {
-      console.error('Error adding pickup signature:', err);
-    }
-  }
-  y += 25;
-  doc.text('Delivery Agent: ' + String(bol.delivery_agent_name ?? ''), 25, y);
-  doc.text('Date: ' + String(formatDate(bol.delivery_date) ?? ''), 100, y);
-  y += 2;
-  if (bol.delivery_signature && typeof bol.delivery_signature === 'string') {
-    try {
-      const base64Data = bol.delivery_signature.split(',')[1] || bol.delivery_signature;
-      doc.addImage(base64Data, 'PNG', 25, y + 2, 40, 16);
-    } catch (err) {
-      console.error('Error adding delivery signature:', err);
-    }
-  }
-  y += 25;
-  if (bol.receiver_agent_name || bol.receiver_signature || bol.receiver_date) {
-    doc.text('Receiver Agent: ' + String(bol.receiver_agent_name ?? ''), 25, y);
-    doc.text('Date: ' + String(formatDate(bol.receiver_date) ?? ''), 100, y);
-    y += 2;
-    if (bol.receiver_signature && typeof bol.receiver_signature === 'string') {
-      try {
-        const base64Data = bol.receiver_signature.split(',')[1] || bol.receiver_signature;
-        doc.addImage(base64Data, 'PNG', 25, y + 2, 40, 16);
-      } catch (err) {
-        console.error('Error adding receiver signature:', err);
-      }
-    }
-    y += 25;
-  }
-
-  // Footer
-  doc.setDrawColor(200, 200, 200);
-  doc.line(14, y, 196, y);
-  y += 8;
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.text('This report was generated by Ideal Transportation Solutions LLC', 105, y, { align: 'center' });
-
-  doc.save(`BillOfLading_${bol.id}.pdf`);
 }
+
 
 function BOLDetailContent() {
   const { currentUser, loading: accessLoading, hasAccess, isSuperuser } = useAccessControl();
