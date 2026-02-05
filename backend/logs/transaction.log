@@ -1290,3 +1290,15 @@ sqlalchemy.exc.ArgumentError: Column expression, FROM clause, or other columns c
 2026-01-28 09:36:16 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
 2026-01-28 09:36:17 - routers.transaction - INFO - Found 306 transactions with broker information
 2026-01-28 09:36:17 - routers.transaction - INFO - Found 306 transactions with broker information
+2026-01-29 00:05:01 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-29 00:05:01 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-29 00:05:02 - routers.transaction - INFO - Found 307 transactions with broker information
+2026-01-29 00:05:02 - routers.transaction - INFO - Found 307 transactions with broker information
+2026-01-29 00:12:54 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-29 00:12:55 - routers.transaction - INFO - Found 307 transactions with broker information
+2026-01-29 00:12:55 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-29 00:12:56 - routers.transaction - INFO - Found 307 transactions with broker information
+2026-01-29 00:13:50 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-29 00:13:51 - routers.transaction - INFO - Found 307 transactions with broker information
+2026-01-29 00:13:51 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-01-29 00:13:52 - routers.transaction - INFO - Found 307 transactions with broker information

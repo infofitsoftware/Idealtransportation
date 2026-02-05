@@ -72,7 +72,7 @@ export default function PaymentMethodSelect({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
         Payment Type
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -91,14 +91,14 @@ export default function PaymentMethodSelect({
               className={`
                 flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all
                 ${isSelected 
-                  ? `${method.bgColor} ${method.borderColor} border-2 ring-2 ring-offset-2 ${method.color.replace('text-', 'ring-')}` 
-                  : 'bg-white border-gray-200 hover:border-gray-300'
+                  ? `${method.bgColor} ${method.borderColor} border-2 ring-2 ring-offset-2 dark:ring-offset-gray-800 ${method.color.replace('text-', 'ring-')} dark:bg-gray-700 dark:border-gray-500` 
+                  : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-900 dark:text-gray-100'
                 }
                 ${error && touched ? 'border-red-500' : ''}
               `}
             >
-              <Icon className={`h-6 w-6 mb-1 ${isSelected ? method.color : 'text-gray-400'}`} />
-              <span className={`text-xs font-medium ${isSelected ? method.color : 'text-gray-600'}`}>
+              <Icon className={`h-6 w-6 mb-1 ${isSelected ? method.color : 'text-gray-400 dark:text-gray-500'}`} />
+              <span className={`text-xs font-medium ${isSelected ? method.color : 'text-gray-600 dark:text-gray-300'}`}>
                 {method.label}
               </span>
             </button>
@@ -111,7 +111,7 @@ export default function PaymentMethodSelect({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={`
-          input w-full
+          input w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600
           ${error && touched ? 'border-red-500' : ''}
         `}
         required={required}
@@ -125,7 +125,7 @@ export default function PaymentMethodSelect({
       </select>
 
       {error && touched && (
-        <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+        <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
           <ExclamationCircleIcon className="h-4 w-4" />
           {error}
         </p>

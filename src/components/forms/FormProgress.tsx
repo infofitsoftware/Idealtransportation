@@ -15,7 +15,7 @@ export default function FormProgress({ currentStep, totalSteps, steps }: FormPro
   return (
     <div className="mb-6">
       {/* Progress Bar */}
-      <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+      <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5 mb-4">
         <div
           className="bg-gradient-to-r from-blue-500 to-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out"
           style={{ width: `${progressPercentage}%` }}
@@ -35,8 +35,8 @@ export default function FormProgress({ currentStep, totalSteps, steps }: FormPro
                   step.completed
                     ? 'bg-blue-600 border-blue-600 text-white'
                     : index + 1 === currentStep
-                    ? 'bg-blue-100 border-blue-600 text-blue-600'
-                    : 'bg-white border-gray-300 text-gray-400'
+                    ? 'bg-blue-100 dark:bg-blue-900/40 border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300'
+                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500'
                 }`}
               >
                 {step.completed ? (
@@ -48,9 +48,9 @@ export default function FormProgress({ currentStep, totalSteps, steps }: FormPro
               {/* Connector Line */}
               {index < steps.length - 1 && (
                 <div
-                  className={`flex-1 h-0.5 mx-2 transition-all ${
-                    step.completed ? 'bg-blue-600' : 'bg-gray-300'
-                  }`}
+                className={`flex-1 h-0.5 mx-2 transition-all ${
+                  step.completed ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+                }`}
                 />
               )}
             </div>
@@ -59,8 +59,8 @@ export default function FormProgress({ currentStep, totalSteps, steps }: FormPro
               <p
                 className={`text-xs font-medium ${
                   step.completed || index + 1 === currentStep
-                    ? 'text-blue-600'
-                    : 'text-gray-500'
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : 'text-gray-500 dark:text-gray-400'
                 }`}
               >
                 {step.label}

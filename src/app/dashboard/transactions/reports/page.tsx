@@ -395,9 +395,9 @@ export default function TransactionReportsPage() {
   // Access control check
   if (accessLoading) {
     return (
-      <div className="max-w-7xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
+      <div className="max-w-7xl mx-auto p-6 bg-white dark:bg-gray-800 shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100 dark:border-gray-700">
         <div className="text-center py-8">
-          <div className="text-gray-500">Checking access permissions...</div>
+          <div className="text-gray-500 dark:text-gray-400">Checking access permissions...</div>
         </div>
       </div>
     );
@@ -405,14 +405,14 @@ export default function TransactionReportsPage() {
 
   if (!hasAccess) {
     return (
-      <div className="max-w-7xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-red-100">
+      <div className="max-w-7xl mx-auto p-6 bg-white dark:bg-gray-800 shadow-xl rounded-2xl mt-8 mb-8 border border-red-100 dark:border-red-900/50">
         <div className="text-center py-8">
-          <ShieldExclamationIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-red-700 mb-2">Access Denied</h1>
-          <p className="text-gray-600 mb-4">
+          <ShieldExclamationIcon className="h-16 w-16 text-red-500 dark:text-red-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-red-700 dark:text-red-300 mb-2">Access Denied</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
             You don't have permission to access this page. Only authorized users can view reports.
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Current user: {currentUser?.email || 'Not logged in'}
           </p>
         </div>
@@ -421,14 +421,14 @@ export default function TransactionReportsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100">
+    <div className="max-w-7xl mx-auto p-6 bg-white dark:bg-gray-800 shadow-xl rounded-2xl mt-8 mb-8 border border-blue-100 dark:border-gray-700">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight flex items-center gap-2">
-          <DocumentTextIcon className="h-8 w-8 text-blue-500" /> Transaction Reports
+        <h1 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 tracking-tight flex items-center gap-2">
+          <DocumentTextIcon className="h-8 w-8 text-blue-500 dark:text-blue-400" /> Transaction Reports
         </h1>
         <div className="flex items-center gap-4">
           {isSuperuser && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300">
               Superuser Access
             </span>
           )}
@@ -437,8 +437,8 @@ export default function TransactionReportsPage() {
             disabled={filteredData.length === 0}
             className={`px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 ${
               filteredData.length === 0
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
+                ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                : 'bg-green-600 text-white hover:bg-green-700 dark:hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800'
             }`}
           >
             <ArrowDownTrayIcon className="h-5 w-5" />
@@ -448,11 +448,11 @@ export default function TransactionReportsPage() {
       </div>
 
       {/* Filters */}
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Filter Options</h2>
+      <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Filter Options</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <div>
-            <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               From Date
             </label>
             <input
@@ -460,11 +460,11 @@ export default function TransactionReportsPage() {
               id="fromDate"
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
           <div>
-            <label htmlFor="toDate" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="toDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               To Date
             </label>
             <input
@@ -472,11 +472,11 @@ export default function TransactionReportsPage() {
               id="toDate"
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
           <div>
-            <label htmlFor="workOrderFilter" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="workOrderFilter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Work Order Number
             </label>
             <input
@@ -485,20 +485,20 @@ export default function TransactionReportsPage() {
               value={workOrderFilter}
               onChange={(e) => setWorkOrderFilter(e.target.value)}
               placeholder="Enter work order number..."
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
           <div>
             <button
               onClick={clearFilters}
-              className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
             >
               Clear Filters
             </button>
           </div>
         </div>
         {(fromDate || toDate || workOrderFilter) && (
-          <div className="mt-3 text-sm text-gray-600">
+          <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
             Showing {filteredData.length} of {data.length} transactions
             {fromDate && toDate && ` from ${fromDate} to ${toDate}`}
             {fromDate && !toDate && ` from ${fromDate}`}
@@ -510,52 +510,52 @@ export default function TransactionReportsPage() {
 
       {/* Payment Statistics */}
       {filteredData.length > 0 && (
-        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Payment Summary</h2>
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-gray-600">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Payment Summary</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white p-3 rounded-lg border border-blue-200">
-              <div className="text-sm text-gray-600">Total Transactions</div>
-              <div className="text-2xl font-bold text-blue-600">{paymentStats.totalTransactions}</div>
+            <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-blue-200 dark:border-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total Transactions</div>
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{paymentStats.totalTransactions}</div>
             </div>
-            <div className="bg-white p-3 rounded-lg border border-green-200">
-              <div className="text-sm text-gray-600">Total Collected</div>
-              <div className="text-2xl font-bold text-green-600">{formatCurrency(paymentStats.totalCollected)}</div>
+            <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-green-200 dark:border-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total Collected</div>
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(paymentStats.totalCollected)}</div>
             </div>
-            <div className="bg-white p-3 rounded-lg border border-red-200">
-              <div className="text-sm text-gray-600">Total Due</div>
-              <div className="text-2xl font-bold text-red-600">{formatCurrency(paymentStats.totalDue)}</div>
+            <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-red-200 dark:border-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total Due</div>
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{formatCurrency(paymentStats.totalDue)}</div>
             </div>
-            <div className="bg-white p-3 rounded-lg border border-purple-200">
-              <div className="text-sm text-gray-600">Completion Rate</div>
-              <div className="text-2xl font-bold text-purple-600">{paymentStats.completionPercentage}%</div>
+            <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-purple-200 dark:border-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">Completion Rate</div>
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{paymentStats.completionPercentage}%</div>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <div className="bg-green-100 p-3 rounded-lg border border-green-300">
-              <div className="text-sm text-green-700">Fully Paid</div>
-              <div className="text-lg font-bold text-green-800">{paymentStats.fullyPaidCount} transactions</div>
+            <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-lg border border-green-300 dark:border-green-800">
+              <div className="text-sm text-green-700 dark:text-green-300">Fully Paid</div>
+              <div className="text-lg font-bold text-green-800 dark:text-green-200">{paymentStats.fullyPaidCount} transactions</div>
             </div>
-            <div className="bg-yellow-100 p-3 rounded-lg border border-yellow-300">
-              <div className="text-sm text-yellow-700">Partially Paid</div>
-              <div className="text-lg font-bold text-yellow-800">{paymentStats.partiallyPaidCount} transactions</div>
+            <div className="bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-lg border border-yellow-300 dark:border-yellow-800">
+              <div className="text-sm text-yellow-700 dark:text-yellow-300">Partially Paid</div>
+              <div className="text-lg font-bold text-yellow-800 dark:text-yellow-200">{paymentStats.partiallyPaidCount} transactions</div>
             </div>
-            <div className="bg-red-100 p-3 rounded-lg border border-red-300">
-              <div className="text-sm text-red-700">Pending Payment</div>
-              <div className="text-lg font-bold text-red-800">{paymentStats.pendingCount} transactions</div>
+            <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-lg border border-red-300 dark:border-red-800">
+              <div className="text-sm text-red-700 dark:text-red-300">Pending Payment</div>
+              <div className="text-lg font-bold text-red-800 dark:text-red-200">{paymentStats.pendingCount} transactions</div>
             </div>
           </div>
         </div>
       )}
 
       {loading ? (
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-gray-500 dark:text-gray-400">Loading...</div>
       ) : error ? (
-        <div className="text-red-600">{error}</div>
+        <div className="text-red-600 dark:text-red-400">{error}</div>
       ) : (
-                 <div className="overflow-auto max-h-96 border border-gray-200 rounded-lg">
+                 <div className="overflow-auto max-h-96 border border-gray-200 dark:border-gray-600 rounded-lg">
            <table className="min-w-full border-collapse text-sm">
              <thead className="sticky top-0 z-10">
-               <tr className="bg-blue-100 text-blue-800">
+               <tr className="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200">
                  <th className="border px-3 py-2 text-left min-w-[120px] whitespace-nowrap">Date</th>
                  <th className="border px-3 py-2 text-left min-w-[140px] whitespace-nowrap">Work Order</th>
                  <th className="border px-3 py-2 text-left min-w-[180px] whitespace-nowrap">Broker</th>
@@ -571,37 +571,37 @@ export default function TransactionReportsPage() {
              </thead>
              <tbody>
                {filteredData.map((transaction) => (
-                 <tr key={transaction.id} className="hover:bg-blue-50">
-                   <td className="border px-3 py-2 whitespace-nowrap">{formatDate(transaction.date)}</td>
-                   <td className="border px-3 py-2 font-medium whitespace-nowrap">{transaction.work_order_no}</td>
-                   <td className="border px-3 py-2">
-                     <div className="font-semibold whitespace-nowrap">{transaction.broker_name || 'N/A'}</div>
-                     <div className="text-xs text-gray-500 whitespace-nowrap">{transaction.broker_phone}</div>
+                 <tr key={transaction.id} className="hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                   <td className="border dark:border-gray-600 px-3 py-2 whitespace-nowrap text-gray-900 dark:text-gray-100">{formatDate(transaction.date)}</td>
+                   <td className="border dark:border-gray-600 px-3 py-2 font-medium whitespace-nowrap text-gray-900 dark:text-gray-100">{transaction.work_order_no}</td>
+                   <td className="border dark:border-gray-600 px-3 py-2">
+                     <div className="font-semibold whitespace-nowrap text-gray-900 dark:text-gray-100">{transaction.broker_name || 'N/A'}</div>
+                     <div className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{transaction.broker_phone}</div>
                    </td>
-                   <td className="border px-3 py-2 whitespace-nowrap">{transaction.bol_id}</td>
-                   <td className="border px-3 py-2 whitespace-nowrap">{transaction.pickup_location}</td>
-                   <td className="border px-3 py-2 whitespace-nowrap">{transaction.dropoff_location}</td>
-                   <td className="border px-3 py-2 whitespace-nowrap">{transaction.payment_type}</td>
-                   <td className="border px-3 py-2 font-medium text-green-600 whitespace-nowrap">{formatCurrency(transaction.collected_amount)}</td>
-                   <td className="border px-3 py-2 font-medium text-red-600 whitespace-nowrap">{formatCurrency(transaction.due_amount)}</td>
-                   <td className="border px-3 py-2">
+                   <td className="border dark:border-gray-600 px-3 py-2 whitespace-nowrap text-gray-900 dark:text-gray-100">{transaction.bol_id}</td>
+                   <td className="border dark:border-gray-600 px-3 py-2 whitespace-nowrap text-gray-900 dark:text-gray-100">{transaction.pickup_location}</td>
+                   <td className="border dark:border-gray-600 px-3 py-2 whitespace-nowrap text-gray-900 dark:text-gray-100">{transaction.dropoff_location}</td>
+                   <td className="border dark:border-gray-600 px-3 py-2 whitespace-nowrap text-gray-900 dark:text-gray-100">{transaction.payment_type}</td>
+                   <td className="border dark:border-gray-600 px-3 py-2 font-medium text-green-600 dark:text-green-400 whitespace-nowrap">{formatCurrency(transaction.collected_amount)}</td>
+                   <td className="border dark:border-gray-600 px-3 py-2 font-medium text-red-600 dark:text-red-400 whitespace-nowrap">{formatCurrency(transaction.due_amount)}</td>
+                   <td className="border dark:border-gray-600 px-3 py-2">
                      {transaction.due_amount <= 0 ? (
-                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap">
+                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 whitespace-nowrap">
                          Paid
                        </span>
                      ) : transaction.collected_amount > 0 ? (
-                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 whitespace-nowrap">
+                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 whitespace-nowrap">
                          Partial
                        </span>
                      ) : (
-                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 whitespace-nowrap">
+                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 whitespace-nowrap">
                          Pending
                        </span>
                      )}
                    </td>
-                   <td className="border px-3 py-2 text-center">
+                   <td className="border dark:border-gray-600 px-3 py-2 text-center">
                      <button
-                       className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition flex items-center gap-1 mx-auto whitespace-nowrap"
+                       className="bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 dark:hover:bg-blue-500 transition flex items-center gap-1 mx-auto whitespace-nowrap"
                        onClick={async () => await downloadTransactionPdf(transaction)}
                      >
                        <ArrowDownTrayIcon className="h-5 w-5" /> Download

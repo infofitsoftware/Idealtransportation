@@ -26,7 +26,7 @@ export default function FieldValidation({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -35,23 +35,23 @@ export default function FieldValidation({
         {children}
         {showError && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+            <ExclamationCircleIcon className="h-5 w-5 text-red-500 dark:text-red-400" />
           </div>
         )}
         {showSuccess && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <CheckCircleIcon className="h-5 w-5 text-green-500" />
+            <CheckCircleIcon className="h-5 w-5 text-green-500 dark:text-green-400" />
           </div>
         )}
       </div>
       {showError && (
-        <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+        <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
           <ExclamationCircleIcon className="h-4 w-4" />
           {error}
         </p>
       )}
       {showSuccess && (
-        <p className="mt-1 text-sm text-green-600 flex items-center gap-1">
+        <p className="mt-1 text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
           <CheckCircleIcon className="h-4 w-4" />
           {success}
         </p>

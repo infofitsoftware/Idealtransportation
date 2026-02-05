@@ -13,18 +13,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col lg:ml-0">
         <button
-          className="lg:hidden fixed top-4 left-4 z-50 bg-white rounded-lg shadow-lg p-2.5 border border-gray-200 hover:bg-gray-50 transition-all"
+          className="lg:hidden fixed top-4 left-4 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2.5 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
           onClick={() => setSidebarOpen(true)}
           aria-label="Open sidebar"
         >
-          <Bars3Icon className="h-6 w-6 text-gray-700" />
+          <Bars3Icon className="h-6 w-6 text-gray-700 dark:text-gray-100" />
         </button>
         <Header />
-        <main className="flex-1 py-8 bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <main className="flex-1 py-8 bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {children}
           </div>

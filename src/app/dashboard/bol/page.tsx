@@ -68,14 +68,14 @@ function SectionHeader({
       onClick={onToggle}
     >
       <div className="flex items-center gap-2">
-        <Icon className="h-6 w-6 text-blue-600" />
-        <h2 className="text-lg font-semibold text-gray-800 tracking-tight">{title}</h2>
+        <Icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 tracking-tight">{title}</h2>
       </div>
       {onToggle && (
         isCollapsed ? (
-          <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+          <ChevronDownIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
         ) : (
-          <ChevronUpIcon className="h-5 w-5 text-gray-400" />
+          <ChevronUpIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
         )
       )}
     </div>
@@ -97,8 +97,8 @@ function SignaturePad({ value, onChange, label }: { value: string; onChange: (da
   };
   return (
     <div className="mb-2">
-      <label className="block font-medium mb-1 text-gray-700">{label}</label>
-      <div className="border-2 border-blue-200 rounded bg-gray-50 overflow-hidden" style={{ width: '100%', maxWidth: 300, height: 100 }}>
+      <label className="block font-medium mb-1 text-gray-700 dark:text-gray-100">{label}</label>
+      <div className="border-2 border-blue-200 dark:border-blue-700 rounded bg-gray-50 dark:bg-gray-700 overflow-hidden" style={{ width: '100%', maxWidth: 300, height: 100 }}>
         <SignatureCanvas
           ref={sigRef}
           penColor="#2563eb"
@@ -108,13 +108,13 @@ function SignaturePad({ value, onChange, label }: { value: string; onChange: (da
         />
       </div>
       <div className="flex gap-2 mt-1">
-        <button type="button" onClick={clear} className="text-sm text-blue-600 underline">Clear</button>
+        <button type="button" onClick={clear} className="text-sm text-blue-600 dark:text-blue-400 underline">Clear</button>
         {value && (
-          <span className="text-green-600 text-xs">Signature captured</span>
+          <span className="text-green-600 dark:text-green-400 text-xs">Signature captured</span>
         )}
       </div>
       {value && (
-        <img src={value} alt="Signature preview" className="mt-2 border rounded bg-white" style={{ width: 150, height: 50 }} />
+        <img src={value} alt="Signature preview" className="mt-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-800" style={{ width: 150, height: 50 }} />
       )}
     </div>
   );
@@ -430,18 +430,18 @@ export default function BillOfLadingForm() {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-white shadow-xl rounded-2xl mt-4 sm:mt-8 mb-4 sm:mb-8 border border-blue-100">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-gray-800 shadow-xl rounded-2xl mt-4 sm:mt-8 mb-4 sm:mb-8 border border-blue-100 dark:border-gray-700">
       <FormHeader />
       
       <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-extrabold mb-2 text-blue-700 tracking-tight flex items-center gap-2">
-          <DocumentTextIcon className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" /> Bill of Lading
+        <h1 className="text-2xl sm:text-3xl font-extrabold mb-2 text-blue-700 dark:text-blue-400 tracking-tight flex items-center gap-2">
+          <DocumentTextIcon className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 dark:text-blue-400" /> Bill of Lading
         </h1>
-        <p className="text-sm sm:text-base text-gray-500">Fill out the form below to create a new Bill of Lading.</p>
+        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Fill out the form below to create a new Bill of Lading.</p>
       </div>
 
       {/* Form Progress Indicator */}
-      <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+      <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-gray-600">
         <FormProgress 
           currentStep={currentStep} 
           totalSteps={totalSteps} 
@@ -450,13 +450,13 @@ export default function BillOfLadingForm() {
       </div>
 
       {/* Total Amount Display */}
-      <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 flex items-center justify-between">
+      <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-gray-600 flex items-center justify-between">
         <div>
-          <span className="text-sm font-medium text-gray-700">Total Amount:</span>
-          <span className="text-2xl sm:text-3xl font-bold text-green-700 ml-3">${totalAmount.toFixed(2)}</span>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Amount:</span>
+          <span className="text-2xl sm:text-3xl font-bold text-green-700 dark:text-green-400 ml-3">${totalAmount.toFixed(2)}</span>
         </div>
         {vehicles.length > 0 && vehicles.some(v => v.price) && (
-          <div className="text-xs text-gray-600">
+          <div className="text-xs text-gray-600 dark:text-gray-400">
             {vehicles.filter(v => v.price).length} vehicle{vehicles.filter(v => v.price).length !== 1 ? 's' : ''}
           </div>
         )}
@@ -464,7 +464,7 @@ export default function BillOfLadingForm() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information Section */}
-        <div className="bg-blue-50 rounded-lg p-4 sm:p-6 border border-blue-100">
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 sm:p-6 border border-blue-100 dark:border-gray-600">
           <SectionHeader icon={DocumentTextIcon} title="Basic Information" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FieldValidation
@@ -487,7 +487,7 @@ export default function BillOfLadingForm() {
               required
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1 flex items-center gap-1">
                   <CalendarDaysIcon className="h-4 w-4 text-blue-400" />
                   Date <span className="text-red-500">*</span>
                 </label>
@@ -509,7 +509,7 @@ export default function BillOfLadingForm() {
               required
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1 flex items-center gap-1">
                   <PencilSquareIcon className="h-4 w-4 text-blue-400" />
                   Work Order No. <span className="text-red-500">*</span>
                 </label>
@@ -523,7 +523,7 @@ export default function BillOfLadingForm() {
                   placeholder="Enter work order number"
                 />
                 {checkingWorkOrder && (
-                  <span className="text-xs text-gray-500 mt-1 block">Checking uniqueness...</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">Checking uniqueness...</span>
                 )}
               </div>
             </FieldValidation>
@@ -531,7 +531,7 @@ export default function BillOfLadingForm() {
         </div>
 
         {/* Broker Information - Collapsible */}
-        <div className="bg-green-50 rounded-lg p-4 sm:p-6 border border-green-100">
+        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 sm:p-6 border border-green-100 dark:border-gray-600">
           <SectionHeader
             icon={BuildingOffice2Icon}
             title="Broker Information"
@@ -541,7 +541,7 @@ export default function BillOfLadingForm() {
           {!collapsedSections.broker && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1 flex items-center gap-1">
                   <BuildingOffice2Icon className="h-4 w-4 text-green-400" />
                   Broker Name
                 </label>
@@ -555,7 +555,7 @@ export default function BillOfLadingForm() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1 flex items-center gap-1">
                   <BuildingOffice2Icon className="h-4 w-4 text-green-400" />
                   Broker Address
                 </label>
@@ -569,7 +569,7 @@ export default function BillOfLadingForm() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1 flex items-center gap-1">
                   <PhoneIcon className="h-4 w-4 text-green-400" />
                   Broker Phone
                 </label>
@@ -588,7 +588,7 @@ export default function BillOfLadingForm() {
 
         {/* Pickup & Delivery - Collapsible */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          <div className="border border-blue-100 rounded-lg p-4 bg-gray-50">
+          <div className="border border-blue-100 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50">
             <SectionHeader
               icon={BuildingOffice2Icon}
               title="Pick Up"
@@ -659,7 +659,7 @@ export default function BillOfLadingForm() {
             )}
           </div>
           
-          <div className="border border-blue-100 rounded-lg p-4 bg-gray-50">
+          <div className="border border-blue-100 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50">
             <SectionHeader
               icon={BuildingOffice2Icon}
               title="Delivery"
@@ -732,7 +732,7 @@ export default function BillOfLadingForm() {
         </div>
 
         {/* Vehicles - Collapsible */}
-        <div className="border border-blue-100 rounded-lg p-4 bg-blue-50">
+        <div className="border border-blue-100 dark:border-gray-600 rounded-lg p-4 bg-blue-50 dark:bg-blue-900/20">
           <SectionHeader
             icon={TruckIcon}
             title="Vehicles"
@@ -745,7 +745,7 @@ export default function BillOfLadingForm() {
               <div className="overflow-x-auto -mx-4 hidden md:block">
                 <table className="min-w-[700px] border mb-2 text-sm mx-4">
                   <thead>
-                    <tr className="bg-blue-100 text-blue-800">
+                    <tr className="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200">
                       <th className="border px-2 py-1">Year</th>
                       <th className="border px-2 py-1">Make</th>
                       <th className="border px-2 py-1">Model</th>
@@ -757,7 +757,7 @@ export default function BillOfLadingForm() {
                   </thead>
                   <tbody>
                     {vehicles.map((v, idx) => (
-                      <tr key={idx} className="hover:bg-blue-50">
+                      <tr key={idx} className="hover:bg-blue-50 dark:hover:bg-blue-900/30">
                         <td className="border px-2 py-1">
                           <input
                             name="year"
@@ -817,7 +817,7 @@ export default function BillOfLadingForm() {
                             <button
                               type="button"
                               onClick={() => removeVehicle(idx)}
-                              className="text-red-500 font-bold hover:text-red-700 transition-colors"
+                              className="text-red-500 dark:text-red-400 font-bold hover:text-red-700 dark:hover:text-red-300 transition-colors"
                             >
                               X
                             </button>
@@ -831,10 +831,10 @@ export default function BillOfLadingForm() {
               {/* Mobile stacked card view */}
               <div className="block md:hidden space-y-4">
                 {vehicles.map((v, idx) => (
-                  <div key={idx} className="bg-white rounded-lg shadow p-3 border border-blue-100">
+                  <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg shadow p-3 border border-blue-100 dark:border-gray-600">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Year</label>
+                        <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Year</label>
                         <input
                           name="year"
                           value={v.year}
@@ -844,7 +844,7 @@ export default function BillOfLadingForm() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Make</label>
+                        <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Make</label>
                         <input
                           name="make"
                           value={v.make}
@@ -854,7 +854,7 @@ export default function BillOfLadingForm() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Model</label>
+                        <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Model</label>
                         <input
                           name="model"
                           value={v.model}
@@ -864,7 +864,7 @@ export default function BillOfLadingForm() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">VIN</label>
+                        <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">VIN</label>
                         <input
                           name="vin"
                           value={v.vin}
@@ -874,7 +874,7 @@ export default function BillOfLadingForm() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Mileage</label>
+                        <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Mileage</label>
                         <input
                           name="mileage"
                           value={v.mileage}
@@ -883,7 +883,7 @@ export default function BillOfLadingForm() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Price</label>
+                        <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Price</label>
                         <input
                           name="price"
                           value={v.price}
@@ -898,7 +898,7 @@ export default function BillOfLadingForm() {
                       <button
                         type="button"
                         onClick={() => removeVehicle(idx)}
-                        className="text-red-500 font-bold text-sm hover:text-red-700 transition-colors"
+                        className="text-red-500 dark:text-red-400 font-bold text-sm hover:text-red-700 dark:hover:text-red-300 transition-colors"
                       >
                         Remove
                       </button>
@@ -918,7 +918,7 @@ export default function BillOfLadingForm() {
         </div>
 
         {/* Condition Codes - Collapsible */}
-        <div className="border border-blue-100 rounded-lg p-4 bg-gray-50">
+        <div className="border border-blue-100 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50">
           <SectionHeader
             icon={DocumentTextIcon}
             title="Condition Codes"
@@ -928,7 +928,7 @@ export default function BillOfLadingForm() {
           {!collapsedSections.conditionCodes && (
             <div className="flex flex-wrap gap-3">
               {conditionCodes.map(({ code, label }) => (
-                <label key={code} className="flex items-center gap-1 text-gray-700 cursor-pointer hover:bg-blue-50 p-2 rounded transition-colors">
+                <label key={code} className="flex items-center gap-1 text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 p-2 rounded transition-colors">
                   <input
                     type="checkbox"
                     checked={form.condition_codes.includes(code)}
@@ -936,7 +936,7 @@ export default function BillOfLadingForm() {
                     className="accent-blue-600"
                   />
                   <span className="font-medium">{code}</span>
-                  <span className="text-xs text-gray-400">{label}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">{label}</span>
                 </label>
               ))}
             </div>
@@ -944,7 +944,7 @@ export default function BillOfLadingForm() {
         </div>
 
         {/* Remarks - Collapsible */}
-        <div className="border border-blue-100 rounded-lg p-4 bg-gray-50">
+        <div className="border border-blue-100 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50">
           <SectionHeader
             icon={PencilSquareIcon}
             title="Remarks"
@@ -964,7 +964,7 @@ export default function BillOfLadingForm() {
         </div>
 
         {/* Signatures & Dates - Collapsible */}
-        <div className="border border-blue-100 rounded-lg p-4 bg-blue-50">
+        <div className="border border-blue-100 dark:border-gray-600 rounded-lg p-4 bg-blue-50 dark:bg-blue-900/20">
           <SectionHeader
             icon={UserIcon}
             title="Signatures & Dates"
@@ -975,7 +975,7 @@ export default function BillOfLadingForm() {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Pick Up Agent</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Pick Up Agent</h3>
                   <input
                     name="pickup_agent_name"
                     placeholder="Agent Name"
@@ -1000,7 +1000,7 @@ export default function BillOfLadingForm() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Delivery Agent</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Delivery Agent</h3>
                   <input
                     name="delivery_agent_name"
                     placeholder="Agent Name"
@@ -1026,8 +1026,8 @@ export default function BillOfLadingForm() {
                 </div>
               </div>
               {/* Receiver Agent Section */}
-              <div className="border-t border-blue-200 pt-4">
-                <h3 className="text-sm font-semibold text-gray-700 mb-2">Receiver Agent</h3>
+              <div className="border-t border-blue-200 dark:border-gray-600 pt-4">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Receiver Agent</h3>
                 <input
                   name="receiver_agent_name"
                   placeholder="Agent Name"
@@ -1055,11 +1055,11 @@ export default function BillOfLadingForm() {
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
           <button
             type="button"
             onClick={() => router.push('/dashboard')}
-            className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium shadow-sm hover:bg-gray-50 transition-colors"
+            className="px-6 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             Cancel
           </button>
@@ -1073,14 +1073,31 @@ export default function BillOfLadingForm() {
       </form>
       <style jsx>{`
         .input {
-          @apply border border-blue-200 rounded px-3 py-2 w-full mb-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm sm:text-base;
+          @apply border rounded px-3 py-2 w-full mb-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm sm:text-base;
           word-wrap: break-word;
           overflow-wrap: break-word;
           white-space: normal;
+          border-color: rgb(191 219 254);
+          background-color: white;
+          color: rgb(17 24 39);
+        }
+        .input::placeholder {
+          color: rgb(107 114 128);
+        }
+        :global(.dark) .input {
+          border-color: rgb(75 85 99);
+          background-color: rgb(31 41 55);
+          color: rgb(243 244 246);
+        }
+        :global(.dark) .input::placeholder {
+          color: rgb(156 163 175);
         }
         .sigCanvas {
           background: #f9fafb;
           border-radius: 0.25rem;
+        }
+        :global(.dark) .sigCanvas {
+          background: #374151;
         }
         textarea.input {
           resize: vertical;

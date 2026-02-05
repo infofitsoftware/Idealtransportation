@@ -83,30 +83,30 @@ export default function ExpenseRow({
   const subTypeOptions = row.expense_type ? (SUB_TYPES[row.expense_type] || []) : [];
 
   return (
-    <div className="border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+    <div className="border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
       {/* Row Header - Mobile Card View */}
       <div 
-        className="p-3 sm:p-4 flex items-center justify-between cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+        className="p-3 sm:p-4 flex items-center justify-between cursor-pointer bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-gray-700">
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
               {row.expense_type || 'New Expense'}
             </span>
             {row.sub_type && (
-              <span className="text-xs text-gray-500">• {row.sub_type}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">• {row.sub_type}</span>
             )}
           </div>
-          <div className="text-lg font-bold text-blue-600 mt-1">
+          <div className="text-lg font-bold text-blue-600 dark:text-blue-400 mt-1">
             ${parseFloat(row.amount || '0').toFixed(2)}
           </div>
         </div>
         <div className="flex items-center gap-2">
           {isExpanded ? (
-            <ChevronUpIcon className="h-5 w-5 text-gray-400" />
+            <ChevronUpIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
           ) : (
-            <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+            <ChevronDownIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
           )}
           <button
             type="button"
@@ -114,7 +114,7 @@ export default function ExpenseRow({
               e.stopPropagation();
               onDelete(index);
             }}
-            className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+            className="p-1 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
           >
             <TrashIcon className="h-5 w-5" />
           </button>
@@ -123,7 +123,7 @@ export default function ExpenseRow({
 
       {/* Row Content - Expandable */}
       {isExpanded && (
-        <div className="p-4 space-y-4 border-t border-gray-200 overflow-x-auto">
+        <div className="p-4 space-y-4 border-t border-gray-200 dark:border-gray-600 overflow-x-auto">
           {/* Desktop Table View */}
           <div className="hidden md:grid md:grid-cols-12 gap-3 min-w-0">
             <div className="col-span-2 min-w-0">
@@ -132,7 +132,7 @@ export default function ExpenseRow({
                 touched={touched[`${index}_expense_type`]}
                 required
               >
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Expense Type <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -141,7 +141,7 @@ export default function ExpenseRow({
                     handleChange('expense_type', e.target.value);
                     handleChange('sub_type', ''); // Reset sub_type when type changes
                   }}
-                  className={`input text-sm w-full min-w-0 ${errors[`${index}_expense_type`] && touched[`${index}_expense_type`] ? 'border-red-500' : ''}`}
+                  className={`input text-sm w-full min-w-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 ${errors[`${index}_expense_type`] && touched[`${index}_expense_type`] ? 'border-red-500' : ''}`}
                   required
                 >
                   <option value="">Select Type</option>
@@ -156,7 +156,7 @@ export default function ExpenseRow({
 
             <div className="col-span-2 min-w-0">
               {subTypeOptions.length > 0 && (
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Sub-Type
                 </label>
               )}
@@ -164,7 +164,7 @@ export default function ExpenseRow({
                 <select
                   value={row.sub_type || ''}
                   onChange={(e) => handleChange('sub_type', e.target.value)}
-                  className="input text-sm w-full min-w-0"
+                  className="input text-sm w-full min-w-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
                 >
                   <option value="">Select Sub-Type</option>
                   {subTypeOptions.map((sub) => (
@@ -174,7 +174,7 @@ export default function ExpenseRow({
                   ))}
                 </select>
               ) : (
-                <div className="text-xs text-gray-400 py-2">N/A</div>
+                <div className="text-xs text-gray-400 dark:text-gray-500 py-2">N/A</div>
               )}
             </div>
 
@@ -184,7 +184,7 @@ export default function ExpenseRow({
                 touched={touched[`${index}_amount`]}
                 required
               >
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Amount <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -193,7 +193,7 @@ export default function ExpenseRow({
                   min="0.01"
                   value={row.amount}
                   onChange={(e) => handleChange('amount', e.target.value)}
-                  className={`input text-sm w-full min-w-0 ${errors[`${index}_amount`] && touched[`${index}_amount`] ? 'border-red-500' : ''}`}
+                  className={`input text-sm w-full min-w-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 ${errors[`${index}_amount`] && touched[`${index}_amount`] ? 'border-red-500' : ''}`}
                   placeholder="0.00"
                   required
                 />
@@ -206,14 +206,14 @@ export default function ExpenseRow({
                 touched={touched[`${index}_location`]}
                 required
               >
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Location <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={row.location}
                   onChange={(e) => handleChange('location', e.target.value)}
-                  className={`input text-sm w-full min-w-0 ${errors[`${index}_location`] && touched[`${index}_location`] ? 'border-red-500' : ''}`}
+                  className={`input text-sm w-full min-w-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 ${errors[`${index}_location`] && touched[`${index}_location`] ? 'border-red-500' : ''}`}
                   placeholder="Enter location"
                   style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
                   required
@@ -227,13 +227,13 @@ export default function ExpenseRow({
                 touched={touched[`${index}_payment_mode`]}
                 required
               >
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Payment Mode <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={row.payment_mode}
                   onChange={(e) => handleChange('payment_mode', e.target.value)}
-                  className={`input text-sm w-full min-w-0 ${errors[`${index}_payment_mode`] && touched[`${index}_payment_mode`] ? 'border-red-500' : ''}`}
+                  className={`input text-sm w-full min-w-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 ${errors[`${index}_payment_mode`] && touched[`${index}_payment_mode`] ? 'border-red-500' : ''}`}
                   required
                 >
                   <option value="">Select Payment Mode</option>
@@ -247,13 +247,13 @@ export default function ExpenseRow({
             </div>
 
             <div className="col-span-3 min-w-0">
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Remarks
               </label>
               <textarea
                 value={row.remarks || ''}
                 onChange={(e) => handleChange('remarks', e.target.value)}
-                className="input text-sm w-full min-w-0 min-h-[60px] resize-y"
+                className="input text-sm w-full min-w-0 min-h-[60px] resize-y bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400"
                 placeholder="Optional remarks..."
                 style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
               />
@@ -269,7 +269,7 @@ export default function ExpenseRow({
                 required
               >
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Expense Type <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -278,7 +278,7 @@ export default function ExpenseRow({
                       handleChange('expense_type', e.target.value);
                       handleChange('sub_type', '');
                     }}
-                    className={`input text-sm ${errors[`${index}_expense_type`] && touched[`${index}_expense_type`] ? 'border-red-500' : ''}`}
+                    className={`input text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 ${errors[`${index}_expense_type`] && touched[`${index}_expense_type`] ? 'border-red-500' : ''}`}
                     required
                   >
                     <option value="">Select Type</option>
@@ -293,13 +293,13 @@ export default function ExpenseRow({
 
               {subTypeOptions.length > 0 && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Sub-Type
                   </label>
                   <select
                     value={row.sub_type || ''}
                     onChange={(e) => handleChange('sub_type', e.target.value)}
-                    className="input text-sm"
+                    className="input text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
                   >
                     <option value="">Select Sub-Type</option>
                     {subTypeOptions.map((sub) => (
@@ -318,7 +318,7 @@ export default function ExpenseRow({
               required
             >
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Amount <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -327,7 +327,7 @@ export default function ExpenseRow({
                   min="0.01"
                   value={row.amount}
                   onChange={(e) => handleChange('amount', e.target.value)}
-                  className={`input text-sm ${errors[`${index}_amount`] && touched[`${index}_amount`] ? 'border-red-500' : ''}`}
+                  className={`input text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 ${errors[`${index}_amount`] && touched[`${index}_amount`] ? 'border-red-500' : ''}`}
                   placeholder="0.00"
                   required
                 />
@@ -340,14 +340,14 @@ export default function ExpenseRow({
               required
             >
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Location <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={row.location}
                   onChange={(e) => handleChange('location', e.target.value)}
-                  className={`input text-sm ${errors[`${index}_location`] && touched[`${index}_location`] ? 'border-red-500' : ''}`}
+                  className={`input text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 ${errors[`${index}_location`] && touched[`${index}_location`] ? 'border-red-500' : ''}`}
                   placeholder="Enter location"
                   style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
                   required
@@ -361,13 +361,13 @@ export default function ExpenseRow({
               required
             >
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Payment Mode <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={row.payment_mode}
                   onChange={(e) => handleChange('payment_mode', e.target.value)}
-                  className={`input text-sm ${errors[`${index}_payment_mode`] && touched[`${index}_payment_mode`] ? 'border-red-500' : ''}`}
+                  className={`input text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 ${errors[`${index}_payment_mode`] && touched[`${index}_payment_mode`] ? 'border-red-500' : ''}`}
                   required
                 >
                   <option value="">Select Payment Mode</option>
@@ -381,13 +381,13 @@ export default function ExpenseRow({
             </FieldValidation>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Remarks
               </label>
               <textarea
                 value={row.remarks || ''}
                 onChange={(e) => handleChange('remarks', e.target.value)}
-                className="input text-sm min-h-[60px] resize-y"
+                className="input text-sm min-h-[60px] resize-y bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400"
                 placeholder="Optional remarks..."
                 style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
               />

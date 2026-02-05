@@ -17,8 +17,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${inter.className} h-full`}>
+    <html lang="en" className="h-full bg-gray-50 dark:bg-gray-900">
+      <body
+        className={`${inter.className} h-full bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100`}
+      >
         <Toaster position="top-center" />
         {children}
       </body>

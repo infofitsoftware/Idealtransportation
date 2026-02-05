@@ -28,15 +28,15 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-white shadow-lg border-b border-gray-200">
+    <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 shadow-lg border-b border-gray-200 dark:border-gray-800">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex flex-1 items-center">
           <div className="flex items-center gap-3">
             <div className="hidden sm:block">
-              <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Dashboard</h1>
             </div>
             {isSuperuser && (
-              <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300">
                 Administrator
               </span>
             )}
@@ -46,7 +46,7 @@ export default function Header() {
           {/* Notifications */}
           <button
             type="button"
-            className="relative rounded-full bg-gray-100 p-2 text-gray-600 hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
+            className="relative rounded-full bg-gray-100 dark:bg-gray-800 p-2 text-gray-600 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
           >
             <span className="sr-only">View notifications</span>
             <BellIcon className="h-5 w-5" aria-hidden="true" />
@@ -56,7 +56,7 @@ export default function Header() {
           {/* Settings */}
           <button
             type="button"
-            className="rounded-full bg-gray-100 p-2 text-gray-600 hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
+            className="rounded-full bg-gray-100 dark:bg-gray-800 p-2 text-gray-600 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
           >
             <span className="sr-only">Settings</span>
             <Cog6ToothIcon className="h-5 w-5" aria-hidden="true" />
@@ -83,16 +83,16 @@ export default function Header() {
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white py-2 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none border border-gray-200">
-                <div className="px-4 py-3 border-b border-gray-200">
-                  <p className="text-sm font-medium text-gray-900">
+              <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white dark:bg-gray-800 py-2 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none border border-gray-200 dark:border-gray-700">
+                <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-600">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     {currentUser?.full_name || user?.email || 'User'}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {user?.email || currentUser?.email || ''}
                   </p>
                   {isSuperuser && (
-                    <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                    <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300">
                       Administrator
                     </span>
                   )}
@@ -102,8 +102,8 @@ export default function Header() {
                     <a
                       href="/dashboard/profile"
                       className={classNames(
-                        active ? 'bg-gray-100' : '',
-                        'block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors'
+                        active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                        'block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors'
                       )}
                     >
                       Your Profile
@@ -115,22 +115,22 @@ export default function Header() {
                     <a
                       href="/dashboard/settings"
                       className={classNames(
-                        active ? 'bg-gray-100' : '',
-                        'block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors'
+                        active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                        'block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors'
                       )}
                     >
                       Settings
                     </a>
                   )}
                 </Menu.Item>
-                <div className="border-t border-gray-200 my-1"></div>
+                <div className="border-t border-gray-200 dark:border-gray-600 my-1"></div>
                 <Menu.Item>
                   {({ active }) => (
                     <button
                       onClick={handleLogout}
                       className={classNames(
-                        active ? 'bg-red-50 text-red-700' : 'text-gray-700',
-                        'block w-full px-4 py-2 text-left text-sm hover:bg-red-50 hover:text-red-700 transition-colors'
+                        active ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300' : 'text-gray-700 dark:text-gray-200',
+                        'block w-full px-4 py-2 text-left text-sm hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-700 dark:hover:text-red-300 transition-colors'
                       )}
                     >
                       Sign out

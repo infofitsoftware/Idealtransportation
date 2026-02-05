@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
-from typing import Any, Optional
+from typing import Any, Optional, List
 from jose import JWTError, jwt
+from pydantic import BaseModel
 
 from models.user import User
 from schemas.auth import UserCreate, User as UserSchema, Token
-from schemas.user import UserResponse
+from schemas.user import UserResponse, AdminUserCreate
 from utils.auth import (
     verify_password,
     get_password_hash,
@@ -18,8 +19,6 @@ from utils.auth import (
 from database import get_db
 from dependencies import get_current_user, get_current_admin_user
 from utils.logger import setup_logger
-from schemas.user import AdminUserCreate
-from typing import List
 
 # Setup logger
 logger = setup_logger(__name__, "auth.log")
@@ -47,6 +46,12 @@ def authenticate_user(db: Session, email: str, password: str):
         return False
     logger.info(f"Authentication successful: {email}")
     return user
+
+
+class ChangePasswordRequest(BaseModel):
+    """Request body for password change endpoint."""
+    old_password: str
+    new_password: str
 
 @router.post("/register", response_model=UserSchema)
 def register_user(user: UserCreate, db: Session = Depends(get_db)) -> Any:
@@ -91,6 +96,34 @@ def login_for_access_token(
     )
     logger.info(f"Login successful: {form_data.username}")
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.post("/change-password")
+def change_password(
+    request: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Allow the currently authenticated user (admin or driver) to change their password.
+    """
+    logger.info(f"User {current_user.email} requested password change")
+
+    # Verify old password
+    if not verify_password(request.old_password, current_user.hashed_password):
+        logger.warning(f"Password change failed for {current_user.email}: incorrect current password")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+
+    # Update to new password
+    current_user.hashed_password = get_password_hash(request.new_password)
+    db.add(current_user)
+    db.commit()
+    logger.info(f"Password changed successfully for user {current_user.email}")
+
+    return {"detail": "Password updated successfully"}
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user(

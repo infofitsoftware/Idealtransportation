@@ -10,6 +10,7 @@ import FormHeader from '@/components/FormHeader'
 import FormProgress from '@/components/forms/FormProgress'
 import FieldValidation from '@/components/forms/FieldValidation'
 import PaymentMethodSelect from '@/components/forms/PaymentMethodSelect'
+import WorkOrderSelect from '@/components/forms/WorkOrderSelect'
 
 const FORM_SECTIONS = [
   { id: 'workOrder', label: 'Work Order', completed: false },
@@ -65,18 +66,39 @@ export default function NewTransaction() {
     }
   }, [])
 
-  // Apply smart defaults
+  // Apply smart defaults (only when no work order selected or locations not yet set from BOL)
   useEffect(() => {
     if (recentPaymentType && !formData.paymentType) {
       setFormData(prev => ({ ...prev, paymentType: recentPaymentType }))
     }
-    if (recentLocations.pickup && !formData.pickupLocation) {
+    if (!selectedBOL && recentLocations.pickup && !formData.pickupLocation) {
       setFormData(prev => ({ ...prev, pickupLocation: recentLocations.pickup }))
     }
-    if (recentLocations.dropoff && !formData.dropoffLocation) {
+    if (!selectedBOL && recentLocations.dropoff && !formData.dropoffLocation) {
       setFormData(prev => ({ ...prev, dropoffLocation: recentLocations.dropoff }))
     }
-  }, [recentPaymentType, recentLocations])
+  }, [recentPaymentType, recentLocations, selectedBOL])
+
+  // Populate Pickup and Dropoff from BOL when work order is selected
+  useEffect(() => {
+    if (!selectedBOL) return
+
+    let cancelled = false
+    bolService.getBOL(selectedBOL.id).then((bol: any) => {
+      if (cancelled || !bol) return
+      const pickup = [bol.pickup_name, bol.pickup_address].filter(Boolean).join(', ').trim()
+      const dropoff = [bol.delivery_name, bol.delivery_address].filter(Boolean).join(', ').trim()
+      setFormData(prev => ({
+        ...prev,
+        ...(pickup && { pickupLocation: pickup }),
+        ...(dropoff && { dropoffLocation: dropoff }),
+      }))
+    }).catch((err) => {
+      if (!cancelled) console.error('Failed to load BOL details for locations:', err)
+    })
+
+    return () => { cancelled = true }
+  }, [selectedBOL?.id])
 
   const loadPendingWorkOrders = async () => {
     try {
@@ -289,14 +311,14 @@ export default function NewTransaction() {
         onClick={onToggle}
       >
         <div className="flex items-center gap-2">
-          <Icon className="h-6 w-6 text-blue-600" />
-          <h2 className="text-lg font-semibold text-gray-800 tracking-tight">{title}</h2>
+          <Icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 tracking-tight">{title}</h2>
         </div>
         {onToggle && (
           isCollapsed ? (
-            <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+            <ChevronDownIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
           ) : (
-            <ChevronUpIcon className="h-5 w-5 text-gray-400" />
+            <ChevronUpIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
           )
         )}
       </div>
@@ -304,21 +326,21 @@ export default function NewTransaction() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-white shadow-xl rounded-2xl mt-4 sm:mt-8 mb-4 sm:mb-8 border border-blue-100">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-gray-800 shadow-xl rounded-2xl mt-4 sm:mt-8 mb-4 sm:mb-8 border border-blue-100 dark:border-gray-700">
       <FormHeader />
       
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-blue-700 tracking-tight">Payment Form</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-blue-700 dark:text-blue-400 tracking-tight">Payment Form</h1>
         <button
           onClick={() => router.push('/dashboard/transactions')}
-          className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
         >
           Back to Transactions
         </button>
       </div>
 
       {/* Form Progress Indicator */}
-      <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+      <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-gray-600">
         <FormProgress 
           currentStep={currentStep} 
           totalSteps={totalSteps} 
@@ -327,14 +349,14 @@ export default function NewTransaction() {
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md border border-red-200">
+        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-md border border-red-200 dark:border-red-800">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Work Order Selection - Collapsible */}
-        <div className="border border-blue-100 rounded-lg p-4 sm:p-6 bg-blue-50">
+        <div className="border border-blue-100 dark:border-gray-600 rounded-lg p-4 sm:p-6 bg-blue-50 dark:bg-blue-900/20">
           <SectionHeader
             icon={TruckIcon}
             title="Work Order Selection"
@@ -348,40 +370,29 @@ export default function NewTransaction() {
                 touched={touchedFields.workOrderNo}
                 required
               >
-                <div>
-                  <label htmlFor="workOrderNo" className="block text-sm font-medium text-gray-700 mb-1">
-                    Work Order Number <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="workOrderNo"
-                    id="workOrderNo"
-                    required
-                    value={formData.workOrderNo}
-                    onChange={(e) => handleWorkOrderChange(e.target.value)}
-                    onBlur={() => setTouchedFields(prev => ({ ...prev, workOrderNo: true }))}
-                    className={`input ${fieldErrors.workOrderNo && touchedFields.workOrderNo ? 'border-red-500' : ''}`}
-                    disabled={isLoading}
-                  >
-                    <option value="">Select Work Order</option>
-                    {pendingWorkOrders.map((wo) => (
-                      <option key={wo.work_order_no} value={wo.work_order_no}>
-                        {wo.work_order_no} - {wo.driver_name} (Due: ${wo.due_amount.toFixed(2)})
-                      </option>
-                    ))}
-                  </select>
-                  {isLoading && <p className="text-sm text-gray-500 mt-1">Loading work orders...</p>}
-                </div>
+                <WorkOrderSelect
+                  value={formData.workOrderNo}
+                  onChange={(val) => {
+                    handleWorkOrderChange(val);
+                    setTouchedFields(prev => ({ ...prev, workOrderNo: true }));
+                  }}
+                  pendingWorkOrders={pendingWorkOrders}
+                  loading={isLoading}
+                  required
+                  error={fieldErrors.workOrderNo}
+                  touched={touchedFields.workOrderNo}
+                />
               </FieldValidation>
 
               {selectedBOL && (
-                <div className="bg-white rounded-lg p-4 border border-blue-200 shadow-sm">
-                  <h3 className="font-semibold text-gray-800 mb-3">Work Order Details</h3>
-                  <div className="space-y-2 text-sm">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-200 dark:border-gray-600 shadow-sm">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-3">Work Order Details</h3>
+                  <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                     <p><span className="font-medium">Driver:</span> {selectedBOL.driver_name}</p>
                     <p><span className="font-medium">Date:</span> {new Date(selectedBOL.date).toLocaleDateString()}</p>
                     <p><span className="font-medium">Total Amount:</span> ${selectedBOL.total_amount.toFixed(2)}</p>
                     <p><span className="font-medium">Already Collected:</span> ${selectedBOL.total_collected.toFixed(2)}</p>
-                    <p className="font-semibold text-red-600">Remaining Due: ${selectedBOL.due_amount.toFixed(2)}</p>
+                    <p className="font-semibold text-red-600 dark:text-red-400">Remaining Due: ${selectedBOL.due_amount.toFixed(2)}</p>
                   </div>
                 </div>
               )}
@@ -390,7 +401,7 @@ export default function NewTransaction() {
         </div>
 
         {/* Payment Information - Collapsible */}
-        <div className="border border-blue-100 rounded-lg p-4 sm:p-6 bg-green-50">
+        <div className="border border-blue-100 dark:border-gray-600 rounded-lg p-4 sm:p-6 bg-green-50 dark:bg-green-900/20">
           <SectionHeader
             icon={CurrencyDollarIcon}
             title="Payment Information"
@@ -406,7 +417,7 @@ export default function NewTransaction() {
                   required
                 >
                   <div>
-                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Payment Date <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -417,7 +428,7 @@ export default function NewTransaction() {
                       value={formData.date}
                       onChange={handleChange}
                       onBlur={() => setTouchedFields(prev => ({ ...prev, date: true }))}
-                      className={`input ${fieldErrors.date && touchedFields.date ? 'border-red-500' : ''}`}
+                      className={`w-full rounded-md border px-3 py-2 mb-1 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition border-gray-300 dark:border-gray-600 ${fieldErrors.date && touchedFields.date ? 'border-red-500' : ''}`}
                     />
                   </div>
                 </FieldValidation>
@@ -428,7 +439,7 @@ export default function NewTransaction() {
                   required
                 >
                   <div>
-                    <label htmlFor="collectedAmount" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="collectedAmount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Payment Amount <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -444,20 +455,20 @@ export default function NewTransaction() {
                         setTouchedFields(prev => ({ ...prev, collectedAmount: true }))
                         validatePayment()
                       }}
-                      className={`input ${fieldErrors.collectedAmount && touchedFields.collectedAmount ? 'border-red-500' : ''}`}
+                      className={`w-full rounded-md border px-3 py-2 mb-1 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition border-gray-300 dark:border-gray-600 ${fieldErrors.collectedAmount && touchedFields.collectedAmount ? 'border-red-500' : ''}`}
                       placeholder="0.00"
                     />
                   </div>
                 </FieldValidation>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Remaining Due
                   </label>
                   <input
                     type="text"
                     value={`$${calculateDueAmount().toFixed(2)}`}
-                    className="input bg-gray-100 cursor-not-allowed"
+                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 mb-1 text-sm sm:text-base bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 cursor-not-allowed focus:outline-none"
                     readOnly
                   />
                 </div>
@@ -486,7 +497,7 @@ export default function NewTransaction() {
         </div>
 
         {/* Location Information - Collapsible */}
-        <div className="border border-blue-100 rounded-lg p-4 sm:p-6 bg-gray-50">
+        <div className="border border-blue-100 dark:border-gray-600 rounded-lg p-4 sm:p-6 bg-gray-50 dark:bg-gray-700/50">
           <SectionHeader
             icon={MapPinIcon}
             title="Location Information"
@@ -496,7 +507,7 @@ export default function NewTransaction() {
           {!collapsedSections.location && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="pickupLocation" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="pickupLocation" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Pickup Location
                 </label>
                 <input
@@ -505,19 +516,19 @@ export default function NewTransaction() {
                   id="pickupLocation"
                   value={formData.pickupLocation}
                   onChange={handleChange}
-                  className="input"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 mb-1 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                   placeholder="Enter pickup location"
                   style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
                 />
                 {recentLocations.pickup && !formData.pickupLocation && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Recent: {recentLocations.pickup}
                   </p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="dropoffLocation" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="dropoffLocation" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Dropoff Location
                 </label>
                 <input
@@ -526,12 +537,12 @@ export default function NewTransaction() {
                   id="dropoffLocation"
                   value={formData.dropoffLocation}
                   onChange={handleChange}
-                  className="input"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 mb-1 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                   placeholder="Enter dropoff location"
                   style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
                 />
                 {recentLocations.dropoff && !formData.dropoffLocation && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Recent: {recentLocations.dropoff}
                   </p>
                 )}
@@ -541,7 +552,7 @@ export default function NewTransaction() {
         </div>
 
         {/* Comments - Collapsible */}
-        <div className="border border-blue-100 rounded-lg p-4 sm:p-6 bg-gray-50">
+        <div className="border border-blue-100 dark:border-gray-600 rounded-lg p-4 sm:p-6 bg-gray-50 dark:bg-gray-700/50">
           <SectionHeader
             icon={CurrencyDollarIcon}
             title="Additional Information"
@@ -550,7 +561,7 @@ export default function NewTransaction() {
           />
           {!collapsedSections.comments && (
             <div>
-              <label htmlFor="comments" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="comments" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Comments
               </label>
               <textarea
@@ -559,7 +570,7 @@ export default function NewTransaction() {
                 rows={3}
                 value={formData.comments}
                 onChange={handleChange}
-                className="input w-full min-h-[80px] resize-y"
+                className="w-full min-h-[80px] resize-y rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 mb-1 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 placeholder="Enter any additional comments..."
                 style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
               />
@@ -567,11 +578,11 @@ export default function NewTransaction() {
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
           <button
             type="button"
             onClick={() => router.push('/dashboard/transactions')}
-            className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium shadow-sm hover:bg-gray-50 transition-colors"
+            className="px-6 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             Cancel
           </button>
@@ -592,7 +603,7 @@ export default function NewTransaction() {
 
       <style jsx>{`
         .input {
-          @apply border border-blue-200 rounded px-3 py-2 w-full mb-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm sm:text-base;
+          @apply border border-blue-200 dark:border-gray-600 rounded px-3 py-2 w-full mb-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400;
           word-wrap: break-word;
           overflow-wrap: break-word;
           white-space: normal;

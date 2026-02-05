@@ -215,55 +215,55 @@ export default function DailyExpenseForm() {
   const total = calculateTotal()
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 bg-white shadow-xl rounded-2xl mt-4 sm:mt-8 mb-4 sm:mb-8 border border-blue-100">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6 bg-white dark:bg-gray-800 shadow-xl rounded-2xl mt-4 sm:mt-8 mb-4 sm:mb-8 border border-blue-100 dark:border-gray-700">
       <FormHeader />
       
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-blue-700 tracking-tight">Daily Expense Form</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-blue-700 dark:text-blue-400 tracking-tight">Daily Expense Form</h1>
         <button
           onClick={() => router.push('/dashboard/transactions')}
-          className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
         >
           Back to Transactions
         </button>
       </div>
 
       {/* Total Amount Display */}
-      <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 flex items-center justify-between">
+      <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-gray-600 flex items-center justify-between">
         <div>
-          <span className="text-sm font-medium text-gray-700">Total Expense:</span>
-          <span className="text-2xl sm:text-3xl font-bold text-green-700 ml-3">${total.toFixed(2)}</span>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Expense:</span>
+          <span className="text-2xl sm:text-3xl font-bold text-green-700 dark:text-green-400 ml-3">${total.toFixed(2)}</span>
         </div>
-        <CalculatorIcon className="h-8 w-8 text-green-600" />
+        <CalculatorIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Header Section */}
-        <div className="border border-blue-100 rounded-lg p-4 sm:p-6 bg-blue-50">
-          <h2 className="text-lg font-semibold text-gray-800 tracking-tight mb-4 flex items-center gap-2">
-            <UserIcon className="h-6 w-6 text-blue-600" />
+        <div className="border border-blue-100 dark:border-gray-600 rounded-lg p-4 sm:p-6 bg-blue-50 dark:bg-blue-900/20">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 tracking-tight mb-4 flex items-center gap-2">
+            <UserIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             Header Information
           </h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Driver Name
               </label>
               <input
                 type="text"
                 value={currentUser?.full_name || 'Loading...'}
                 disabled
-                className="input bg-gray-100 cursor-not-allowed text-gray-600"
+                className="input bg-gray-100 dark:bg-gray-700 cursor-not-allowed text-gray-600 dark:text-gray-400"
                 placeholder="Loading user name..."
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {currentUser ? `Auto-populated from your account (${currentUser.email})` : 'Loading user data...'}
               </p>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1">
                 <CalendarDaysIcon className="h-4 w-4 text-blue-400" />
                 Date <span className="text-red-500">*</span>
               </label>
@@ -272,16 +272,16 @@ export default function DailyExpenseForm() {
                 value={headerData.date}
                 onChange={(e) => handleHeaderChange('date', e.target.value)}
                 onBlur={() => setTouchedFields(prev => ({ ...prev, date: true }))}
-                className={`input ${fieldErrors.date && touchedFields.date ? 'border-red-500' : ''}`}
+                className={`w-full rounded-md border px-3 py-2 mb-1 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition border-gray-300 dark:border-gray-600 ${fieldErrors.date && touchedFields.date ? 'border-red-500' : ''}`}
                 required
               />
               {fieldErrors.date && touchedFields.date && (
-                <p className="mt-1 text-sm text-red-600">{fieldErrors.date}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.date}</p>
               )}
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1">
                 <TruckIcon className="h-4 w-4 text-blue-400" />
                 Vehicle Number
               </label>
@@ -289,7 +289,7 @@ export default function DailyExpenseForm() {
                 type="text"
                 value={headerData.vehicle_number}
                 onChange={(e) => handleHeaderChange('vehicle_number', e.target.value)}
-                className="input"
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 mb-1 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 placeholder="Optional vehicle identifier"
                 style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
               />
@@ -298,15 +298,15 @@ export default function DailyExpenseForm() {
         </div>
 
         {/* Expense Entries Section */}
-        <div className="border border-blue-100 rounded-lg p-4 sm:p-6 bg-gray-50">
+        <div className="border border-blue-100 dark:border-gray-600 rounded-lg p-4 sm:p-6 bg-gray-50 dark:bg-gray-700/50">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800 tracking-tight">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 tracking-tight">
               Expense Entries ({expenseRows.length})
             </h2>
             <button
               type="button"
               onClick={addExpenseRow}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors text-sm font-medium"
             >
               <PlusIcon className="h-4 w-4" />
               Add Expense
@@ -329,11 +329,11 @@ export default function DailyExpenseForm() {
         </div>
 
         {/* Submit Buttons */}
-        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
           <button
             type="button"
             onClick={() => router.push('/dashboard/transactions')}
-            className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium shadow-sm hover:bg-gray-50 transition-colors"
+            className="px-6 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             Cancel
           </button>
@@ -364,7 +364,7 @@ export default function DailyExpenseForm() {
 
       <style jsx>{`
         .input {
-          @apply border border-blue-200 rounded px-3 py-2 w-full mb-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm sm:text-base;
+          @apply border border-blue-200 dark:border-gray-600 rounded px-3 py-2 w-full mb-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400;
           word-wrap: break-word;
           overflow-wrap: break-word;
           white-space: normal;

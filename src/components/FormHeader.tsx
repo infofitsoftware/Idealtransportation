@@ -2,7 +2,7 @@ import Image from 'next/image'
 
 export default function FormHeader() {
   return (
-    <div className="bg-white border-b border-gray-200 pb-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Image
@@ -13,13 +13,13 @@ export default function FormHeader() {
             className="h-20 w-auto"
           />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Ideal Transportation Solutions LLC</h1>
-            <p className="text-sm text-gray-600">16 Palmero Way, Manvel, Texas 77578</p>
-            <p className="text-sm text-gray-600">USDOT NO:-4193929</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Ideal Transportation Solutions LLC</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">16 Palmero Way, Manvel, Texas 77578</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">USDOT NO:-4193929</p>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs text-gray-500">Document Date: {new Date().toLocaleDateString()}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Document Date: {new Date().toLocaleDateString()}</p>
         </div>
       </div>
     </div>

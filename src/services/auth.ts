@@ -185,5 +185,10 @@ export const authService = {
 
   async deleteUser(userId: number) {
     await api.delete(`/auth/users/${userId}`);
+  },
+
+  async changePassword(data: { old_password: string; new_password: string }) {
+    const response = await api.post('/auth/change-password', data);
+    return response.data;
   }
 }; 

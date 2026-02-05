@@ -67,11 +67,11 @@ export default function DriverDashboard() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <p className="text-red-800">Error: {error}</p>
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+        <p className="text-red-800 dark:text-red-300">Error: {error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 dark:hover:bg-red-500"
         >
           Retry
         </button>
@@ -82,7 +82,7 @@ export default function DriverDashboard() {
   if (!data) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
           <ProgressBar progress={progress} label="Loading dashboard..." />
         </div>
       </div>
@@ -95,7 +95,7 @@ export default function DriverDashboard() {
     <div className="space-y-6">
       {/* Progress Bar */}
       {loading && (
-        <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
           <ProgressBar progress={progress} label="Loading dashboard..." />
         </div>
       )}
@@ -107,10 +107,10 @@ export default function DriverDashboard() {
         }`}
       >
         <div className="min-w-0 flex-1">
-          <h2 className="text-3xl font-bold leading-7 text-gray-900 sm:truncate sm:text-4xl sm:tracking-tight">
+          <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:truncate sm:text-4xl sm:tracking-tight">
             My Dashboard
           </h2>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Overview of your BOLs and activities
           </p>
         </div>
@@ -128,39 +128,39 @@ export default function DriverDashboard() {
       {/* Profile Details */}
       {currentUser && (
         <div 
-          className={`bg-white rounded-lg shadow-lg p-6 border border-gray-200 transition-all duration-500 ${
+          className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-all duration-500 ${
             loadedSections.profile ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}
         >
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <UserCircleIcon className="h-5 w-5 text-blue-600" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+            <UserCircleIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             Profile Details
           </h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <IdentificationIcon className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+              <IdentificationIcon className="h-5 w-5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
               <div className="min-w-0">
-                <div className="text-sm font-medium text-gray-500">Full Name</div>
-                <div className="text-base font-semibold text-gray-900 mt-1">
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Full Name</div>
+                <div className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
                   {currentUser.full_name || 'Not set'}
                 </div>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <EnvelopeIcon className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+              <EnvelopeIcon className="h-5 w-5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
               <div className="min-w-0">
-                <div className="text-sm font-medium text-gray-500">Email</div>
-                <div className="text-base font-semibold text-gray-900 mt-1 break-words">
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</div>
+                <div className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1 break-words">
                   {currentUser.email || 'Not set'}
                 </div>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <UserCircleIcon className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+              <UserCircleIcon className="h-5 w-5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
               <div className="min-w-0">
-                <div className="text-sm font-medium text-gray-500">Role</div>
-                <div className="text-base font-semibold text-gray-900 mt-1">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Role</div>
+                <div className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300">
                     Driver
                   </span>
                 </div>
@@ -172,30 +172,30 @@ export default function DriverDashboard() {
 
       {/* Quick Actions */}
       <div 
-        className={`bg-white rounded-lg shadow-lg p-6 border border-gray-200 transition-all duration-500 ${
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-all duration-500 ${
           loadedSections.quickActions ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Link
             href="/dashboard/bol"
-            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all hover:shadow-md"
+            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all hover:shadow-md"
           >
-            <PlusIcon className="h-6 w-6 text-blue-600" />
+            <PlusIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             <div>
-              <div className="font-medium text-gray-900">Create New BOL</div>
-              <div className="text-sm text-gray-500">Add a new bill of lading</div>
+              <div className="font-medium text-gray-900 dark:text-gray-100">Create New BOL</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Add a new bill of lading</div>
             </div>
           </Link>
           <Link
             href="/dashboard/transactions/daily-expense"
-            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all hover:shadow-md"
+            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all hover:shadow-md"
           >
-            <DocumentTextIcon className="h-6 w-6 text-blue-600" />
+            <DocumentTextIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             <div>
-              <div className="font-medium text-gray-900">Daily Expenses</div>
-              <div className="text-sm text-gray-500">Record daily expenses</div>
+              <div className="font-medium text-gray-900 dark:text-gray-100">Daily Expenses</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Record daily expenses</div>
             </div>
           </Link>
         </div>

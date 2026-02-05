@@ -44,10 +44,10 @@ export default function StatsCard({
 }: StatsCardProps) {
   if (loading) {
     return (
-      <div className={`bg-white rounded-lg shadow p-6 border ${borderColors[color]}`}>
+      <div className={`bg-white dark:bg-gray-800 rounded-lg shadow p-6 border ${borderColors[color]} dark:border-gray-600`}>
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-1/2 mb-4"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-600 rounded w-1/3"></div>
         </div>
       </div>
     );
@@ -70,17 +70,17 @@ export default function StatsCard({
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 border ${borderColors[color]}`}>
+    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow p-6 border ${borderColors[color]} dark:border-gray-600`}>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-          <p className={`text-3xl font-bold text-gray-900`}>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{title}</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             {formatValue(value)}
           </p>
           {trend && (
             <div className="mt-2 flex items-center">
               <span className={`text-sm font-medium ${
-                trend.isPositive ? 'text-green-600' : 'text-red-600'
+                trend.isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
               }`}>
                 {trend.isPositive ? '↑' : '↓'} {trend.value}
               </span>
@@ -88,7 +88,7 @@ export default function StatsCard({
           )}
         </div>
         {Icon && (
-          <div className={`ml-4 p-3 rounded-lg ${iconColors[color]}`}>
+          <div className={`ml-4 p-3 rounded-lg ${iconColors[color]} dark:opacity-90`}>
             <Icon className="h-6 w-6" />
           </div>
         )}

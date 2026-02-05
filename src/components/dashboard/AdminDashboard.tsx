@@ -71,11 +71,11 @@ export default function AdminDashboard() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <p className="text-red-800">Error: {error}</p>
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+        <p className="text-red-800 dark:text-red-300">Error: {error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 dark:hover:bg-red-500"
         >
           Retry
         </button>
@@ -86,7 +86,7 @@ export default function AdminDashboard() {
   if (!data) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
           <ProgressBar progress={progress} label="Loading dashboard..." />
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       {/* Progress Bar */}
       {loading && (
-        <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
           <ProgressBar progress={progress} label="Loading dashboard..." />
         </div>
       )}
@@ -114,10 +114,10 @@ export default function AdminDashboard() {
         }`}
       >
         <div className="min-w-0 flex-1">
-          <h2 className="text-3xl font-bold leading-7 text-gray-900 sm:truncate sm:text-4xl sm:tracking-tight">
+          <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:truncate sm:text-4xl sm:tracking-tight">
             Admin Dashboard
           </h2>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Overview of your transportation operations
           </p>
         </div>
@@ -188,26 +188,26 @@ export default function AdminDashboard() {
           color="green"
           loading={!loadedSections.secondaryStats}
         />
-        <div className={`bg-white rounded-lg shadow-lg p-6 border border-gray-200 transition-all duration-500 ${
+        <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-all duration-500 ${
           loadedSections.secondaryStats ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}>
-          <h3 className="text-sm font-medium text-gray-600 mb-4">Payment Status</h3>
+          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-4">Payment Status</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Fully Paid</span>
-              <span className="text-lg font-semibold text-green-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Fully Paid</span>
+              <span className="text-lg font-semibold text-green-600 dark:text-green-400">
                 {stats.payment_breakdown.fully_paid}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Partially Paid</span>
-              <span className="text-lg font-semibold text-yellow-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Partially Paid</span>
+              <span className="text-lg font-semibold text-yellow-600 dark:text-yellow-400">
                 {stats.payment_breakdown.partially_paid}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Pending</span>
-              <span className="text-lg font-semibold text-red-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Pending</span>
+              <span className="text-lg font-semibold text-red-600 dark:text-red-400">
                 {stats.payment_breakdown.pending_payment}
               </span>
             </div>
@@ -227,10 +227,10 @@ export default function AdminDashboard() {
         </div>
 
         {/* Monthly Revenue Chart */}
-        <div className={`bg-white rounded-lg shadow-lg p-6 border border-gray-200 transition-all duration-500 ${
+        <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-all duration-500 ${
           loadedSections.widgets ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Revenue (Last 6 Months)</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Monthly Revenue (Last 6 Months)</h3>
           {monthly_revenue && monthly_revenue.length > 0 ? (
             <div className="space-y-3">
               {monthly_revenue.map((month, index) => {
@@ -240,14 +240,14 @@ export default function AdminDashboard() {
                 return (
                   <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-gray-700">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {new Date(month.month + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                       </span>
-                      <span className="text-sm font-semibold text-gray-900">
+                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                         ${month.revenue.toLocaleString()}
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                       <div
                         className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-1000"
                         style={{ width: `${percentage}%` }}
@@ -259,8 +259,8 @@ export default function AdminDashboard() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-              <p className="text-sm text-gray-500">No revenue data available</p>
+              <ChartBarIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">No revenue data available</p>
             </div>
           )}
         </div>
@@ -268,39 +268,39 @@ export default function AdminDashboard() {
 
       {/* Quick Actions */}
       <div 
-        className={`bg-white rounded-lg shadow-lg p-6 border border-gray-200 transition-all duration-500 ${
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-all duration-500 ${
           loadedSections.quickActions ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Link
             href="/dashboard/bol"
-            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all hover:shadow-md"
+            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all hover:shadow-md"
           >
-            <DocumentTextIcon className="h-6 w-6 text-blue-600" />
-            <span className="font-medium text-gray-900">Create BOL</span>
+            <DocumentTextIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <span className="font-medium text-gray-900 dark:text-gray-100">Create BOL</span>
           </Link>
           <Link
             href="/dashboard/reports"
-            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all hover:shadow-md"
+            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all hover:shadow-md"
           >
-            <ChartBarIcon className="h-6 w-6 text-blue-600" />
-            <span className="font-medium text-gray-900">View Reports</span>
+            <ChartBarIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <span className="font-medium text-gray-900 dark:text-gray-100">View Reports</span>
           </Link>
           <Link
             href="/dashboard/users"
-            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all hover:shadow-md"
+            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all hover:shadow-md"
           >
-            <UserGroupIcon className="h-6 w-6 text-blue-600" />
-            <span className="font-medium text-gray-900">Manage Users</span>
+            <UserGroupIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <span className="font-medium text-gray-900 dark:text-gray-100">Manage Users</span>
           </Link>
           <Link
             href="/dashboard/analytics"
-            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all hover:shadow-md"
+            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all hover:shadow-md"
           >
-            <ChartBarIcon className="h-6 w-6 text-blue-600" />
-            <span className="font-medium text-gray-900">Analytics</span>
+            <ChartBarIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <span className="font-medium text-gray-900 dark:text-gray-100">Analytics</span>
           </Link>
         </div>
       </div>
