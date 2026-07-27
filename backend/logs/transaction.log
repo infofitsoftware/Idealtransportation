@@ -1302,3 +1302,65 @@ sqlalchemy.exc.ArgumentError: Column expression, FROM clause, or other columns c
 2026-01-29 00:13:51 - routers.transaction - INFO - Found 307 transactions with broker information
 2026-01-29 00:13:51 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
 2026-01-29 00:13:52 - routers.transaction - INFO - Found 307 transactions with broker information
+2026-02-05 16:12:33 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 16:12:33 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 16:12:34 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 16:12:34 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 16:13:20 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 16:13:20 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 16:13:20 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 16:13:21 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 16:13:35 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2026-02-05 16:13:35 - routers.transaction - INFO - Found 17 daily expenses
+2026-02-05 16:13:35 - routers.transaction - INFO - Successfully processed 17 expenses
+2026-02-05 16:13:35 - routers.transaction - INFO - Fetching daily expenses for user: admin@idealtransport.com
+2026-02-05 16:13:36 - routers.transaction - INFO - Found 17 daily expenses
+2026-02-05 16:13:36 - routers.transaction - INFO - Successfully processed 17 expenses
+2026-02-05 16:39:32 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 16:39:33 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 16:39:33 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 16:39:33 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 16:46:28 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 16:46:28 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 16:46:28 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 16:46:28 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:13:05 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:13:06 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:13:06 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:13:07 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:22:54 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:22:54 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:22:54 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:22:54 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:26:51 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:26:51 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:26:51 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:26:51 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:26:56 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:26:56 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:26:57 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:26:57 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:29:39 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:29:39 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:29:40 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:29:40 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:33:44 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:33:45 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:33:45 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:33:45 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:34:03 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:34:03 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:34:03 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:34:03 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:42:46 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:42:46 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-05 17:42:46 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-05 17:42:47 - routers.transaction - INFO - Found 316 transactions with broker information
+2026-02-19 10:58:32 - routers.transaction - INFO - Fetching transactions for user: anish@idealtransport.com
+2026-02-19 10:58:32 - routers.transaction - INFO - Fetching transactions for user: anish@idealtransport.com
+2026-02-19 10:58:32 - routers.transaction - INFO - Found 0 transactions with broker information
+2026-02-19 10:58:32 - routers.transaction - INFO - Found 0 transactions with broker information
+2026-02-19 11:03:26 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-19 11:03:26 - routers.transaction - INFO - Fetching transactions for user: admin@idealtransport.com
+2026-02-19 11:03:27 - routers.transaction - INFO - Found 326 transactions with broker information
+2026-02-19 11:03:27 - routers.transaction - INFO - Found 326 transactions with broker information
